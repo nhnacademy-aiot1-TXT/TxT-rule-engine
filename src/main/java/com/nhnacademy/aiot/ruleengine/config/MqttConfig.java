@@ -13,27 +13,54 @@ import org.springframework.messaging.MessageHandler;
 @Configuration
 public class MqttConfig {
     @Bean
-    public MessageChannel mqttInputChannel() {
+    public MessageChannel txtSensorInputChannel() {
         return new DirectChannel();
     }
 
     @Bean
-    public MessageProducer inbound() {
+    public MessageChannel academySensorInputChannel() {
+        return new DirectChannel();
+    }
+
+    @Bean
+    public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine",
-                        "milesight/s/nhnacademy/b/gyeongnam/p/pair_room/d/vs330/e/battery_level");
+                        "milesight/s/nhnacademySensor/b/gyeongnam/p/pair_room/d/vs330/e/battery_level");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
-        adapter.setOutputChannel(mqttInputChannel());
+        adapter.setOutputChannel(txtSensorInputChannel());
         return adapter;
     }
 
     @Bean
-    @ServiceActivator(inputChannel = "mqttInputChannel")
-    public MessageHandler handler() {
+    public MessageProducer academySensorInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "",
+                        "");
+        adapter.setCompletionTimeout(5000);
+        adapter.setConverter(new DefaultPahoMessageConverter());
+        adapter.setQos(2);
+        adapter.setOutputChannel(academySensorInputChannel());
+        return adapter;
+    }
+
+    @Bean
+    @ServiceActivator(inputChannel = "txtSensorInputChannel")
+    public MessageHandler handler1() {
         return message -> {
-            System.out.println(message.getPayload());
+            System.out.println("txtSensorInputChannel : " + message.getPayload());
+            System.out.println("txtSensorSensorHeader"  + message.getHeaders());
+        };
+    }
+
+    @Bean
+    @ServiceActivator(inputChannel = "academySensorInputChannel")
+    public MessageHandler handler2() {
+        return message -> {
+            System.out.println("academySensorInputChannel : " + message.getPayload());
+            System.out.println("academySensorHeader"  + message.getHeaders());
         };
     }
 }
