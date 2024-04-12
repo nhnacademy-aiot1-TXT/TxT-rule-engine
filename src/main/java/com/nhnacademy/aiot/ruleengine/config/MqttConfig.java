@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.occupancy.config;
+package com.nhnacademy.aiot.ruleengine.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
