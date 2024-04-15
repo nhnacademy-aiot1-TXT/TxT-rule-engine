@@ -1,5 +1,8 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
+import com.nhnacademy.aiot.ruleengine.service.InfluxService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -10,8 +13,13 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class MqttConfig {
+
+    private final InfluxService influxService;
+
     @Bean
     public MessageChannel txtSensorInputChannel() {
         return new DirectChannel();
@@ -25,8 +33,8 @@ public class MqttConfig {
     @Bean
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine",
-                        "milesight/s/nhnacademySensor/b/gyeongnam/p/pair_room/d/vs330/e/battery_level");
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/pair_room/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -37,8 +45,8 @@ public class MqttConfig {
     @Bean
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "",
-                        "");
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-acdaemy",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -46,12 +54,16 @@ public class MqttConfig {
         return adapter;
     }
 
+
     @Bean
     @ServiceActivator(inputChannel = "txtSensorInputChannel")
     public MessageHandler handler1() {
         return message -> {
-            System.out.println("txtSensorInputChannel : " + message.getPayload());
-            System.out.println("txtSensorSensorHeader"  + message.getHeaders());
+            influxService.saveData(
+                    message.getHeaders().get("mqtt_receivedTopic", String.class),
+                    message.getPayload().toString());
+
+            log.debug("TxT Sensor : " + message.getPayload());
         };
     }
 
@@ -59,8 +71,11 @@ public class MqttConfig {
     @ServiceActivator(inputChannel = "academySensorInputChannel")
     public MessageHandler handler2() {
         return message -> {
-            System.out.println("academySensorInputChannel : " + message.getPayload());
-            System.out.println("academySensorHeader"  + message.getHeaders());
+            influxService.saveData(
+                    message.getHeaders().get("mqtt_receivedTopic", String.class),
+                    message.getPayload().toString());
+
+            log.debug("Academy Sensor : " + message.getPayload());
         };
     }
 }
