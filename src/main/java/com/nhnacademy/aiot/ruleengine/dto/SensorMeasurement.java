@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.txt.dto;
+package com.nhnacademy.aiot.ruleengine.dto;
 
 import lombok.*;
 

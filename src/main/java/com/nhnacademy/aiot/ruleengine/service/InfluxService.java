@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.txt.service;
+package com.nhnacademy.aiot.ruleengine.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,9 +6,9 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
-import com.nhnacademy.aiot.ruleengine.txt.dto.Payload;
-import com.nhnacademy.aiot.ruleengine.txt.dto.SensorMeasurement;
-import com.nhnacademy.aiot.ruleengine.txt.exception.MeasurementParseException;
+import com.nhnacademy.aiot.ruleengine.dto.Payload;
+import com.nhnacademy.aiot.ruleengine.dto.SensorMeasurement;
+import com.nhnacademy.aiot.ruleengine.exception.MeasurementParseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class InfluxService {
     @Value("${influxdb.bucket}")
     private String bucket;
 
-    private SensorMeasurement parseSenesorMeasurement(String topic, String payloadStr) {
+    private SensorMeasurement parseSensorMeasurement(String topic, String payloadStr) {
         String[] topics = topic.split("/");
         Payload payload;
         try {
@@ -50,7 +50,7 @@ public class InfluxService {
     }
 
     public void saveData(String topic, String payloadStr) {
-        SensorMeasurement sensorMeasurement = parseSenesorMeasurement(topic, payloadStr);
+        SensorMeasurement sensorMeasurement = parseSensorMeasurement(topic, payloadStr);
         InfluxDBClient influxDBClient = InfluxDBClientFactory.create(url, token.toCharArray(), org, bucket);
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
 

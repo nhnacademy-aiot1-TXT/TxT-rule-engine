@@ -1,7 +1,8 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
-import com.nhnacademy.aiot.ruleengine.txt.service.InfluxService;
+import com.nhnacademy.aiot.ruleengine.service.InfluxService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -12,6 +13,7 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class MqttConfig {
@@ -61,7 +63,7 @@ public class MqttConfig {
                     message.getHeaders().get("mqtt_receivedTopic", String.class),
                     message.getPayload().toString());
 
-            System.out.println("TxT Sensor : " + message.getPayload());
+            log.debug("TxT Sensor : " + message.getPayload());
         };
     }
 
@@ -73,7 +75,7 @@ public class MqttConfig {
                     message.getHeaders().get("mqtt_receivedTopic", String.class),
                     message.getPayload().toString());
 
-            System.out.println("Academy Sensor : " + message.getPayload());
+            log.debug("Academy Sensor : " + message.getPayload());
         };
     }
 }
