@@ -12,6 +12,5 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SwitchState {
-    private String switchName;
     private boolean state;
 }

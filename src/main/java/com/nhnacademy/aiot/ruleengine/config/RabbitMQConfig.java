@@ -28,45 +28,62 @@ public class RabbitMQConfig {
     @Value("${spring.rabbitmq.password}")
     private String rabbitmqPassword;
 
-    @Value("${rabbitmq.queue.name}")
-    private String queueName;
-
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
 
-    @Value("${rabbitmq.routing.key}")
-    private String routingKey;
+    @Value("${rabbitmq.aircleaner.queue.name}")
+    private String aircleanerQueue;
 
-    /**
-     * 지정된 큐 이름으로 Queue 빈을 생성
-     *
-     * @return Queue 빈 객체
-     */
-    @Bean
-    public Queue queue() {
-        return new Queue(queueName);
-    }
+    @Value("${rabbitmq.aircleaner.routing.key}")
+    private String aircleanerRouterKey;
 
-    /**
-     * 지정된 익스체인지 이름으로 DirectExchange 빈을 생성
-     *
-     * @return TopicExchange 빈 객체
-     */
+    @Value("${rabbitmq.light.queue.name}")
+    private String lightQueue;
+
+    @Value("${rabbitmq.light.routing.key}")
+    private String lightRouterKey;
+
+    @Value("${rabbitmq.airconditioner.queue.name}")
+    private String airconditionerQueue;
+
+    @Value("${rabbitmq.airconditioner.routing.key}")
+    private String airconditionerRouterKey;
+
+
     @Bean
     public DirectExchange exchange() {
         return new DirectExchange(exchangeName);
     }
 
-    /**
-     * 주어진 큐와 익스체인지를 바인딩하고 라우팅 키를 사용하여 Binding 빈을 생성
-     *
-     * @param queue    바인딩할 Queue
-     * @param exchange 바인딩할 TopicExchange
-     * @return Binding 빈 객체
-     */
+
     @Bean
-    public Binding binding(Queue queue, DirectExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(routingKey);
+    public Queue aircleanerQueue() {
+        return new Queue(aircleanerQueue);
+    }
+
+    @Bean
+    public Binding aircleanerBinding(Queue aircleanerQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(aircleanerQueue).to(exchange).with(aircleanerRouterKey);
+    }
+
+    @Bean
+    public Queue lightQueue() {
+        return new Queue(lightQueue);
+    }
+
+    @Bean
+    public Binding lightBinding(Queue lightQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(lightQueue).to(exchange).with(lightRouterKey);
+    }
+
+    @Bean
+    public Queue airconditionerQueue() {
+        return new Queue(airconditionerQueue);
+    }
+
+    @Bean
+    public Binding airconditionerBinding(Queue airconditionerQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(airconditionerQueue).to(exchange).with(airconditionerRouterKey);
     }
 
     /**

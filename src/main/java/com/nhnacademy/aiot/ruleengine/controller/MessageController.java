@@ -22,8 +22,20 @@ public class MessageController {
      * @return ResponseEntity 객체로 응답을 반환
      */
     @PostMapping(value = "/light")
-    public ResponseEntity<?> sendMessage(@RequestBody SwitchState switchState) {
-        messageService.sendMessage(switchState);
-        return ResponseEntity.ok("Message sent to RabbitMQ!");
+    public ResponseEntity<?> sendLightStateMessage(@RequestBody SwitchState switchState) {
+        messageService.sendLightMessage(switchState);
+        return ResponseEntity.ok("Light_StateMessage sent to RabbitMQ!");
+    }
+
+    @PostMapping(value = "/air-cleaner")
+    public ResponseEntity<?> sendAircleanerStateMessage(@RequestBody SwitchState switchState) {
+        messageService.sendAircleanerMessage(switchState);
+        return ResponseEntity.ok("Air_Cleaner_StateMessage sent to RabbitMQ!");
+    }
+
+    @PostMapping(value = "/air-conditioner")
+    public ResponseEntity<?> sendAirconditionerStateMessage(@RequestBody SwitchState switchState) {
+        messageService.sendAirconditionerMessage(switchState);
+        return ResponseEntity.ok("Air_Conditioner_StateMessage sent to RabbitMQ!");
     }
 }

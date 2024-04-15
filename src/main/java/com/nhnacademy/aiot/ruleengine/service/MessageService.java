@@ -16,20 +16,32 @@ public class MessageService {
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
 
-    @Value("${rabbitmq.routing.key}")
-    private String routingKey;
+    @Value("${rabbitmq.aircleaner.routing.key}")
+    private String aircleanerRoutingKey;
+
+    @Value("${rabbitmq.light.routing.key}")
+    private String lightRoutingKey;
+
+    @Value("${rabbitmq.airconditioner.routing.key}")
+    private String airconditionerRoutingKey;
 
     private final RabbitTemplate rabbitTemplate;
 
-    /**
-     * Queue로 메시지를 발행
-     *
-     * @param switchState 발행할 메시지의 DTO 객체
-     */
-    public void sendMessage(SwitchState  switchState) {
+    public void sendAircleanerMessage(SwitchState switchState) {
         log.info("message sent: {}", switchState.toString());
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, switchState);
+        rabbitTemplate.convertAndSend(exchangeName, aircleanerRoutingKey, switchState);
     }
+
+    public void sendLightMessage(SwitchState switchState) {
+        log.info("message sent: {}", switchState.toString());
+        rabbitTemplate.convertAndSend(exchangeName, lightRoutingKey, switchState);
+    }
+
+    public void sendAirconditionerMessage(SwitchState switchState) {
+        log.info("message sent: {}", switchState.toString());
+        rabbitTemplate.convertAndSend(exchangeName, airconditionerRoutingKey, switchState);
+    }
+
 
     /**
      * Queue에서 메시지를 구독
@@ -37,7 +49,7 @@ public class MessageService {
      * @param switchState 구독한 메시지를 담고 있는 객체
      */
     @RabbitListener(queues = "${rabbitmq.queue.name}")
-    public void reciveMessage(SwitchState switchState) {
+    public void receiveMessage(SwitchState switchState) {
         log.info("Received message: {}", switchState.toString());
     }
 }
