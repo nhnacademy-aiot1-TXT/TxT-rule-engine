@@ -1,0 +1,7 @@
+POST http://localhost:9090/api/message/light
+Content-Type: application/json
+
+{
+  "switchName": "light",
+  "state": true
+}

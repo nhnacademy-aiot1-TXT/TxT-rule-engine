@@ -1,0 +1,29 @@
+package com.nhnacademy.aiot.ruleengine.controller;
+
+import com.nhnacademy.aiot.ruleengine.dto.SwitchState;
+import com.nhnacademy.aiot.ruleengine.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/message")
+public class MessageController {
+
+    private final MessageService messageService;
+
+    /**
+     * Queue로 메시지를 발행
+     *
+     * @param switchState 발행할 메시지의 DTO 객체
+     * @return ResponseEntity 객체로 응답을 반환
+     */
+    @PostMapping(value = "/light")
+    public ResponseEntity<?> sendMessage(@RequestBody SwitchState switchState) {
+        messageService.sendMessage(switchState);
+        return ResponseEntity.ok("Message sent to RabbitMQ!");
+    }
+}
