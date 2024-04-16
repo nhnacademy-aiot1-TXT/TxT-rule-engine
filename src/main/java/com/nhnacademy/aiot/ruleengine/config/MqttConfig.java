@@ -16,6 +16,7 @@ import org.springframework.messaging.MessageHandler;
 
 /**
  * MQTT와 관련된 설정을 정의하는 클래스
+ *
  * @author jjunho50
  */
 @Slf4j
@@ -44,6 +45,7 @@ public class MqttConfig {
     /**
      * 이 메소드는 TxT 팀이 별도로 설치한 센서 메시지를 수신하는 데 필요한 설정을 정의하며,
      * 수신된 메시지는 txtSensorInputChannel을 통해 전달됩니다.
+     *
      * @return MessageProducer 객체
      */
     @Bean
@@ -59,8 +61,8 @@ public class MqttConfig {
     }
 
     /**
-     * 이 메소드는 학원의 기존 센서들의 메시지를 수신하는 데 필요한 설정을 정의하며,
-     * 수신된 메시지는 academySensorInputChannel을 통해 전달됩니다.
+     * 이 메소드는 학원의 기존 센서들의 메시지를 수신하는 데 필요한 설정을 정의
+     *
      * @return MessageProducer 객체
      */
     @Bean
@@ -76,8 +78,8 @@ public class MqttConfig {
     }
 
     /**
-     * 이 메소드는 학원 재실센서의 in-out 메시지를 수신하는데 필요한 설정을 정의하며,
-     * 수신된 메시지는 inOutSensorInputChannel을 통해 전달됩니다.
+     * 이 메소드는 학원 재실센서의 in-out 메시지를 수신하는데 필요한 설정을 정의
+     *
      * @return MessageProducer 객체
      */
     @Bean
@@ -95,6 +97,7 @@ public class MqttConfig {
     /**
      * MQTT 메시지를 처리하는 MessageHandler 빈을 생성하고 반환합니다.
      * 이 메소드는 TxT 팀의 커스텀 MQTT 메시지를 InfluxDB에 저장합니다.
+     *
      * @return MessageHandler 객체
      */
     @Bean
@@ -109,6 +112,7 @@ public class MqttConfig {
 
     /**
      * 이 메소드는 학원의 기존 센서들의 MQTT 메시지를 InfluxDB에 저장합니다.
+     *
      * @return MessageHandler 객체
      */
     @Bean
@@ -123,6 +127,7 @@ public class MqttConfig {
 
     /**
      * 이 메소드는 학원의 재실센서 in-out 센서 MQTT 메시지를 InfluxDB에 저장합니다.
+     *
      * @return MessageHandler 객체
      */
     @Bean

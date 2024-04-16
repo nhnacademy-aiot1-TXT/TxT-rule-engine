@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * RabbitMQ 테스트용 컨트롤러 (기능 구현 시, 삭제할 예정)
+ *
  * @author jjunho50
  */
 @Slf4j

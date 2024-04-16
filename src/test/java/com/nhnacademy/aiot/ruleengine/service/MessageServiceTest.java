@@ -16,6 +16,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 /**
+ * MessageService 테스트 클래스입니다.
  * @author jjunho50
  */
 @ExtendWith(MockitoExtension.class)
@@ -24,6 +25,7 @@ public class MessageServiceTest {
     private MessageService messageService;
     @Mock
     private RabbitTemplate rabbitTemplate;
+
     @BeforeEach
     public void setup() {
         ReflectionTestUtils.setField(messageService, "exchangeName", "exchange");
@@ -34,8 +36,9 @@ public class MessageServiceTest {
 
     /**
      * 에에컨, 공기청정기, 전등 스위치 ON/OFF 여부 데이터 메세지 처리
+     * MessageService의 Field값은 반드시 application.properties의 정보와 일치해야 한다!!!
      *
-     * @param routingKey The type of the message that is sent.
+     * @param routingKey
      */
     @ParameterizedTest
     @ValueSource(strings = {"aircleaner", "light", "airconditioner"})
