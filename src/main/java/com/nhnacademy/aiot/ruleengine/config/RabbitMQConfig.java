@@ -13,6 +13,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * RabbitMQ 서비스와 관련된 설정을 정의하는 클래스
+ *
+ * @author jjunho50
+ */
 @Configuration
 public class RabbitMQConfig {
 
@@ -87,7 +92,7 @@ public class RabbitMQConfig {
     }
 
     /**
-     * RabbitMQ 연결을 위한 ConnectionFactory 빈을 생성하여 반환
+     * RabbitMQ 서버와 연결을 위한 ConnectionFactory 빈을 생성하고 반환합니다.
      *
      * @return ConnectionFactory 객체
      */
@@ -103,14 +108,14 @@ public class RabbitMQConfig {
 
     /**
      * RabbitTemplate을 생성하여 반환
+     * Jackson2JsonMessageConverter를 메시지 컨버터로 설정 (JSON 형식의 메시지를 직렬화하고 역직렬할 수 있도록 설정)
      *
-     * @param connectionFactory RabbitMQ와의 연결을 위한 ConnectionFactory 객체
+     * @param connectionFactory RabbitMQ 와의 연결을 위한 ConnectionFactory 객체
      * @return RabbitTemplate 객체
      */
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        // JSON 형식의 메시지를 직렬화하고 역직렬할 수 있도록 설정
         rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
         return rabbitTemplate;
     }
