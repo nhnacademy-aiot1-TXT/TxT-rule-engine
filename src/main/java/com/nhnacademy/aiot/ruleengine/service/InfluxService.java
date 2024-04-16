@@ -6,9 +6,11 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
-import com.nhnacademy.aiot.ruleengine.dto.Payload;
-import com.nhnacademy.aiot.ruleengine.dto.SensorMeasurement;
+import com.nhnacademy.aiot.ruleengine.domain.Payload;
+import com.nhnacademy.aiot.ruleengine.domain.SensorMeasurement;
 import com.nhnacademy.aiot.ruleengine.exception.MeasurementParseException;
+import com.nhnacademy.aiot.ruleengine.point.InfluxdbPoint;
+import com.nhnacademy.aiot.ruleengine.point.PointFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 public class InfluxService {
 
     private final ObjectMapper objectMapper;
+
+    private final PointFactory pointFactory;
 
     @Value("${influxdb.url}")
     private String url;
@@ -51,19 +55,11 @@ public class InfluxService {
 
     public void saveData(String topic, String payloadStr) {
         SensorMeasurement sensorMeasurement = parseSensorMeasurement(topic, payloadStr);
+        InfluxdbPoint influxdbPoint = pointFactory.getInfluxdbPoint(sensorMeasurement.getMeasurement());
         InfluxDBClient influxDBClient = InfluxDBClientFactory.create(url, token.toCharArray(), org, bucket);
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
 
-        Point point = Point.measurement(sensorMeasurement.getMeasurement())
-                .addField("time", sensorMeasurement.getTime())
-                .addField("device", sensorMeasurement.getDevice())
-                .addField("place", sensorMeasurement.getPlace())
-                .addField("topic", sensorMeasurement.getTopic());
-        if ("battery_level".equals(sensorMeasurement.getMeasurement())) {
-            point.addField("value", Integer.parseInt(sensorMeasurement.getValue()));
-        } else {
-            point.addField("value", sensorMeasurement.getValue());
-        }
+        Point point = influxdbPoint.build(sensorMeasurement);
         writeApi.writePoint(point);
         influxDBClient.close();
     }
