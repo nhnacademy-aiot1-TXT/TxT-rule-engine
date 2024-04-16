@@ -231,3 +231,8 @@ $RECYCLE.BIN/
 *.lnk
 
 .iml
+/.idea/compiler.xml
+/.idea/jarRepositories.xml
+/.idea/misc.xml
+/.idea/vcs.xml
+/.idea/.gitignore

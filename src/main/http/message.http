@@ -1,0 +1,26 @@
+POST http://localhost:9090/api/message/light
+Content-Type: application/json
+
+{
+  "state": false
+}
+
+
+###
+
+POST http://localhost:9090/api/message/air-cleaner
+Content-Type: application/json
+
+{
+  "state": true
+}
+
+###
+
+POST http://localhost:9090/api/message/air-conditioner
+Content-Type: application/json
+
+{
+"state": true
+}
+

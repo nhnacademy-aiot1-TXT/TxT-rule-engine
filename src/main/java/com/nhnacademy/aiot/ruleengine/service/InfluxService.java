@@ -44,13 +44,13 @@ public class InfluxService {
             throw new MeasurementParseException("payload 불러오기 실패");
         }
         return SensorMeasurement.builder()
-                                .time(payload.getTime())
-                                .device(topics[8])
-                                .place(topics[6])
-                                .topic(topic)
-                                .value(payload.getValue())
-                                .measurement(topics[10])
-                                .build();
+                .time(payload.getTime())
+                .device(topics[8])
+                .place(topics[6])
+                .topic(topic)
+                .value(payload.getValue())
+                .measurement(topics[10])
+                .build();
     }
 
     public void saveData(String topic, String payloadStr) {
