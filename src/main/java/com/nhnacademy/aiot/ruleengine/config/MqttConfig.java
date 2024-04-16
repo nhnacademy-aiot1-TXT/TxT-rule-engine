@@ -36,12 +36,6 @@ public class MqttConfig {
         return new DirectChannel();
     }
 
-    @Bean
-    public MessageChannel inOutSensorInputChannel() {
-        return new DirectChannel();
-    }
-
-
     /**
      * 이 메소드는 TxT 팀이 별도로 설치한 센서 메시지를 수신하는 데 필요한 설정을 정의하며,
      * 수신된 메시지는 txtSensorInputChannel을 통해 전달됩니다.
@@ -51,7 +45,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt1",
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt112",
                         "milesight/s/nhnacademy/b/gyeongnam/p/pair_room/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
@@ -68,32 +62,14 @@ public class MqttConfig {
     @Bean
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy2",
-                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy2323",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#", "milesight/s/nhnacademy/b/gyeongnam/p/entrance/d/vs133/e/people_counter");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
         adapter.setOutputChannel(academySensorInputChannel());
         return adapter;
     }
-
-    /**
-     * 이 메소드는 학원 재실센서의 in-out 메시지를 수신하는데 필요한 설정을 정의
-     *
-     * @return MessageProducer 객체
-     */
-    @Bean
-    public MessageProducer inOutSensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-inOut",
-                        "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#");
-        adapter.setCompletionTimeout(5000);
-        adapter.setConverter(new DefaultPahoMessageConverter());
-        adapter.setQos(2);
-        adapter.setOutputChannel(inOutSensorInputChannel());
-        return adapter;
-    }
-
     /**
      * MQTT 메시지를 처리하는 MessageHandler 빈을 생성하고 반환합니다.
      * 이 메소드는 TxT 팀의 커스텀 MQTT 메시지를 InfluxDB에 저장합니다.
@@ -122,22 +98,8 @@ public class MqttConfig {
             influxService.saveData(
                     message.getHeaders().get("mqtt_receivedTopic", String.class),
                     message.getPayload().toString());
-        };
-    }
-
-    /**
-     * 이 메소드는 학원의 재실센서 in-out 센서 MQTT 메시지를 InfluxDB에 저장합니다.
-     *
-     * @return MessageHandler 객체
-     */
-    @Bean
-    @ServiceActivator(inputChannel = "inOutSensorInputChannel")
-    public MessageHandler handler3() {
-        return message -> {
-            influxService.saveData(
-                    message.getHeaders().get("mqtt_receivedTopic", String.class),
-                    message.getPayload().toString());
             System.out.println(message.getPayload());
+            System.out.println(message.getHeaders());
         };
     }
 }
