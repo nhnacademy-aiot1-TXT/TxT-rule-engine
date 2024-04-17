@@ -63,7 +63,7 @@ public class MqttConfig {
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy",
-                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#", "milesight/s/nhnacademy/b/gyeongnam/p/entrance/d/vs133/e/people_counter");
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#", "milesight/s/nhnacademy/b/gyeongnam/p/entrance/d/vs133/e/people_counter", "data/s/nhnacademy/b/gyeongnam/p/entrance/d/6757D16625110018/e/+/1");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
