@@ -45,7 +45,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt112",
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt",
                         "milesight/s/nhnacademy/b/gyeongnam/p/pair_room/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
@@ -62,8 +62,8 @@ public class MqttConfig {
     @Bean
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy2323",
-                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#", "milesight/s/nhnacademy/b/gyeongnam/p/entrance/d/vs133/e/people_counter");
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#", "milesight/s/nhnacademy/b/gyeongnam/p/entrance/d/vs133/e/people_counter", "data/s/nhnacademy/b/gyeongnam/p/entrance/d/6757D16625110018/e/+/1");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -98,8 +98,6 @@ public class MqttConfig {
             influxService.saveData(
                     message.getHeaders().get("mqtt_receivedTopic", String.class),
                     message.getPayload().toString());
-            System.out.println(message.getPayload());
-            System.out.println(message.getHeaders());
         };
     }
 }
