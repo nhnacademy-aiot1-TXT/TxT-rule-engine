@@ -11,16 +11,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class MessageService {
-
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
-
     @Value("${rabbitmq.aircleaner.routing.key}")
     private String aircleanerRoutingKey;
-
     @Value("${rabbitmq.light.routing.key}")
     private String lightRoutingKey;
-
     @Value("${rabbitmq.airconditioner.routing.key}")
     private String airconditionerRoutingKey;
 
