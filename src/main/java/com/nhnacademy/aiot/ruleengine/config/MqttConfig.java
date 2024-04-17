@@ -70,6 +70,7 @@ public class MqttConfig {
         adapter.setOutputChannel(academySensorInputChannel());
         return adapter;
     }
+
     /**
      * MQTT 메시지를 처리하는 MessageHandler 빈을 생성하고 반환합니다.
      * 이 메소드는 TxT 팀의 커스텀 MQTT 메시지를 InfluxDB에 저장합니다.
