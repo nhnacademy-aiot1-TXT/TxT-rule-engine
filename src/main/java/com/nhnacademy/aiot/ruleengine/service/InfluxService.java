@@ -50,6 +50,7 @@ public class InfluxService {
             writeApi.writePoint(point);
             influxDBClient.close();
         } catch (MeasurementParseException e) {
+            //
         }
     }
 
@@ -75,7 +76,6 @@ public class InfluxService {
         if (topic.contains("people_counter")) {
             return getCountPayload(payloadStr, objectMapper);
         }
-
         try {
             return objectMapper.readValue(payloadStr, Payload.class);
         } catch (IOException e) {
@@ -84,10 +84,8 @@ public class InfluxService {
     }
 
     private Payload getCountPayload(String payloadStr, ObjectMapper objectMapper) {
-        System.out.println(payloadStr);
-
         if (!payloadStr.contains("total_data")) {
-            throw new MeasurementParseException("asfd");
+            throw new MeasurementParseException("payload 불러오기 실패");
         }
 
         try {
