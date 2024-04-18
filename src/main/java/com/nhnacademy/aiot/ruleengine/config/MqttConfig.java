@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
+import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.messaging.MessageHandler;
 public class MqttConfig {
 
     private final InfluxService influxService;
+    private final MessageService messageService;
 
     @Bean
     public MessageChannel txtSensorInputChannel() {
@@ -45,7 +47,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt",
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt12312",
                         "milesight/s/nhnacademy/b/gyeongnam/p/pair_room/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
@@ -62,7 +64,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy",
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy3213",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#", "milesight/s/nhnacademy/b/gyeongnam/p/entrance/d/vs133/e/people_counter", "data/s/nhnacademy/b/gyeongnam/p/entrance/d/6757D16625110018/e/+/1");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
@@ -81,9 +83,11 @@ public class MqttConfig {
     @ServiceActivator(inputChannel = "txtSensorInputChannel")
     public MessageHandler handler1() {
         return message -> {
-            influxService.saveData(
-                    message.getHeaders().get("mqtt_receivedTopic", String.class),
-                    message.getPayload().toString());
+            String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
+            String payload = message.getPayload().toString();
+
+            influxService.saveData(topic, payload);
+            messageService.sendValidateMessage(topic, payload);
         };
     }
 
