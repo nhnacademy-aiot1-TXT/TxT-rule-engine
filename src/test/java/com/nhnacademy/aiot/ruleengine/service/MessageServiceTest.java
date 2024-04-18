@@ -1,6 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.nhnacademy.aiot.ruleengine.domain.SwitchState;
+import com.nhnacademy.aiot.ruleengine.dto.SwitchState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,10 +17,11 @@ import static org.mockito.Mockito.verify;
 
 /**
  * MessageService 테스트 클래스입니다.
+ *
  * @author jjunho50
  */
 @ExtendWith(MockitoExtension.class)
-public class MessageServiceTest {
+class MessageServiceTest {
     @InjectMocks
     private MessageService messageService;
     @Mock
@@ -42,7 +43,7 @@ public class MessageServiceTest {
      */
     @ParameterizedTest
     @ValueSource(strings = {"aircleaner", "light", "airconditioner"})
-    public void testSendMessage(String routingKey) {
+    void testSendMessage(String routingKey) {
         SwitchState switchState = new SwitchState();
 
         switch (routingKey) {
