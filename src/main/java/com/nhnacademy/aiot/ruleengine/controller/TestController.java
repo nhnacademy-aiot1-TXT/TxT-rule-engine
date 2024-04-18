@@ -1,6 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.controller;
 
-import com.nhnacademy.aiot.ruleengine.domain.SwitchState;
+import com.nhnacademy.aiot.ruleengine.dto.SwitchState;
 import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
