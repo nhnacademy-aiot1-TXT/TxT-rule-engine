@@ -50,7 +50,7 @@ class MqttConfigTest {
         handler.handleMessage(message);
 
         assertNotNull(handler);
-        verify(influxService).saveData("test/topic", "test payload");
+        verify(influxService).save("test/topic", "test payload");
         verify(messageService).sendValidateMessage("test/topic", "test payload");
     }
 

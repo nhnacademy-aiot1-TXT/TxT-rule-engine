@@ -90,7 +90,7 @@ public class MqttConfig {
             String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             String payload = message.getPayload().toString();
 
-            influxService.saveData(topic, payload);
+            influxService.save(topic, payload);
             messageService.sendValidateMessage(topic, payload);
         };
     }
