@@ -61,6 +61,8 @@ public class RabbitMQConfig {
     private String occupancyRouterKey;
 
 
+
+
     @Bean
     public DirectExchange exchange() {
         return new DirectExchange(exchangeName);

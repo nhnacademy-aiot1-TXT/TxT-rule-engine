@@ -26,17 +26,14 @@ public class MessageService {
     private final RabbitTemplate rabbitTemplate;
 
     public void sendValidateMessage(String topic, String payload) {
-        if(topic.contains("magnet_status")) {
-            System.out.println(payload);
+        if (topic.contains("magnet_status")) {
             sendAirconditionerMessage(new SwitchState(payload.contains("open")));
-        } else if(topic.contains("occupancy")) {
-            System.out.println(payload);
+        } else if (topic.contains("occupancy")) {
             sendOccupancyMessage(new SwitchState(payload.contains("occupied")));
         }
     }
 
-    private void sendOccupancyMessage(SwitchState switchState)
-    {
+    private void sendOccupancyMessage(SwitchState switchState) {
         sendMessage(switchState, occupancyRoutingKey);
     }
 
