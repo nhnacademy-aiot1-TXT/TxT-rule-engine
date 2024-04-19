@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
+import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,8 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class MqttConfigTest {
+    @Mock
+    private MessageService messageService;
 
     @Mock
     private InfluxService influxService;
@@ -40,14 +43,15 @@ class MqttConfigTest {
     @Test
     void handler1() {
         Message<String> message = MessageBuilder.withPayload("test payload")
-                                                .setHeader("mqtt_receivedTopic", "test/topic")
-                                                .build();
+                .setHeader("mqtt_receivedTopic", "test/topic")
+                .build();
 
         MessageHandler handler = config.handler1();
         handler.handleMessage(message);
 
         assertNotNull(handler);
         verify(influxService).save("test/topic", "test payload");
+        verify(messageService).sendValidateMessage("test/topic", "test payload");
     }
 
     @Test

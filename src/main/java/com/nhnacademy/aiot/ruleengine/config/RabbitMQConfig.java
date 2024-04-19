@@ -54,6 +54,14 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.airconditioner.routing.key}")
     private String airconditionerRouterKey;
 
+    @Value("${rabbitmq.occupancy.queue.name}")
+    private String occupancyQueue;
+
+    @Value("${rabbitmq.occupancy.routing.key}")
+    private String occupancyRouterKey;
+
+
+
 
     @Bean
     public DirectExchange exchange() {
@@ -89,6 +97,16 @@ public class RabbitMQConfig {
     @Bean
     public Binding airconditionerBinding(Queue airconditionerQueue, DirectExchange exchange) {
         return BindingBuilder.bind(airconditionerQueue).to(exchange).with(airconditionerRouterKey);
+    }
+
+    @Bean
+    public Queue occupancyQueue() {
+        return new Queue(occupancyQueue);
+    }
+
+    @Bean
+    public Binding occupancyBinding(Queue occupancyQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(occupancyQueue).to(exchange).with(occupancyRouterKey);
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
+import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.messaging.MessageHandler;
 public class MqttConfig {
 
     private final InfluxService influxService;
+    private final MessageService messageService;
 
     @Bean
     public MessageChannel txtSensorInputChannel() {
@@ -85,9 +87,11 @@ public class MqttConfig {
     @ServiceActivator(inputChannel = "txtSensorInputChannel")
     public MessageHandler handler1() {
         return message -> {
-            influxService.save(
-                    message.getHeaders().get("mqtt_receivedTopic", String.class),
-                    message.getPayload().toString());
+            String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
+            String payload = message.getPayload().toString();
+
+            influxService.save(topic, payload);
+            messageService.sendValidateMessage(topic, payload);
         };
     }
 

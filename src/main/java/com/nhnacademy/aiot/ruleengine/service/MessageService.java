@@ -20,17 +20,32 @@ public class MessageService {
     @Value("${rabbitmq.airconditioner.routing.key}")
     private String airconditionerRoutingKey;
 
+    @Value("${rabbitmq.occupancy.routing.key}")
+    private String occupancyRoutingKey;
+
     private final RabbitTemplate rabbitTemplate;
 
-    public void sendAircleanerMessage(SwitchState switchState) {
+    public void sendValidateMessage(String topic, String payload) {
+        if (topic.contains("magnet_status")) {
+            sendAirconditionerMessage(new SwitchState(payload.contains("open")));
+        } else if (topic.contains("occupancy")) {
+            sendOccupancyMessage(new SwitchState(payload.contains("occupied")));
+        }
+    }
+
+    private void sendOccupancyMessage(SwitchState switchState) {
+        sendMessage(switchState, occupancyRoutingKey);
+    }
+
+    private void sendAircleanerMessage(SwitchState switchState) {
         sendMessage(switchState, aircleanerRoutingKey);
     }
 
-    public void sendLightMessage(SwitchState switchState) {
+    private void sendLightMessage(SwitchState switchState) {
         sendMessage(switchState, lightRoutingKey);
     }
 
-    public void sendAirconditionerMessage(SwitchState switchState) {
+    private void sendAirconditionerMessage(SwitchState switchState) {
         sendMessage(switchState, airconditionerRoutingKey);
     }
 
