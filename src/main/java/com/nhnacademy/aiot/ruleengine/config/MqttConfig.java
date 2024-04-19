@@ -47,7 +47,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt2",
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt",
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
@@ -64,7 +64,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy2",
+                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
