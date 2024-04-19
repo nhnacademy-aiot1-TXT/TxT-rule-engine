@@ -65,7 +65,11 @@ public class MqttConfig {
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy",
-                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+", "event/s/nhnacademy/b/gyeongnam/p/+/d/6757D16645620016/e/#");
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -100,7 +104,7 @@ public class MqttConfig {
     @ServiceActivator(inputChannel = "academySensorInputChannel")
     public MessageHandler handler2() {
         return message -> {
-            influxService.saveData(
+            influxService.save(
                     message.getHeaders().get("mqtt_receivedTopic", String.class),
                     message.getPayload().toString());
         };

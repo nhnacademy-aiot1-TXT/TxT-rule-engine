@@ -1,10 +1,8 @@
-package com.nhnacademy.aiot.ruleengine.domain;
+package com.nhnacademy.aiot.ruleengine.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * 해당 device의 ON/OFF 여부 확인 클래스

@@ -28,8 +28,6 @@ class MqttConfigTest {
 
     @Test
     void txtSensorInbound() {
-        MessageChannel channel = config.txtSensorInputChannel();
-
         MessageProducer messageProducer = config.txtSensorInbound();
 
         assertNotNull(messageProducer);
@@ -37,8 +35,6 @@ class MqttConfigTest {
 
     @Test
     void academySensorInbound() {
-        MessageChannel channel = config.academySensorInputChannel();
-
         MessageProducer messageProducer = config.academySensorInbound();
 
         assertNotNull(messageProducer);
@@ -68,6 +64,6 @@ class MqttConfigTest {
         handler.handleMessage(message);
 
         assertNotNull(handler);
-        verify(influxService).saveData("test/topic", "test payload");
+        verify(influxService).save("test/topic", "test payload");
     }
 }
