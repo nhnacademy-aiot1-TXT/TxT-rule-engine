@@ -14,6 +14,8 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import java.util.Objects;
+
 
 /**
  * MQTT와 관련된 설정을 정의하는 클래스
@@ -91,12 +93,13 @@ public class MqttConfig {
             String payload = message.getPayload().toString();
 
             influxService.save(topic, payload);
-            messageService.sendValidateMessage(topic, payload);
+            messageService.sendValidateMessage(Objects.requireNonNull(topic), payload);
         };
     }
 
     /**
      * 이 메소드는 학원의 기존 센서들의 MQTT 메시지를 InfluxDB에 저장합니다.
+     * 하지만 각 센서의 배터리 레벨은 RabbitMQ에도 저장 됩니다. (낮은 배터리 레벨을 탐지하기 위한 데이터 저장)
      *
      * @return MessageHandler 객체
      */
@@ -104,9 +107,12 @@ public class MqttConfig {
     @ServiceActivator(inputChannel = "academySensorInputChannel")
     public MessageHandler handler2() {
         return message -> {
-            influxService.save(
-                    message.getHeaders().get("mqtt_receivedTopic", String.class),
-                    message.getPayload().toString());
+            String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
+            String payload = message.getPayload().toString();
+
+            if(Objects.requireNonNull(topic).contains("battery_level"))
+                messageService.sendValidateMessage(topic, payload);
+            influxService.save(topic, payload);
         };
     }
 }
