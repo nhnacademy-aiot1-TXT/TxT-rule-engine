@@ -60,6 +60,12 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.occupancy.routing.key}")
     private String occupancyRouterKey;
 
+    @Value("${rabbitmq.battery.queue.name}")
+    private String batteryQueue;
+
+    @Value("${rabbitmq.battery.routing.key}")
+    private String batteryRouterKey;
+
 
 
 
@@ -107,6 +113,16 @@ public class RabbitMQConfig {
     @Bean
     public Binding occupancyBinding(Queue occupancyQueue, DirectExchange exchange) {
         return BindingBuilder.bind(occupancyQueue).to(exchange).with(occupancyRouterKey);
+    }
+
+    @Bean
+    public Queue batteryQueue() {
+        return new Queue(batteryQueue);
+    }
+
+    @Bean
+    public Binding batteryBinding(Queue batteryQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(batteryQueue).to(exchange).with(batteryRouterKey);
     }
 
     /**
