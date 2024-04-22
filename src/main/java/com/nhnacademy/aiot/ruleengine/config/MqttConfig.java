@@ -69,6 +69,7 @@ public class MqttConfig {
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
