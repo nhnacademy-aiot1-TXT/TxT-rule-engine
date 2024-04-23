@@ -36,6 +36,9 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
 
+    @Value("${rabbitmq.exchange.sensor.name}")
+    private String exchangeSensorName;
+
     @Value("${rabbitmq.aircleaner.queue.name}")
     private String aircleanerQueue;
 
@@ -67,12 +70,13 @@ public class RabbitMQConfig {
     private String batteryRouterKey;
 
 
-
-
     @Bean
     public DirectExchange exchange() {
         return new DirectExchange(exchangeName);
     }
+
+    @Bean
+    public DirectExchange sensorExchange() {return new DirectExchange(exchangeSensorName);}
 
 
     @Bean
@@ -111,8 +115,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding occupancyBinding(Queue occupancyQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(occupancyQueue).to(exchange).with(occupancyRouterKey);
+    public Binding occupancyBinding(Queue occupancyQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(occupancyQueue).to(sensorExchange).with(occupancyRouterKey);
     }
 
     @Bean
@@ -121,8 +125,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding batteryBinding(Queue batteryQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(batteryQueue).to(exchange).with(batteryRouterKey);
+    public Binding batteryBinding(Queue batteryQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(batteryQueue).to(sensorExchange).with(batteryRouterKey);
     }
 
     /**
