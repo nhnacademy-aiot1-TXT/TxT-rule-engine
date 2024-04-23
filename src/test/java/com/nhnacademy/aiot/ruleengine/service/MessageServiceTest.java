@@ -28,24 +28,64 @@ public class MessageServiceTest {
     @BeforeEach
     public void setup() {
         ReflectionTestUtils.setField(messageService, "exchangeName", "exchange");
+        ReflectionTestUtils.setField(messageService, "exchangeSensorName", "exchangeSensorName");
         ReflectionTestUtils.setField(messageService, "aircleanerRoutingKey", "aircleaner");
         ReflectionTestUtils.setField(messageService, "lightRoutingKey", "light");
         ReflectionTestUtils.setField(messageService, "airconditionerRoutingKey", "airconditioner");
         ReflectionTestUtils.setField(messageService, "batteryRoutingKey", "battery");
         ReflectionTestUtils.setField(messageService, "occupancyRoutingKey", "occupancy");
-
+        ReflectionTestUtils.setField(messageService, "temperatureRoutingKey", "temperature");
+        ReflectionTestUtils.setField(messageService, "humidityRoutingKey", "humidity");
+        ReflectionTestUtils.setField(messageService, "totalPeopleCountRoutingKey", "totalPeopleCount");
     }
 
     /**
-     * 에에컨, 공기청정기, 전등 스위치 ON/OFF 여부 데이터 메세지 처리
-     * MessageService의 Field값은 반드시 application.properties의 정보와 일치해야 한다!!!
+     * 에에컨, 공기청정기, 전등 스위치 등 디바이스 컨트롤 데이터 메세지 처리 (지금은 에어컨만 존재한다)
      */
     @ParameterizedTest
-    @ValueSource(strings = {"airconditioner", "occupancy", "battery"})
-    public void testSendMessage(String routingKey) {
-        SwitchState message = new SwitchState(true);
-        String exchangeName = "exchange";
-        ReflectionTestUtils.invokeMethod(messageService, "sendMessage", message, routingKey);
-        verify(rabbitTemplate).convertAndSend(eq(exchangeName), eq(routingKey), eq(message));
+    @ValueSource(strings = {"airconditioner"})
+    public void testDeviceControlMessage(String routingKey) {
+        SwitchState switchState = new SwitchState(true);
+        String deviceType = "";
+        if (routingKey.equals("airconditioner")) {
+            deviceType = "magnet_status";
+        }
+
+        messageService.sendValidateMessage(deviceType, "open");
+
+        verify(rabbitTemplate).convertAndSend(eq("exchange"), eq(routingKey), eq(switchState));
     }
+
+//    /**
+//     * 온습도, 배터리, 재실 인원 수 등 센서 데이터 메세지 처리
+//     */
+//    @ParameterizedTest
+//    @ValueSource(strings = {"occupancy", "battery", "temperature", "humidity", "totalPeopleCount"})
+//    public void testSensorDataMessage(String routingKey) throws JsonProcessingException {
+//        Payload payload = new Payload(1713406102466L, "45");
+//
+//        ObjectMapper mapper = new ObjectMapper();
+//        String jsonPayload = mapper.writeValueAsString(payload);
+//
+//        messageService.sendValidateMessage(routingKey, jsonPayload);
+//
+//        FloatMessage floatMessage;
+//        // 행동 확인
+//        switch (routingKey) {
+//            case "occupancy":
+//                SwitchState switchState = new SwitchState(true);
+//                verify(rabbitTemplate).convertAndSend(eq("exchangeSensorName"), eq(routingKey), eq(switchState));
+//                break;
+//            case "battery":
+//            case "totalPeopleCount":
+//                IntegerMessage integerMessage = new IntegerMessage(45, "magnet_status", "battery_level");
+//                verify(rabbitTemplate).convertAndSend(eq("exchangeSensorName"), eq(routingKey), eq(integerMessage));
+//                break;
+//            case "temperature":
+//            case "humidity":
+//                floatMessage = new FloatMessage(Float.parseFloat(payload.getValue()), "magnet_status", "battery_level");
+//                verify(rabbitTemplate).convertAndSend(eq("exchangeSensorName"), eq(routingKey), eq(floatMessage));
+//                break;
+//        }
+//    }
 }

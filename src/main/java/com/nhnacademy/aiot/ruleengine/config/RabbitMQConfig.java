@@ -69,6 +69,24 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.battery.routing.key}")
     private String batteryRouterKey;
 
+    @Value("${rabbitmq.temperature.queue.name}")
+    private String temperatureQueue;
+
+    @Value("${rabbitmq.temperature.routing.key}")
+    private String temperatureRouterKey;
+
+    @Value("${rabbitmq.humidity.queue.name}")
+    private String humidityQueue;
+
+    @Value("${rabbitmq.humidity.routing.key}")
+    private String humidityRouterKey;
+
+    @Value("${rabbitmq.totalPeopleCount.queue.name}")
+    private String totalPeopleCountQueue;
+
+    @Value("${rabbitmq.totalPeopleCount.routing.key}")
+    private String totalPeopleCountRouterKey;
+
 
     @Bean
     public DirectExchange exchange() {
@@ -127,6 +145,36 @@ public class RabbitMQConfig {
     @Bean
     public Binding batteryBinding(Queue batteryQueue, DirectExchange sensorExchange) {
         return BindingBuilder.bind(batteryQueue).to(sensorExchange).with(batteryRouterKey);
+    }
+
+    @Bean
+    public Queue temperatureQueue() {
+        return new Queue(temperatureQueue);
+    }
+
+    @Bean
+    public Binding temperatureBinding(Queue temperatureQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(temperatureQueue).to(sensorExchange).with(temperatureRouterKey);
+    }
+
+    @Bean
+    public Queue humidityQueue() {
+        return new Queue(humidityQueue);
+    }
+
+    @Bean
+    public Binding humidityBinding(Queue humidityQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(humidityQueue).to(sensorExchange).with(humidityRouterKey);
+    }
+
+    @Bean
+    public Queue totalPeopleCountQueue() {
+        return new Queue(totalPeopleCountQueue);
+    }
+
+    @Bean
+    public Binding totalPeopleCountBinding(Queue totalPeopleCountQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(totalPeopleCountQueue).to(sensorExchange).with(totalPeopleCountRouterKey);
     }
 
     /**
