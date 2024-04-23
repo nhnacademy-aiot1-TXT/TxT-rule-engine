@@ -18,15 +18,10 @@ public class SensorService {
 
     public BaseSensor build(String topic, String payloadStr) {
         String[] topics = topic.split("/");
-        Payload payload;
-        try {
-            payload = objectMapper.readValue(payloadStr, Payload.class);
-        } catch (JsonProcessingException e) {
-            throw new PayloadParseException();
-        }
+        Payload payload = convertStringToPayload(payloadStr);
 
         BaseSensor.BaseSensorBuilder<?, ?> builder = isFloat(payload.getValue()) ?
-                FloatValueSensor.builder().value(Math.round(Float.parseFloat(payload.getValue()) * 10) / 10f) :
+                FloatValueSensor.builder().value(parseToFloatValue(payload.getValue())) :
                 StringValueSensor.builder().value(payload.getValue());
 
         return builder
@@ -45,5 +40,17 @@ public class SensorService {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    public Payload convertStringToPayload(String payload) {
+        try {
+            return objectMapper.readValue(payload, Payload.class);
+        } catch (JsonProcessingException e) {
+            throw new PayloadParseException();
+        }
+    }
+
+    public Float parseToFloatValue(String value) {
+        return Math.round(Float.parseFloat(value) * 10) / 10f;
     }
 }

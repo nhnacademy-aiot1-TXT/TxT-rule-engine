@@ -1,7 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.service.redis;
 
+import com.nhnacademy.aiot.ruleengine.adapter.SensorRedisAdapter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -9,47 +9,42 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings("ConstantConditions")
 public class OccupancyRedisService {
 
-    public static final String OCCUPANCY_TIMER = "occupancy_timer";
-    public static final String OCCUPANCY_STATUS = "occupancy_status";
-    public static final String OCCUPANCY = "occupancy";
-    public static final String OCCUPIED = "occupied";
     public static final String VACANT = "vacant";
+    public static final String OCCUPIED = "occupied";
+    public static final String OCCUPANCY = "occupancy";
 
-    private final RedisTemplate<String, Long> longRedisTemplate;
-    private final RedisTemplate<String, String> stringRedisTemplate;
+    private final SensorRedisAdapter sensorRedisAdapter;
 
-    public boolean hasOccupancyTimer() {
-        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(OCCUPANCY_TIMER));
+    public boolean hasTimer() {
+        return sensorRedisAdapter.hasTimer(OCCUPANCY);
     }
 
-    public void setOccupancyTimer(Long value) {
-        longRedisTemplate.opsForValue().set(OCCUPANCY_TIMER, value);
+    public void setTimer(Long time) {
+        sensorRedisAdapter.setTimer(OCCUPANCY, time);
     }
 
-    public Long getOccupancyTimer() {
-        return longRedisTemplate.opsForValue().get(OCCUPANCY_TIMER);
+    public Long getTimer() {
+        return sensorRedisAdapter.getTimer(OCCUPANCY);
     }
 
     public String getOccupancyStatus() {
-        return String.valueOf(stringRedisTemplate.opsForValue().get(OCCUPANCY_STATUS));
+        return sensorRedisAdapter.getStatus(OCCUPANCY);
     }
 
 
-    public void saveList(String value) {
-        stringRedisTemplate.opsForList().rightPush(OCCUPANCY, value);
+    public void saveToList(String value) {
+        sensorRedisAdapter.saveStringToList(OCCUPANCY, value);
     }
 
     public void setOccupancyStatus() {
-        stringRedisTemplate.opsForValue().set(OCCUPANCY_STATUS, isOcucpied());
-        stringRedisTemplate.delete(OCCUPANCY);
-        longRedisTemplate.delete(OCCUPANCY_TIMER);
+        sensorRedisAdapter.setStatus(OCCUPANCY,isOcucpied());
+        sensorRedisAdapter.deleteListAndTimer(OCCUPANCY);
     }
 
     private String isOcucpied() {
-        List<String> list = stringRedisTemplate.opsForList().range(OCCUPANCY, 0, -1);
+        List<String> list = sensorRedisAdapter.getAllStringList(OCCUPANCY);
         return Collections.frequency(list, OCCUPIED) >= Collections.frequency(list, VACANT) ?
                 OCCUPIED : VACANT;
     }
