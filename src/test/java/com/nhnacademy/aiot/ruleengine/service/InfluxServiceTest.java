@@ -32,9 +32,9 @@ class InfluxServiceTest {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(influxService, "url", "http://localhost:8086");
-        ReflectionTestUtils.setField(influxService, "token", "XXEa9ArQqioW7NKxwjQnuHDBdLOPRAsKCsifTtaDaavtDpkJKiSJ9ZUkwwuJEahui1QpCfzUJ0ZRkJrduobhBg==");
-        ReflectionTestUtils.setField(influxService, "org", "nhnacademy");
+        ReflectionTestUtils.setField(influxService, "url", "http://133.186.217.132:8086");
+        ReflectionTestUtils.setField(influxService, "token", "noC68n9KNe6HJd20B9HFaRf68SuYV2lLVdGuuj1aFZb9xaJ4wlkL7Wxf02_ajEVxgw8PupjrTAwQo7kX6K65fA==");
+        ReflectionTestUtils.setField(influxService, "org", "TXT");
         ReflectionTestUtils.setField(influxService, "bucket", "TxT-iot");
         when(influxDBClient.getWriteApiBlocking()).thenReturn(writeApiBlocking);
     }
