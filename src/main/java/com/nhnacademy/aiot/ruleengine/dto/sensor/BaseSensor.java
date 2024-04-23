@@ -14,5 +14,6 @@ public abstract class BaseSensor {
     protected String device;
     protected String measurement;
 
+    public abstract Object getValue();
     public abstract Point addValueToInfluxPoint(Point point);
 }
