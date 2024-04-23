@@ -26,6 +26,9 @@ import org.springframework.messaging.MessageHandler;
 @SuppressWarnings("ConstantConditions")
 public class MqttConfig {
 
+    public static final String TXT_MQTT = "tcp://133.186.229.200:1883";
+    public static final String ACADEMY_MQTT = "tcp://133.186.153.19:1883";
+
     private final InfluxService influxService;
     private final MessageService messageService;
 
@@ -54,9 +57,53 @@ public class MqttConfig {
         return adapter;
     }
 
+    /**
+     * 이 메소드는 TxT 팀이 별도로 설치한 센서 메시지를 수신하는 데 필요한 설정을 정의하며,
+     * 수신된 메시지는 txtSensorInputChannel을 통해 전달됩니다.
+     *
+     * @return MessageProducer 객체
+     */
+    @Bean
+    public MessageProducer txtSensorInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter(TXT_MQTT, "rule-engine-txt",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/total_people_count",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/magnet_status",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity");
+        adapter.setCompletionTimeout(5000);
+        adapter.setConverter(new DefaultPahoMessageConverter());
+        adapter.setQos(2);
+        adapter.setOutputChannel(influxInputChannel());
+        return adapter;
+    }
+
+    /**
+     * 이 메소드는 학원의 기존 센서들의 메시지를 수신하는 데 필요한 설정을 정의
+     *
+     * @return MessageProducer 객체
+     */
+    @Bean
+    public MessageProducer academySensorInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter(ACADEMY_MQTT, "rule-engine-academy",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        adapter.setCompletionTimeout(5000);
+        adapter.setConverter(new DefaultPahoMessageConverter());
+        adapter.setQos(2);
+        adapter.setOutputChannel(influxInputChannel());
+        return adapter;
+    }
+
     @Bean
     public MessageProducer occupancySensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter("tcp://133.186.229.200:1883",
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(TXT_MQTT,
                 "rule-engine-occupancy",
                 "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/occupancy");
         adapter.setOutputChannel(occupancyChannel());
@@ -65,7 +112,7 @@ public class MqttConfig {
 
     @Bean
     public MessageProducer vocSensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter("tcp://133.186.229.200:1883",
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(ACADEMY_MQTT,
                 "rule-engine-voc",
                 "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc");
         adapter.setOutputChannel(vocChannel());
@@ -90,44 +137,4 @@ public class MqttConfig {
         };
     }
 
-    //
-//    /**
-//     * 이 메소드는 TxT 팀이 별도로 설치한 센서 메시지를 수신하는 데 필요한 설정을 정의하며,
-//     * 수신된 메시지는 txtSensorInputChannel을 통해 전달됩니다.
-//     *
-//     * @return MessageProducer 객체
-//     */
-//    @Bean
-//    public MessageProducer txtSensorInbound() {
-//        MqttPahoMessageDrivenChannelAdapter adapter =
-//                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt",
-//                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/total_people_count",
-//                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/magnet_status",
-//                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
-//        adapter.setCompletionTimeout(5000);
-//        adapter.setConverter(new DefaultPahoMessageConverter());
-//        adapter.setQos(2);
-//        adapter.setOutputChannel(dataInputChannel());
-//        return adapter;
-//    }
-//
-//    /**
-//     * 이 메소드는 학원의 기존 센서들의 메시지를 수신하는 데 필요한 설정을 정의
-//     *
-//     * @return MessageProducer 객체
-//     */
-//    @Bean
-//    public MessageProducer academySensorInbound() {
-//        MqttPahoMessageDrivenChannelAdapter adapter =
-//                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy",
-//                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
-//                     ,
-//                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
-//                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
-//        adapter.setCompletionTimeout(5000);
-//        adapter.setConverter(new DefaultPahoMessageConverter());
-//        adapter.setQos(2);
-//        adapter.setOutputChannel(dataInputChannel());
-//        return adapter;
-//    }
 }
