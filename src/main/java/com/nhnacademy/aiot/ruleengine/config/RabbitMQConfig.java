@@ -36,6 +36,9 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
 
+    @Value("${rabbitmq.exchange.sensor.name}")
+    private String exchangeSensorName;
+
     @Value("${rabbitmq.aircleaner.queue.name}")
     private String aircleanerQueue;
 
@@ -66,13 +69,32 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.battery.routing.key}")
     private String batteryRouterKey;
 
+    @Value("${rabbitmq.temperature.queue.name}")
+    private String temperatureQueue;
 
+    @Value("${rabbitmq.temperature.routing.key}")
+    private String temperatureRouterKey;
+
+    @Value("${rabbitmq.humidity.queue.name}")
+    private String humidityQueue;
+
+    @Value("${rabbitmq.humidity.routing.key}")
+    private String humidityRouterKey;
+
+    @Value("${rabbitmq.totalPeopleCount.queue.name}")
+    private String totalPeopleCountQueue;
+
+    @Value("${rabbitmq.totalPeopleCount.routing.key}")
+    private String totalPeopleCountRouterKey;
 
 
     @Bean
     public DirectExchange exchange() {
         return new DirectExchange(exchangeName);
     }
+
+    @Bean
+    public DirectExchange sensorExchange() {return new DirectExchange(exchangeSensorName);}
 
 
     @Bean
@@ -111,8 +133,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding occupancyBinding(Queue occupancyQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(occupancyQueue).to(exchange).with(occupancyRouterKey);
+    public Binding occupancyBinding(Queue occupancyQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(occupancyQueue).to(sensorExchange).with(occupancyRouterKey);
     }
 
     @Bean
@@ -121,8 +143,38 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding batteryBinding(Queue batteryQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(batteryQueue).to(exchange).with(batteryRouterKey);
+    public Binding batteryBinding(Queue batteryQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(batteryQueue).to(sensorExchange).with(batteryRouterKey);
+    }
+
+    @Bean
+    public Queue temperatureQueue() {
+        return new Queue(temperatureQueue);
+    }
+
+    @Bean
+    public Binding temperatureBinding(Queue temperatureQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(temperatureQueue).to(sensorExchange).with(temperatureRouterKey);
+    }
+
+    @Bean
+    public Queue humidityQueue() {
+        return new Queue(humidityQueue);
+    }
+
+    @Bean
+    public Binding humidityBinding(Queue humidityQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(humidityQueue).to(sensorExchange).with(humidityRouterKey);
+    }
+
+    @Bean
+    public Queue totalPeopleCountQueue() {
+        return new Queue(totalPeopleCountQueue);
+    }
+
+    @Bean
+    public Binding totalPeopleCountBinding(Queue totalPeopleCountQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(totalPeopleCountQueue).to(sensorExchange).with(totalPeopleCountRouterKey);
     }
 
     /**

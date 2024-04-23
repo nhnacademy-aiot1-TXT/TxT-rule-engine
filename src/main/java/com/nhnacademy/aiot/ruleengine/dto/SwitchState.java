@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class SwitchState {
     /**
      * ON/OFF == TRUE/FALSE
