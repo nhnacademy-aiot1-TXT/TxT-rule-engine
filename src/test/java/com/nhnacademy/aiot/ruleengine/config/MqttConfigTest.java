@@ -41,7 +41,7 @@ class MqttConfigTest {
     }
 
     @Test
-    void handler1() {
+    void handler() {
         Message<String> message = MessageBuilder.withPayload("test payload")
                 .setHeader("mqtt_receivedTopic", "test/topic")
                 .build();
@@ -52,18 +52,5 @@ class MqttConfigTest {
         assertNotNull(handler);
         verify(influxService).save("test/topic", "test payload");
         verify(messageService).sendValidateMessage("test/topic", "test payload");
-    }
-
-    @Test
-    void handler2() {
-        Message<String> message = MessageBuilder.withPayload("test payload")
-                                                .setHeader("mqtt_receivedTopic", "test/topic")
-                                                .build();
-
-        MessageHandler handler = config.handler2();
-        handler.handleMessage(message);
-
-        assertNotNull(handler);
-        verify(influxService).save("test/topic", "test payload");
     }
 }
