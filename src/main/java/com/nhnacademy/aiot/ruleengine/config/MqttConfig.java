@@ -56,6 +56,7 @@ public class MqttConfig {
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/magnet_status",
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level",
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy",
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
