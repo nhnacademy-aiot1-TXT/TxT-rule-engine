@@ -49,20 +49,14 @@ public class MessageService {
         if (topic.contains("magnet_status")) {
             sendDeviceMessage(new SwitchState(payload.contains("open")), airconditionerRoutingKey);
         } else if (topic.contains("occupancy")) {
-            sendDeviceMessage(new SwitchState(payload.contains("occupied")), occupancyRoutingKey);
+            sendSensorMessage(new SwitchState(payload.contains("occupied")), occupancyRoutingKey);
         } else if (topic.contains("battery_level")) {
             sendSensorMessage(handleMessageWithIntegerResult(topic, payload), batteryRoutingKey);
         } else {
-            if (topic.contains("temperature"))
-                predictMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
-            else if (topic.contains("humidity"))
-                predictMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
-            else
-                predictMessage.setTotalPeopleCountMessage(handleMessageWithIntegerResult(topic, payload));
-
-            if (Objects.nonNull(predictMessage.getTemperatureMessage()) && Objects.nonNull(predictMessage.getHumidityMessage()) && Objects.nonNull( predictMessage.getTotalPeopleCountMessage())) {
+            inputPredictMessage(topic, payload);
+            if (Objects.nonNull(predictMessage.getTemperatureMessage()) && Objects.nonNull(predictMessage.getHumidityMessage()) && Objects.nonNull(predictMessage.getTotalPeopleCountMessage())) {
                 sendPredictMessage(predictMessage);
-               predictMessage = new PredictMessage();
+                predictMessage = new PredictMessage();
             }
         }
     }
@@ -76,7 +70,7 @@ public class MessageService {
     }
 
     private <T> void sendDeviceMessage(T message, String routingKey) {
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, message);
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, message, new CustomMessagePostProcessor(2000));
     }
 
     private IntegerMessage handleMessageWithIntegerResult(String topic, String payload) {
@@ -87,6 +81,15 @@ public class MessageService {
     private FloatMessage handleMessageWithFloatResult(String topic, String payload) {
         Result result = getResult(topic, payload);
         return new FloatMessage(Float.parseFloat(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
+    }
+
+    private void inputPredictMessage(String topic, String payload) {
+        if (topic.contains("temperature"))
+            predictMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
+        else if (topic.contains("humidity"))
+            predictMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
+        else
+            predictMessage.setTotalPeopleCountMessage(handleMessageWithIntegerResult(topic, payload));
     }
 
     @NotNull
