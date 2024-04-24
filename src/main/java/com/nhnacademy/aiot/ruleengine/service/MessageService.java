@@ -2,10 +2,8 @@ package com.nhnacademy.aiot.ruleengine.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.aiot.ruleengine.dto.IntegerMessage;
-import com.nhnacademy.aiot.ruleengine.dto.FloatMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.*;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
-import com.nhnacademy.aiot.ruleengine.dto.SwitchState;
 import com.nhnacademy.aiot.ruleengine.exception.PayloadParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +12,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.function.Consumer;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,100 +38,55 @@ public class MessageService {
     @Value("${rabbitmq.battery.routing.key}")
     private String batteryRoutingKey;
 
-    @Value("${rabbitmq.temperature.routing.key}")
-    private String temperatureRoutingKey;
-
-    @Value("${rabbitmq.humidity.routing.key}")
-    private String humidityRoutingKey;
-
-    @Value("${rabbitmq.totalPeopleCount.routing.key}")
-    private String totalPeopleCountRoutingKey;
+    @Value("${rabbitmq.predict.routing.key}")
+    private String predictRoutingKey;
 
 
     private final RabbitTemplate rabbitTemplate;
+    private PredictMessage predictMessage = new PredictMessage();
 
     public void sendValidateMessage(String topic, String payload) {
         if (topic.contains("magnet_status")) {
-            sendSwitchStateMessage(payload.contains("open"), this::sendAirconditionerMessage);
+            sendDeviceMessage(new SwitchState(payload.contains("open")), airconditionerRoutingKey);
         } else if (topic.contains("occupancy")) {
-            sendSwitchStateMessage(payload.contains("occupied"), this::sendOccupancyMessage);
-        } else if (topic.contains("battery_level") || topic.contains("total_people_count")) {
-            handleMessageWithIntegerResult(topic, payload);
-        } else if (topic.contains("temperature") || topic.contains("humidity")) {
-            handleMessageWithFloatResult(topic, payload);
+            sendDeviceMessage(new SwitchState(payload.contains("occupied")), occupancyRoutingKey);
+        } else if (topic.contains("battery_level")) {
+            sendSensorMessage(handleMessageWithIntegerResult(topic, payload), batteryRoutingKey);
+        } else {
+            if (topic.contains("temperature"))
+                predictMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
+            else if (topic.contains("humidity"))
+                predictMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
+            else
+                predictMessage.setTotalPeopleCountMessage(handleMessageWithIntegerResult(topic, payload));
+
+            if (Objects.nonNull(predictMessage.getTemperatureMessage()) && Objects.nonNull(predictMessage.getHumidityMessage()) && Objects.nonNull( predictMessage.getTotalPeopleCountMessage())) {
+                sendPredictMessage(predictMessage);
+               predictMessage = new PredictMessage();
+            }
         }
     }
 
-
-    private void sendAircleanerMessage(SwitchState switchState) {
-        sendDeviceControlMessage(switchState, aircleanerRoutingKey);
+    private void sendPredictMessage(PredictMessage predictMessage) {
+        rabbitTemplate.convertAndSend(exchangeSensorName, predictRoutingKey, predictMessage);
     }
 
-    private void sendLightMessage(SwitchState switchState) {
-        sendDeviceControlMessage(switchState, lightRoutingKey);
-    }
-
-    private void sendAirconditionerMessage(SwitchState switchState) {
-        sendDeviceControlMessage(switchState, airconditionerRoutingKey);
-    }
-
-    // on/off 제어 데이터
-    // -------------------------------------------------------------------------------------------------------------------------------------
-    // 센서 데이터
-
-    private void sendBatteryMessage(IntegerMessage batteryMessage) {
-        sendSensorDataMessage(batteryMessage, batteryRoutingKey);
-    }
-
-    private void sendTotalPeopleCountMessage(IntegerMessage totalPeopleCountMessage) {
-        sendSensorDataMessage(totalPeopleCountMessage, totalPeopleCountRoutingKey);
-    }
-
-    private void sendTemperatureMessage(FloatMessage temperatureMessage) {
-        sendSensorDataMessage(temperatureMessage, temperatureRoutingKey);
-    }
-
-    private void sendHumidityMessage(FloatMessage humidityMessage) {
-        sendSensorDataMessage(humidityMessage, humidityRoutingKey);
-    }
-
-    private void sendOccupancyMessage(SwitchState switchState) {
-        sendSensorDataMessage(switchState, occupancyRoutingKey);
-    }
-
-
-    private <T> void sendSensorDataMessage(T message, String routingKey) {
+    private <T> void sendSensorMessage(T message, String routingKey) {
         rabbitTemplate.convertAndSend(exchangeSensorName, routingKey, message);
     }
 
-    private <T> void sendDeviceControlMessage(T message, String routingKey) {
+    private <T> void sendDeviceMessage(T message, String routingKey) {
         rabbitTemplate.convertAndSend(exchangeName, routingKey, message);
     }
 
-    private void sendSwitchStateMessage(boolean state, Consumer<SwitchState> switchStateSender) {
-        switchStateSender.accept(new SwitchState(state));
+    private IntegerMessage handleMessageWithIntegerResult(String topic, String payload) {
+        Result result = getResult(topic, payload);
+        return new IntegerMessage(Integer.parseInt(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
     }
 
-    private void handleMessageWithIntegerResult(String topic, String payload) {
+    private FloatMessage handleMessageWithFloatResult(String topic, String payload) {
         Result result = getResult(topic, payload);
-        IntegerMessage message = new IntegerMessage(Integer.parseInt(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
-
-        if (topic.contains("battery_level")) {
-            sendBatteryMessage(message);
-        } else if (topic.contains("total_people_count")) {
-            sendTotalPeopleCountMessage(message);
-        }
-    }
-
-    private void handleMessageWithFloatResult(String topic, String payload) {
-        Result result = getResult(topic, payload);
-        FloatMessage message = new FloatMessage(Float.parseFloat(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
-
-        if (topic.contains("temperature")) {
-            sendTemperatureMessage(message);
-        } else if (topic.contains("humidity")) {
-            sendHumidityMessage(message);
-        }
+        return new FloatMessage(Float.parseFloat(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
     }
 
     @NotNull

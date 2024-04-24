@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto;
+package com.nhnacademy.aiot.ruleengine.dto.message;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

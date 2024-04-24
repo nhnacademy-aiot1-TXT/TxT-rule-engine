@@ -69,23 +69,12 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.battery.routing.key}")
     private String batteryRouterKey;
 
-    @Value("${rabbitmq.temperature.queue.name}")
-    private String temperatureQueue;
+    @Value("${rabbitmq.predict.queue.name}")
+    private String predictQueue;
 
-    @Value("${rabbitmq.temperature.routing.key}")
-    private String temperatureRouterKey;
+    @Value("${rabbitmq.predict.routing.key}")
+    private String predictRouterKey;
 
-    @Value("${rabbitmq.humidity.queue.name}")
-    private String humidityQueue;
-
-    @Value("${rabbitmq.humidity.routing.key}")
-    private String humidityRouterKey;
-
-    @Value("${rabbitmq.totalPeopleCount.queue.name}")
-    private String totalPeopleCountQueue;
-
-    @Value("${rabbitmq.totalPeopleCount.routing.key}")
-    private String totalPeopleCountRouterKey;
 
 
     @Bean
@@ -148,34 +137,15 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue temperatureQueue() {
-        return new Queue(temperatureQueue);
+    public Queue predictQueue() {
+        return new Queue(predictQueue);
     }
 
     @Bean
-    public Binding temperatureBinding(Queue temperatureQueue, DirectExchange sensorExchange) {
-        return BindingBuilder.bind(temperatureQueue).to(sensorExchange).with(temperatureRouterKey);
+    public Binding predictBinding(Queue predictQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(predictQueue).to(sensorExchange).with(predictRouterKey);
     }
 
-    @Bean
-    public Queue humidityQueue() {
-        return new Queue(humidityQueue);
-    }
-
-    @Bean
-    public Binding humidityBinding(Queue humidityQueue, DirectExchange sensorExchange) {
-        return BindingBuilder.bind(humidityQueue).to(sensorExchange).with(humidityRouterKey);
-    }
-
-    @Bean
-    public Queue totalPeopleCountQueue() {
-        return new Queue(totalPeopleCountQueue);
-    }
-
-    @Bean
-    public Binding totalPeopleCountBinding(Queue totalPeopleCountQueue, DirectExchange sensorExchange) {
-        return BindingBuilder.bind(totalPeopleCountQueue).to(sensorExchange).with(totalPeopleCountRouterKey);
-    }
 
     /**
      * RabbitMQ 서버와 연결을 위한 ConnectionFactory 빈을 생성하고 반환합니다.

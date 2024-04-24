@@ -26,6 +26,8 @@ import java.util.Objects;
 @Configuration
 @RequiredArgsConstructor
 public class MqttConfig {
+    public static final String TXT_MQTT = "tcp://133.186.229.200:1883";
+    public static final String ACADEMY_MQTT = "tcp://133.186.153.19:1883";
 
     private final InfluxService influxService;
     private final MessageService messageService;
@@ -49,8 +51,12 @@ public class MqttConfig {
     @Bean
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.229.200:1883", "rule-engine-txt",
-                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
+                new MqttPahoMessageDrivenChannelAdapter(TXT_MQTT, "rule-engine-txt",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/total_people_count",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/magnet_status",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -66,7 +72,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("tcp://133.186.153.19:1883", "rule-engine-academy",
+                new MqttPahoMessageDrivenChannelAdapter(ACADEMY_MQTT, "rule-engine-academy",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
@@ -111,7 +117,7 @@ public class MqttConfig {
             String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             String payload = message.getPayload().toString();
 
-            if(Objects.requireNonNull(topic).contains("battery_level") || topic.contains("temperature") || topic.contains("humidity") || topic.contains("total_people_count"))
+            if (Objects.requireNonNull(topic).contains("battery_level") || topic.contains("temperature") || topic.contains("humidity") || topic.contains("total_people_count"))
                 messageService.sendValidateMessage(topic, payload);
             influxService.save(topic, payload);
         };
