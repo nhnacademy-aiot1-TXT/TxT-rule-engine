@@ -41,36 +41,24 @@ public class MessageService {
 
     @Value("${rabbitmq.predict.routing.key}")
     private String predictRoutingKey;
-    @Value("${rabbitmq.outdoor.routing.key}")
-    private String outdoorRoutingKey;
 
 
     private final RabbitTemplate rabbitTemplate;
-    private PredictMessage predictMessage = new PredictMessage();
-    private OutdoorMessage outdoorMessage = new OutdoorMessage();
+    private final PredictMessage predictMessage = new PredictMessage();
 
     public void sendValidateMessage(String topic, String payload) {
         if (topic.contains("magnet_status")) {
-            sendDeviceMessage(new SwitchState(payload.contains("open")), airconditionerRoutingKey);
+            sendDeviceMessage(new SwitchMessage(payload.contains("open")), airconditionerRoutingKey);
         } else if (topic.contains("occupancy")) {
-            sendSensorMessage(new SwitchState(payload.contains("occupied")), occupancyRoutingKey);
+            sendSensorMessage(new SwitchMessage(payload.contains("occupied")), occupancyRoutingKey);
         } else if (topic.contains("battery_level")) {
             sendSensorMessage(handleMessageWithIntegerResult(topic, payload), batteryRoutingKey);
-        } else if (topic.contains("outdoor")) {
-            inputOutdoorMessage(topic, payload);
-            if (Objects.nonNull(outdoorMessage.getTemperatureMessage()) && Objects.nonNull(outdoorMessage.getHumidityMessage())) {
-                JSONObject json = new JSONObject(payload);
-                outdoorMessage.setTime(json.getLong("time"));
-                sendSensorMessage(outdoorMessage, outdoorRoutingKey);
-                outdoorMessage = new OutdoorMessage();
-            }
         } else {
             inputPredictMessage(topic, payload);
-            if (Objects.nonNull(predictMessage.getTemperatureMessage()) && Objects.nonNull(predictMessage.getHumidityMessage()) && Objects.nonNull(predictMessage.getTotalPeopleCountMessage())) {
-                JSONObject json = new JSONObject(payload);
-                predictMessage.setTime(json.getLong("time"));
+            if (isFull()) {
+                setTimeValue(payload);
                 sendSensorMessage(predictMessage, predictRoutingKey);
-                predictMessage = new PredictMessage();
+                resetIndoorMessage();
             }
         }
     }
@@ -93,21 +81,36 @@ public class MessageService {
         return new FloatMessage(Float.parseFloat(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
     }
 
-    private void inputOutdoorMessage(String topic, String payload) {
-        if (topic.contains("temperature")) {
-            outdoorMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
-        } else {
-            outdoorMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
-        }
-    }
 
     private void inputPredictMessage(String topic, String payload) {
-        if (topic.contains("temperature"))
-            predictMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
-        else if (topic.contains("humidity"))
-            predictMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
-        else
-            predictMessage.setTotalPeopleCountMessage(handleMessageWithIntegerResult(topic, payload));
+        if (topic.contains("temperature")) {
+            if (topic.contains("outdoor"))
+                predictMessage.setOutdoorTemperature(handleMessageWithFloatResult(topic, payload));
+            else
+                predictMessage.setIndoorTemperature(handleMessageWithFloatResult(topic, payload));
+        } else if (topic.contains("humidity")) {
+            if (topic.contains("outdoor"))
+                predictMessage.setOutdoorHumidity(handleMessageWithFloatResult(topic, payload));
+            else
+                predictMessage.setIndoorHumidity(handleMessageWithFloatResult(topic, payload));
+        } else
+            predictMessage.setTotalPeopleCount(handleMessageWithIntegerResult(topic, payload));
+    }
+
+    private boolean isFull() {
+        return Objects.nonNull(predictMessage.getIndoorTemperature()) && Objects.nonNull(predictMessage.getIndoorHumidity())
+                && Objects.nonNull(predictMessage.getTotalPeopleCount()) && Objects.nonNull(predictMessage.getOutdoorHumidity()) && Objects.nonNull(predictMessage.getOutdoorTemperature());
+    }
+
+    private void resetIndoorMessage() {
+        predictMessage.setIndoorHumidity(null);
+        predictMessage.setIndoorTemperature(null);
+        predictMessage.setTotalPeopleCount(null);
+    }
+
+    private void setTimeValue(String payload) {
+        JSONObject json = new JSONObject(payload);
+        predictMessage.setTime(json.getLong("time"));
     }
 
     @NotNull

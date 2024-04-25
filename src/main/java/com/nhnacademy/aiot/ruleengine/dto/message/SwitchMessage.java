@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class SwitchState {
+public class SwitchMessage {
     /**
      * ON/OFF == TRUE/FALSE
      */
