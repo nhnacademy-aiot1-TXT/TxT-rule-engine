@@ -8,6 +8,7 @@ import com.nhnacademy.aiot.ruleengine.exception.PayloadParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,10 +41,13 @@ public class MessageService {
 
     @Value("${rabbitmq.predict.routing.key}")
     private String predictRoutingKey;
+    @Value("${rabbitmq.outdoor.routing.key}")
+    private String outdoorRoutingKey;
 
 
     private final RabbitTemplate rabbitTemplate;
     private PredictMessage predictMessage = new PredictMessage();
+    private OutdoorMessage outdoorMessage = new OutdoorMessage();
 
     public void sendValidateMessage(String topic, String payload) {
         if (topic.contains("magnet_status")) {
@@ -52,17 +56,23 @@ public class MessageService {
             sendSensorMessage(new SwitchState(payload.contains("occupied")), occupancyRoutingKey);
         } else if (topic.contains("battery_level")) {
             sendSensorMessage(handleMessageWithIntegerResult(topic, payload), batteryRoutingKey);
+        } else if (topic.contains("outdoor")) {
+            inputOutdoorMessage(topic, payload);
+            if (Objects.nonNull(outdoorMessage.getTemperatureMessage()) && Objects.nonNull(outdoorMessage.getHumidityMessage())) {
+                JSONObject json = new JSONObject(payload);
+                outdoorMessage.setTime(json.getLong("time"));
+                sendSensorMessage(outdoorMessage, outdoorRoutingKey);
+                outdoorMessage = new OutdoorMessage();
+            }
         } else {
             inputPredictMessage(topic, payload);
             if (Objects.nonNull(predictMessage.getTemperatureMessage()) && Objects.nonNull(predictMessage.getHumidityMessage()) && Objects.nonNull(predictMessage.getTotalPeopleCountMessage())) {
-                sendPredictMessage(predictMessage);
+                JSONObject json = new JSONObject(payload);
+                predictMessage.setTime(json.getLong("time"));
+                sendSensorMessage(predictMessage, predictRoutingKey);
                 predictMessage = new PredictMessage();
             }
         }
-    }
-
-    private void sendPredictMessage(PredictMessage predictMessage) {
-        rabbitTemplate.convertAndSend(exchangeSensorName, predictRoutingKey, predictMessage);
     }
 
     private <T> void sendSensorMessage(T message, String routingKey) {
@@ -70,7 +80,7 @@ public class MessageService {
     }
 
     private <T> void sendDeviceMessage(T message, String routingKey) {
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, message, new CustomMessagePostProcessor(2000));
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, message, new CustomMessagePostProcessor(0));
     }
 
     private IntegerMessage handleMessageWithIntegerResult(String topic, String payload) {
@@ -81,6 +91,14 @@ public class MessageService {
     private FloatMessage handleMessageWithFloatResult(String topic, String payload) {
         Result result = getResult(topic, payload);
         return new FloatMessage(Float.parseFloat(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
+    }
+
+    private void inputOutdoorMessage(String topic, String payload) {
+        if (topic.contains("temperature")) {
+            outdoorMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
+        } else {
+            outdoorMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
+        }
     }
 
     private void inputPredictMessage(String topic, String payload) {

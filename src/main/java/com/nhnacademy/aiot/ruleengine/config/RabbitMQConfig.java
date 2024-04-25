@@ -75,6 +75,12 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.predict.routing.key}")
     private String predictRouterKey;
 
+    @Value("${rabbitmq.outdoor.queue.name}")
+    private String outdoorQueue;
+
+    @Value("${rabbitmq.outdoor.routing.key}")
+    private String outdoorRouterKey;
+
 
 
     @Bean
@@ -144,6 +150,16 @@ public class RabbitMQConfig {
     @Bean
     public Binding predictBinding(Queue predictQueue, DirectExchange sensorExchange) {
         return BindingBuilder.bind(predictQueue).to(sensorExchange).with(predictRouterKey);
+    }
+
+    @Bean
+    public Queue outdoorQueue() {
+        return new Queue(outdoorQueue);
+    }
+
+    @Bean
+    public Binding outdoorBinding(Queue outdoorQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(outdoorQueue).to(sensorExchange).with(outdoorRouterKey);
     }
 
 
