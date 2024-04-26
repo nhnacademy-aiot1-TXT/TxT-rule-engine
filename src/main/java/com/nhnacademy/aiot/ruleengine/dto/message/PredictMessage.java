@@ -8,9 +8,9 @@ import lombok.*;
 @EqualsAndHashCode
 public class PredictMessage {
     private Long time;
-    private FloatMessage indoorTemperature;
-    private FloatMessage indoorHumidity;
-    private FloatMessage outdoorTemperature;
-    private FloatMessage outdoorHumidity;
-    private IntegerMessage totalPeopleCount;
+    private Message indoorTemperature;
+    private Message indoorHumidity;
+    private Message outdoorTemperature;
+    private Message outdoorHumidity;
+    private Message totalPeopleCount;
 }

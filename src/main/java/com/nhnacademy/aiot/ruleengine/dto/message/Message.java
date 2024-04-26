@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
-public class FloatMessage {
-    private Float value;
+public class Message {
+    private String value;
     private String device;
     private String place;
 }

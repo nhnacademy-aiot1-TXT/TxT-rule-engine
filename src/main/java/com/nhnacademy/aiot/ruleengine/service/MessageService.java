@@ -52,7 +52,7 @@ public class MessageService {
         } else if (topic.contains("occupancy")) {
             sendSensorMessage(new SwitchMessage(payload.contains("occupied")), occupancyRoutingKey);
         } else if (topic.contains("battery_level")) {
-            sendSensorMessage(handleMessageWithIntegerResult(topic, payload), batteryRoutingKey);
+            sendSensorMessage(getMessage(topic, payload), batteryRoutingKey);
         } else {
             inputPredictMessage(topic, payload);
             if (isFull()) {
@@ -71,30 +71,24 @@ public class MessageService {
         rabbitTemplate.convertAndSend(exchangeName, routingKey, message, new CustomMessagePostProcessor(0));
     }
 
-    private IntegerMessage handleMessageWithIntegerResult(String topic, String payload) {
+    private Message getMessage(String topic, String payload) {
         Result result = getResult(topic, payload);
-        return new IntegerMessage(Integer.parseInt(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
+        return new Message(result.payloadObject.getValue(), result.topics[8], result.topics[6]);
     }
-
-    private FloatMessage handleMessageWithFloatResult(String topic, String payload) {
-        Result result = getResult(topic, payload);
-        return new FloatMessage(Float.parseFloat(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
-    }
-
 
     private void inputPredictMessage(String topic, String payload) {
         if (topic.contains("temperature")) {
             if (topic.contains("outdoor"))
-                predictMessage.setOutdoorTemperature(handleMessageWithFloatResult(topic, payload));
+                predictMessage.setOutdoorTemperature(getMessage(topic, payload));
             else
-                predictMessage.setIndoorTemperature(handleMessageWithFloatResult(topic, payload));
+                predictMessage.setIndoorTemperature(getMessage(topic, payload));
         } else if (topic.contains("humidity")) {
             if (topic.contains("outdoor"))
-                predictMessage.setOutdoorHumidity(handleMessageWithFloatResult(topic, payload));
+                predictMessage.setOutdoorHumidity(getMessage(topic, payload));
             else
-                predictMessage.setIndoorHumidity(handleMessageWithFloatResult(topic, payload));
+                predictMessage.setIndoorHumidity(getMessage(topic, payload));
         } else
-            predictMessage.setTotalPeopleCount(handleMessageWithIntegerResult(topic, payload));
+            predictMessage.setTotalPeopleCount(getMessage(topic, payload));
     }
 
     private boolean isFull() {
