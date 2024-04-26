@@ -51,7 +51,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(TXT_MQTT, "rule-engine-txt11",
+                new MqttPahoMessageDrivenChannelAdapter(TXT_MQTT, "rule-engine-txt",
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/total_people_count",
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/magnet_status",
                         "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level",
@@ -73,7 +73,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(ACADEMY_MQTT, "rule-engine-academy11",
+                new MqttPahoMessageDrivenChannelAdapter(ACADEMY_MQTT, "rule-engine-academy",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
                         "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
