@@ -1,0 +1,53 @@
+spring:
+  rabbitmq:
+    password: user
+    host: 133.186.221.92
+    port: '5672'
+    username: user
+rabbitmq:
+  airconditioner:
+    queue:
+      name: txt.airconditioner.queue
+    routing:
+      key: txt.airconditioner
+  occupancy:
+    routing:
+      key: txt.occupancy
+    queue:
+      name: txt.occupancy.queue
+  outdoor:
+    routing:
+      key: txt.outdoor
+    queue:
+      name: txt.outdoor.queue
+  aircleaner:
+    queue:
+      name: txt.aircleaner.queue
+    routing:
+      key: txt.aircleaner
+  light:
+    routing:
+      key: txt.light
+    queue:
+      name: txt.light.queue
+  predict:
+    queue:
+      name: txt.predict.queue
+    routing:
+      key: txt.predict
+  battery:
+    routing:
+      key: txt.battery
+    queue:
+      name: txt.battery.queue
+  exchange:
+    sensor:
+      name: txt.sensor.data
+    name: txt.device.control
+influxdb:
+  bucket: TxT-iot
+  token: noC68n9KNe6HJd20B9HFaRf68SuYV2lLVdGuuj1aFZb9xaJ4wlkL7Wxf02_ajEVxgw8PupjrTAwQo7kX6K65fA==
+  url: http://133.186.217.132:8086
+  org: TXT
+server:
+  port: '9897'
