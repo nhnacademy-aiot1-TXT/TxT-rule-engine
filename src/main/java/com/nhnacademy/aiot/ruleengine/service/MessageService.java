@@ -3,14 +3,13 @@ package com.nhnacademy.aiot.ruleengine.service;
 import com.nhnacademy.aiot.ruleengine.dto.message.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
-import static com.nhnacademy.aiot.ruleengine.util.MessageUtil.getMessage;
+import static com.nhnacademy.aiot.ruleengine.util.MessageUtil.*;
 import static com.nhnacademy.aiot.ruleengine.util.PredictMessageUtil.inputPredictMessage;
 
 @Slf4j
@@ -24,18 +23,6 @@ public class MessageService {
 
     @Value("${rabbitmq.exchange.sensor.name}")
     private String exchangeSensorName;
-    @Value("${rabbitmq.aircleaner.routing.key}")
-    private String aircleanerRoutingKey;
-    @Value("${rabbitmq.light.routing.key}")
-    private String lightRoutingKey;
-    @Value("${rabbitmq.airconditioner.routing.key}")
-    private String airconditionerRoutingKey;
-
-    @Value("${rabbitmq.occupancy.routing.key}")
-    private String occupancyRoutingKey;
-
-    @Value("${rabbitmq.battery.routing.key}")
-    private String batteryRoutingKey;
 
     @Value("${rabbitmq.predict.routing.key}")
     private String predictRoutingKey;
@@ -45,12 +32,15 @@ public class MessageService {
     private PredictMessage predictMessage = new PredictMessage();
 
     public void sendValidateMessage(String topic, String payload) {
-        if (topic.contains("magnet_status")) {
-            sendDeviceMessage(new BooleanMessage(payload.contains("open")), airconditionerRoutingKey);
-        } else if (topic.contains("occupancy")) {
-            sendSensorMessage(new BooleanMessage(payload.contains("occupied")), occupancyRoutingKey);
-        } else if (topic.contains("battery_level")) {
-            sendSensorMessage(getMessage(topic, payload), batteryRoutingKey);
+        String type = topic.split("/")[10];
+
+        if (deviceMap.containsKey(type)) {
+            sendDeviceMessage(new BooleanMessage(payload.contains("open")), deviceMap.get(type));
+        } else if (stringMap.containsKey(type)) {
+            String[] s = stringMap.get(type);
+            sendSensorMessage(new BooleanMessage(payload.contains(s[0])), s[1]);
+        } else if (numberMap.containsKey(type)) {
+            sendSensorMessage(getDetailedMessage(topic, payload), numberMap.get(type));
         } else {
             predictMessage = inputPredictMessage(topic, payload, predictMessage);
             if (isFull()) {
@@ -60,7 +50,7 @@ public class MessageService {
         }
     }
 
-    public <T> void sendSensorMessage(T message, String routingKey) {
+    private <T> void sendSensorMessage(T message, String routingKey) {
         rabbitTemplate.convertAndSend(exchangeSensorName, routingKey, message);
     }
 

@@ -90,7 +90,6 @@ public class MqttConfig {
     /**
      * MQTT 메시지를 처리하는 MessageHandler 빈을 생성하고 반환합니다.
      * 이 메소드는 TxT 팀의 커스텀 MQTT 메시지를 InfluxDB에 저장합니다.
-     *
      * @return MessageHandler 객체
      */
     @Bean
@@ -108,7 +107,6 @@ public class MqttConfig {
     /**
      * 이 메소드는 학원의 기존 센서들의 MQTT 메시지를 InfluxDB에 저장합니다.
      * 하지만 각 센서의 배터리 레벨은 RabbitMQ에도 저장 됩니다. (낮은 배터리 레벨을 탐지하기 위한 데이터 저장)
-     *
      * @return MessageHandler 객체
      */
     @Bean
