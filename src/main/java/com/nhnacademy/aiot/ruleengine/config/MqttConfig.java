@@ -23,7 +23,6 @@ import org.springframework.messaging.MessageHandler;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@SuppressWarnings("ConstantConditions")
 public class MqttConfig {
 
     public static final String TXT_MQTT = "tcp://133.186.229.200:1883";
@@ -130,7 +129,6 @@ public class MqttConfig {
     /**
      * MQTT 메시지를 처리하는 MessageHandler 빈을 생성하고 반환합니다.
      * 이 메소드는 TxT 팀의 커스텀 MQTT 메시지를 InfluxDB에 저장합니다.
-     *
      * @return MessageHandler 객체
      */
     @Bean
@@ -155,4 +153,3 @@ public class MqttConfig {
         return adapter;
     }
 }
-
