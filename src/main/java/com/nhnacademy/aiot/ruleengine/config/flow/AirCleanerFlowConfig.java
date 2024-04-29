@@ -1,11 +1,10 @@
 package com.nhnacademy.aiot.ruleengine.config.flow;
 
 import com.nhnacademy.aiot.ruleengine.adapter.CommonAdapter;
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.DeviceSensorResponse;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
-import com.nhnacademy.aiot.ruleengine.service.SensorService;
-import com.nhnacademy.aiot.ruleengine.service.redis.OccupancyRedisService;
-import com.nhnacademy.aiot.ruleengine.service.redis.VocRedisService;
+import com.nhnacademy.aiot.ruleengine.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,52 +17,46 @@ public class AirCleanerFlowConfig {
 
     private final CommonAdapter commonAdapter;
     private final SensorService sensorService;
-    private final VocRedisService vocRedisService;
-    private final OccupancyRedisService occupancyRedisService;
+    private final MessageService messageService;
+    private final AirCleanerService airCleanerService;
+    private final DeviceRedisService deviceRedisService;
+    private final OccupancyService occupancyService;
 
     @Bean
-    public IntegrationFlow process() {
-        return IntegrationFlows.from("vocChannel")
+    public IntegrationFlow airCleanerProcess() {
+        return IntegrationFlows.from(Constants.AIR_CLEANER_CHANNEL)
+                               .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus()),
+                                       e -> e.discardFlow(airCleanerVacantOffFlow()))
                                .transform(sensorService::convertStringToPayload)
-                               .filter(payload -> "occupied".equals(occupancyRedisService.getOccupancyStatus()),
-                                       e -> e.discardFlow(vacantOffFlow()))
+                               .handle(Payload.class, (payload, headers) -> airCleanerService.setTimer(payload))
+                               .filter(Payload.class, payload -> !airCleanerService.isTimerActive(payload),
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airCleanerService.saveVoc(payload))))
                                .handle(Payload.class, (payload, headers) -> {
-                                   setTimer(payload);
-                                   return updateVoc(payload);
+                                   float avg = airCleanerService.getAvg();
+                                   DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCLEANER)
+                                                                                .get(0);
+
+                                   if (avg > response.getOnValue() && !deviceRedisService.isAirCleanerPowered()) {
+                                       messageService.sendValidateMessage(Constants.AIRCLEANER, Constants.TRUE);
+                                   }
+
+                                   if (avg < response.getOffValue() && deviceRedisService.isAirCleanerPowered()) {
+                                       messageService.sendValidateMessage(Constants.AIRCLEANER, Constants.FALSE);
+                                   }
+
+                                   airCleanerService.deleteListAndTimer();
+
+                                   return null;
                                })
+                               .get();
     }
 
     @Bean
-    public IntegrationFlow vacantOffFlow() {
+    public IntegrationFlow airCleanerVacantOffFlow() {
         return flow -> {
-
+            if (deviceRedisService.isAirCleanerPowered()) {
+                messageService.sendValidateMessage(Constants.AIRCLEANER, Constants.FALSE);
+            }
         };
-    }
-
-
-    private Payload setTimer(Payload payload) {
-        if (!vocRedisService.hasTimer()) {
-            vocRedisService.setTimer(payload.getTime());
-        }
-        return payload;
-    }
-
-    private Payload updateVoc(Payload payload) {
-        if (isTimerActive(payload)) {
-            vocRedisService.saveToList(payload.getValue());
-        } else {
-            float avg = vocRedisService.getAvg();
-            DeviceSensorResponse response = commonAdapter.getOnOffValue("aircleaner").get(0);
-
-            // on인지 off인지 확인
-            // on off 비교
-            // 전이랑 다른지메세지 날리기
-            // 레디스 지우기
-        }
-        return payload;
-    }
-
-    private boolean isTimerActive(Payload payload) {
-        return payload.getTime() - vocRedisService.getTimer() <= 60000;
     }
 }

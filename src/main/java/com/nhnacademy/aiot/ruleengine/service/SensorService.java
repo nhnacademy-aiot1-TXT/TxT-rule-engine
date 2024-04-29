@@ -6,7 +6,10 @@ import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.SensorData;
 import com.nhnacademy.aiot.ruleengine.exception.PayloadParseException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -14,8 +17,8 @@ public class SensorService {
 
     private final ObjectMapper objectMapper;
 
-    public SensorData build(String topic, String payloadStr) {
-        String[] topics = topic.split("/");
+    public SensorData build(MessageHeaders headers, String payloadStr) {
+        String[] topics = getTopics(headers);
         Payload payload = convertStringToPayload(payloadStr);
 
         return SensorData.builder()
@@ -39,4 +42,9 @@ public class SensorService {
     public Float parseToFloatValue(String value) {
         return Math.round(Float.parseFloat(value) * 10) / 10f;
     }
+
+    public String[] getTopics(MessageHeaders headers) {
+        return Objects.requireNonNull(headers.get("mqtt_receivedTopic", String.class)).split("/");
+    }
+
 }

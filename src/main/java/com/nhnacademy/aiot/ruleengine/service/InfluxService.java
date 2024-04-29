@@ -7,6 +7,7 @@ import com.influxdb.client.write.Point;
 import com.nhnacademy.aiot.ruleengine.dto.SensorData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,11 +28,11 @@ public class InfluxService {
     @Value("${influxdb.bucket}")
     private String bucket;
 
-    public void save(String topic, String payloadStr) {
+    public void save(MessageHeaders headers, String payloadStr) {
         InfluxDBClient influxDBClient = InfluxDBClientFactory.create(url, token.toCharArray(), org, bucket);
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
 
-        SensorData sensorData = sensorService.build(topic, payloadStr);
+        SensorData sensorData = sensorService.build(headers, payloadStr);
         Point point = addValueToInfluxPoint(sensorData.getValue(),
                 Point.measurement(sensorData.getMeasurement())
                      .addField("time", sensorData.getTime())

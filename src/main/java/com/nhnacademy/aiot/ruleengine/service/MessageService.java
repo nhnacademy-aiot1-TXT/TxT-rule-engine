@@ -61,9 +61,10 @@ public class MessageService {
             handleMessageWithIntegerResult(topic, payload);
         } else if (topic.contains("temperature") || topic.contains("humidity")) {
             handleMessageWithFloatResult(topic, payload);
+        } else if (topic.contains("aircleaner")) {
+            sendSwitchStateMessage(Boolean.parseBoolean(payload), this::sendAircleanerMessage);
         }
     }
-
 
     private void sendAircleanerMessage(SwitchState switchState) {
         sendDeviceControlMessage(switchState, aircleanerRoutingKey);

@@ -38,23 +38,18 @@ public class MqttConfig {
     }
 
     @Bean
-    public MessageChannel vocChannel() {
-        return new DirectChannel();
-    }
-
-    @Bean
     public MessageChannel occupancyChannel() {
         return new DirectChannel();
     }
 
+    @Bean
+    public MessageChannel airCleanerChannel() {
+        return new DirectChannel();
+    }
 
-    private MqttPahoMessageDrivenChannelAdapter createMqttAdapter(String url, String clientId, String... topic) {
-        MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(url, clientId, topic);
-        adapter.setCompletionTimeout(5000);
-        adapter.setConverter(new DefaultPahoMessageConverter());
-        adapter.setQos(2);
-        return adapter;
+    @Bean
+    public MessageChannel airConditionerChannel() {
+        return new DirectChannel();
     }
 
     /**
@@ -67,11 +62,7 @@ public class MqttConfig {
     public MessageProducer txtSensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(TXT_MQTT, "rule-engine-txt",
-                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/total_people_count",
-                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/magnet_status",
-                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level",
-                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
-                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity");
+                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -103,19 +94,36 @@ public class MqttConfig {
 
     @Bean
     public MessageProducer occupancySensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(TXT_MQTT,
-                "rule-engine-occupancy",
-                "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/occupancy");
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(TXT_MQTT, "rule-engine-occupancy",
+                "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
         adapter.setOutputChannel(occupancyChannel());
         return adapter;
     }
 
     @Bean
     public MessageProducer vocSensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(ACADEMY_MQTT,
-                "rule-engine-voc",
-                "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc");
-        adapter.setOutputChannel(vocChannel());
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(ACADEMY_MQTT, "rule-engine-voc",
+                "data/s/nhnacademy/b/gyeongnam/p/class_a/d/24e124128c067999/e/tvoc");
+        adapter.setOutputChannel(airCleanerChannel());
+        return adapter;
+    }
+
+    @Bean
+    public MessageProducer airConditionerInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(ACADEMY_MQTT, "rule-engine-airconditioner",
+                "data/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/temperature",
+                "data/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/humidity");
+        adapter.setOutputChannel(airConditionerChannel());
+        return adapter;
+    }
+
+    @Bean
+    public MessageProducer airConditionerInbound2() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(TXT_MQTT, "rule-engine-airconditioner2",
+                "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/temperature",
+                "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/humidity",
+                "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/total_people_count");
+        adapter.setOutputChannel(airConditionerChannel());
         return adapter;
     }
 
@@ -127,14 +135,24 @@ public class MqttConfig {
      */
     @Bean
     @ServiceActivator(inputChannel = "influxInputChannel")
-    public MessageHandler handler1() {
+    public MessageHandler handler() {
         return message -> {
             String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             String payload = message.getPayload().toString();
 
-            influxService.save(topic, payload);
+            influxService.save(message.getHeaders(), payload);
             messageService.sendValidateMessage(topic, payload);
         };
     }
 
+
+    private MqttPahoMessageDrivenChannelAdapter createMqttAdapter(String url, String clientId, String... topic) {
+        MqttPahoMessageDrivenChannelAdapter adapter =
+                new MqttPahoMessageDrivenChannelAdapter(url, clientId, topic);
+        adapter.setCompletionTimeout(5000);
+        adapter.setConverter(new DefaultPahoMessageConverter());
+        adapter.setQos(2);
+        return adapter;
+    }
 }
+
