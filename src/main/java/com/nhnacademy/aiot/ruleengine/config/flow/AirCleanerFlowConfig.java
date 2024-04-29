@@ -38,11 +38,11 @@ public class AirCleanerFlowConfig {
                             .get(0);
 
                     if (avg > response.getOnValue() && !deviceRedisService.isAirCleanerPowered()) {
-                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(Constants.TRUE));
+                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(true));
                     }
 
                     if (avg < response.getOffValue() && deviceRedisService.isAirCleanerPowered()) {
-                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(Constants.TRUE));
+                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
                     }
 
                     airCleanerService.deleteListAndTimer();
@@ -54,10 +54,12 @@ public class AirCleanerFlowConfig {
 
     @Bean
     public IntegrationFlow airCleanerVacantOffFlow() {
-        return flow -> {
-            if (deviceRedisService.isAirCleanerPowered()) {
-                messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(Constants.FALSE));
-            }
-        };
+        return flow ->
+                flow.handle(Payload.class, (payload, headers) -> {
+                    if (deviceRedisService.isAirCleanerPowered()) {
+                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
+                    }
+                    return null;
+                });
     }
 }

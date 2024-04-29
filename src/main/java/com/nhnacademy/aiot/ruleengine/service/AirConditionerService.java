@@ -49,7 +49,7 @@ public class AirConditionerService {
             redisAdapter.saveLongToList("airconditioner:time:" + measurement, payload.getTime());
         }
 
-        return payload;
+        return null;
     }
 
     public Payload saveTemperature(Payload payload) {

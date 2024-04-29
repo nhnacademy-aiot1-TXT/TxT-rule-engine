@@ -27,10 +27,10 @@ public class LightFlowConfig {
         return IntegrationFlows.from("occupancyChannel")
                 .transform(sensorService::convertStringToPayload)
                 .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()) && !deviceService.isLightPowered(),
-                        e -> e.discardFlow(flow -> messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(Constants.TRUE))))
+                        e -> e.discardFlow(flow -> messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(true))))
                 .handle(Payload.class, (payload, headers) -> {
                     if (Constants.VACANT.equals(occupancyService.getOccupancyStatus()) && deviceService.isLightPowered()) {
-                        messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(Constants.FALSE));
+                        messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(false));
                     }
                     return null;
                 })

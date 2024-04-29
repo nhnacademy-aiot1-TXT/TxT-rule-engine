@@ -7,6 +7,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -27,5 +29,34 @@ public class MessageService {
 
     public void sendDeviceMessage(String measurement, ValueMessage message) {
         rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message, new CustomMessagePostProcessor(0));
+    }
+
+    public void injectPredictMessage(Map<String, Float> avg, PredictMessage predictMessage) {
+        for(Map.Entry<String,Float> entry : avg.entrySet())
+        {
+            String key = entry.getKey();
+            switch (key) {
+                case "outdoorTemperature":
+                    predictMessage.setOutdoorTemperature(new ValueMessage(avg.get(key)));
+                    break;
+                case "outdoorHumidity":
+                    predictMessage.setOutdoorHumidity(new ValueMessage(avg.get(key)));
+                    break;
+                case "indoorTemperature":
+                    predictMessage.setIndoorTemperature(new ValueMessage(avg.get(key)));
+                    break;
+                case "indoorHumidity":
+                    predictMessage.setIndoorHumidity(new ValueMessage(avg.get(key)));
+                    break;
+                case "totalPeopleCount":
+                    predictMessage.setTotalPeopleCount(new ValueMessage(avg.get(key)));
+                    break;
+                case "time":
+                    predictMessage.setTime(avg.get(key));
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

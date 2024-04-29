@@ -6,8 +6,8 @@ public final class Constants {
         throw new UnsupportedOperationException("유틸 클래스입니다.");
     }
 
-    public static final String TRUE = "true";
-    public static final String FALSE = "false";
+    public static final String TXT_MQTT = "tcp://133.186.229.200:1883";
+    public static final String ACADEMY_MQTT = "tcp://133.186.153.19:1883";
     public static final String OCCUPIED = "occupied";
     public static final String AIRCLEANER = "aircleaner";
     public static final String AIR_CLEANER_CHANNEL = "airCleanerChannel";

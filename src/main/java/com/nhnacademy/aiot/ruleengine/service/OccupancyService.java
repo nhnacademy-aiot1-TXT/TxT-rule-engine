@@ -63,7 +63,7 @@ public class OccupancyService {
         } else {
             setOccupancyStatus();
         }
-        return payload;
+        return null;
     }
 
     private boolean isTimerActive(Payload payload) {

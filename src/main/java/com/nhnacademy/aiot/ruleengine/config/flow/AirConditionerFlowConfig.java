@@ -43,9 +43,9 @@ public class AirConditionerFlowConfig {
                                            Map<String, Float> avg = airConditionerService.getAvgForAutoMode();
 
                                            PredictMessage predictMessage = new PredictMessage();
-                                           injectPredictMessage(avg, predictMessage);
-
+                                           messageService.injectPredictMessage(avg, predictMessage);
                                            messageService.sendPredictMessage(predictMessage);
+
                                            airConditionerService.deleteForAutoMode();
                                        }))
                                .handle(Payload.class, (payload, headers) -> airConditionerService.saveForAutoMode(headers, payload))
@@ -72,41 +72,15 @@ public class AirConditionerFlowConfig {
                                                                                 .get(0);
 
                                    if (avg > response.getOnValue() && !deviceRedisService.isAirConditionerPowered()) {
-                                       messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(Constants.TRUE));
+                                       messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(true));
                                    }
 
                                    if (avg < response.getOffValue() && deviceRedisService.isAirCleanerPowered()) {
-                                       messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(Constants.FALSE));
+                                       messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(false));
                                    }
 
                                    airConditionerService.deleteListAndTimer();
                                    return null;
                                }).get();
-    }
-
-    private static void injectPredictMessage(Map<String, Float> avg, PredictMessage predictMessage) {
-        for(String key : avg.keySet())
-        {
-            switch (key) {
-                case "outdoorTemperature":
-                    predictMessage.setOutdoorTemperature(new ValueMessage(avg.get(key)));
-                    break;
-                case "outdoorHumidity":
-                    predictMessage.setOutdoorHumidity(new ValueMessage(avg.get(key)));
-                    break;
-                case "indoorTemperature":
-                    predictMessage.setIndoorTemperature(new ValueMessage(avg.get(key)));
-                    break;
-                case "indoorHumidity":
-                    predictMessage.setIndoorHumidity(new ValueMessage(avg.get(key)));
-                    break;
-                case "totalPeopleCount":
-                    predictMessage.setTotalPeopleCount(new ValueMessage(avg.get(key)));
-                    break;
-                case "time":
-                    predictMessage.setTime(avg.get(key));
-                    break;
-            }
-        }
     }
 }
