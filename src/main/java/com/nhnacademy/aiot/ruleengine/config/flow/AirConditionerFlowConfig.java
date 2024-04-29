@@ -4,6 +4,8 @@ import com.nhnacademy.aiot.ruleengine.adapter.CommonAdapter;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.DeviceSensorResponse;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
+import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.service.AirConditionerService;
 import com.nhnacademy.aiot.ruleengine.service.DeviceRedisService;
 import com.nhnacademy.aiot.ruleengine.service.MessageService;
@@ -39,10 +41,11 @@ public class AirConditionerFlowConfig {
                                .filter(Payload.class, payload -> airConditionerService.isTimerActive(Constants.AUTO_AIRCONDITIONER, payload),
                                        e -> e.discardFlow(flow -> {
                                            Map<String, Float> avg = airConditionerService.getAvgForAutoMode();
-                                           DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCONDITIONER)
-                                                                                        .get(0);
 
-                                           // 메세지 보내기~!!!!
+                                           PredictMessage predictMessage = new PredictMessage();
+                                           injectPredictMessage(avg, predictMessage);
+
+                                           messageService.sendPredictMessage(predictMessage);
                                            airConditionerService.deleteForAutoMode();
                                        }))
                                .handle(Payload.class, (payload, headers) -> airConditionerService.saveForAutoMode(headers, payload))
@@ -69,16 +72,41 @@ public class AirConditionerFlowConfig {
                                                                                 .get(0);
 
                                    if (avg > response.getOnValue() && !deviceRedisService.isAirConditionerPowered()) {
-                                       messageService.sendValidateMessage(Constants.AIRCONDITIONER, Constants.TRUE);
+                                       messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(Constants.TRUE));
                                    }
 
                                    if (avg < response.getOffValue() && deviceRedisService.isAirCleanerPowered()) {
-                                       messageService.sendValidateMessage(Constants.AIRCONDITIONER, Constants.FALSE);
+                                       messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(Constants.FALSE));
                                    }
 
                                    airConditionerService.deleteListAndTimer();
-
                                    return null;
                                }).get();
+    }
+
+    private static void injectPredictMessage(Map<String, Float> avg, PredictMessage predictMessage) {
+        for(String key : avg.keySet())
+        {
+            switch (key) {
+                case "outdoorTemperature":
+                    predictMessage.setOutdoorTemperature(new ValueMessage(avg.get(key)));
+                    break;
+                case "outdoorHumidity":
+                    predictMessage.setOutdoorHumidity(new ValueMessage(avg.get(key)));
+                    break;
+                case "indoorTemperature":
+                    predictMessage.setIndoorTemperature(new ValueMessage(avg.get(key)));
+                    break;
+                case "indoorHumidity":
+                    predictMessage.setIndoorHumidity(new ValueMessage(avg.get(key)));
+                    break;
+                case "totalPeopleCount":
+                    predictMessage.setTotalPeopleCount(new ValueMessage(avg.get(key)));
+                    break;
+                case "time":
+                    predictMessage.setTime(avg.get(key));
+                    break;
+            }
+        }
     }
 }

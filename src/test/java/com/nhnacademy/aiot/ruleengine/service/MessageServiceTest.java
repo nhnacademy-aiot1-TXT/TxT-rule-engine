@@ -30,11 +30,8 @@
 //    }
 //
 //    @ParameterizedTest
-//    @CsvSource(value = {
-//            "data/s/nhnacademy/b/gyeongnam/p/lobby/d/24e124785c421885/e/battery_level;{\"time\":1714118076489,\"value\":1};exchangeSensorName;txt.battery",
-//    }, delimiter = ';')
-//    void testSendValidateMessage(String topic, String payload, String exchange, String routingKey) {
-//        messageService.sendValidateMessage(topic, payload);
-//        verify(rabbitTemplate, times(1)).convertAndSend(eq(exchange), eq(routingKey), any(DetailMessage.class));
+//    @CsvSource(value = {"exchangeSensorName;battery"}, delimiter = ';')
+//    void testSendValidateMessage(String exchange, String measurement) {
+//        verify(rabbitTemplate, times(1)).convertAndSend(eq(exchange), eq(measurement), any(DetailMessage.class));
 //    }
 //}

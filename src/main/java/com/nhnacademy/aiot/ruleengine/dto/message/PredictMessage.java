@@ -7,10 +7,10 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class PredictMessage {
-    private Long time;
-    private Message indoorTemperature;
-    private Message indoorHumidity;
-    private Message outdoorTemperature;
-    private Message outdoorHumidity;
-    private Message totalPeopleCount;
+    private Float time;
+    private ValueMessage indoorTemperature;
+    private ValueMessage indoorHumidity;
+    private ValueMessage outdoorTemperature;
+    private ValueMessage outdoorHumidity;
+    private ValueMessage totalPeopleCount;
 }

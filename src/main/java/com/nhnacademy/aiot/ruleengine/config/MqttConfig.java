@@ -139,7 +139,6 @@ public class MqttConfig {
             String payload = message.getPayload().toString();
 
             influxService.save(message.getHeaders(), payload);
-            messageService.sendValidateMessage(topic, payload);
         };
     }
 
