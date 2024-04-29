@@ -8,5 +8,5 @@ import lombok.Getter;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class Message {
-    private String value;
+    private Object value;
 }

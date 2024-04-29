@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessageUtil {
+
+    private MessageUtil()
+    {}
     public static final Map<String, String> deviceMap = new HashMap<>() {{
         put("magnet_status", "txt.airconditioner");
         put("aircleaner", "txt.aircleaner");
@@ -26,14 +29,23 @@ public class MessageUtil {
         put("battery_level", "txt.battery");
     }};
 
-    public static Message getMessage(String topic, String payload) {
+
+    public static Object getMessage(String topic, String payload) {
         Result result = getResult(topic, payload);
-        return new Message(result.payloadObject.getValue());
+        double value = Double.parseDouble(result.payloadObject.getValue());
+        String formattedValue;
+        if (value == Math.floor(value)) {
+            formattedValue = String.format("%.0f", value); // value 정수일 시, 그대로 리턴
+            return new Message(Integer.parseInt(formattedValue));
+        } else {
+            formattedValue = String.format("%.1f", value); // value 실수일 시, 소수점 첫째자리 실수로 리턴.
+            return new Message(Float.parseFloat(formattedValue));
+        }
     }
 
     public static DetailMessage getDetailedMessage(String topic, String payload) {
         Result result = getResult(topic, payload);
-        return new DetailMessage(result.payloadObject.getValue(),result.topics[6], result.topics[8]);
+        return new DetailMessage(Integer.parseInt(result.payloadObject.getValue()),result.topics[6], result.topics[8]);
     }
 
     @NotNull

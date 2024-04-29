@@ -8,11 +8,11 @@ class MessageUtilTest {
     @Test
     void getMessage() {
         String topic = "data/s/nhnacademy/b/gyeongnam/p/storage/d/24e124136d151547/e/temperature";
-        String payload = "{\"time\":1714117279580,\"value\":24.1}";
+        String payload = "{\"time\":1714117279580,\"value\":24.10000004}";
 
-        Message message = MessageUtil.getMessage(topic, payload);
+        Message message = (Message) MessageUtil.getMessage(topic, payload);
 
         assertNotNull(message);
-        assertEquals("24.1", message.getValue());
+        assertEquals(24.1F, message.getValue());
     }
 }

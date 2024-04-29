@@ -1,5 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.util;
 
+import com.nhnacademy.aiot.ruleengine.dto.message.Message;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import org.json.JSONObject;
 
@@ -11,16 +12,16 @@ public class PredictMessageUtil {
     public static PredictMessage inputPredictMessage(String topic, String payload, PredictMessage predictMessage) {
         if (topic.contains("temperature")) {
             if (topic.contains("outdoor"))
-                predictMessage.setOutdoorTemperature(getMessage(topic, payload));
+                predictMessage.setOutdoorTemperature((Message)getMessage(topic, payload));
             else
-                predictMessage.setIndoorTemperature(getMessage(topic, payload));
+                predictMessage.setIndoorTemperature((Message)getMessage(topic, payload));
         } else if (topic.contains("humidity")) {
             if (topic.contains("outdoor"))
-                predictMessage.setOutdoorHumidity(getMessage(topic, payload));
+                predictMessage.setOutdoorHumidity((Message)getMessage(topic, payload));
             else
-                predictMessage.setIndoorHumidity(getMessage(topic, payload));
+                predictMessage.setIndoorHumidity((Message)getMessage(topic, payload));
         } else
-            predictMessage.setTotalPeopleCount(getMessage(topic, payload));
+            predictMessage.setTotalPeopleCount((Message)getMessage(topic, payload));
         JSONObject json = new JSONObject(payload);
         predictMessage.setTime(json.getLong("time"));
         return predictMessage;
