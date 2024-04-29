@@ -35,10 +35,10 @@ public class MessageService {
         String type = topic.split("/")[10];
 
         if (deviceMap.containsKey(type)) {
-            sendDeviceMessage(new BooleanMessage(payload.contains("open")), deviceMap.get(type));
+            sendDeviceMessage(new Message(payload.contains("open")), deviceMap.get(type));
         } else if (stringMap.containsKey(type)) {
             String[] s = stringMap.get(type);
-            sendSensorMessage(new BooleanMessage(payload.contains(s[0])), s[1]);
+            sendSensorMessage(new Message(payload.contains(s[0])), s[1]);
         } else if (numberMap.containsKey(type)) {
             sendSensorMessage(getDetailedMessage(topic, payload), numberMap.get(type));
         } else {
