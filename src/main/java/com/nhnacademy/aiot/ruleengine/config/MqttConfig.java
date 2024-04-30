@@ -134,7 +134,7 @@ public class MqttConfig {
             String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             String payload = message.getPayload().toString();
 
-//            influxService.save(message.getHeaders(), payload);
+            influxService.save(message.getHeaders(), payload);
         };
     }
 

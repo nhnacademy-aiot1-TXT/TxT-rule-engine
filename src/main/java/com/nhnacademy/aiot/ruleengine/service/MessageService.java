@@ -28,7 +28,7 @@ public class MessageService {
     }
 
     public void sendDeviceMessage(String measurement, ValueMessage message) {
-        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message, new CustomMessagePostProcessor(0));
+        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
     }
 
     public void injectPredictMessage(Map<String, Float> avg, PredictMessage predictMessage) {

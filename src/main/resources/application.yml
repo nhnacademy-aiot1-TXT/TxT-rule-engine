@@ -26,26 +26,23 @@ rabbitmq:
     name: txt.device.control
     sensor:
       name: txt.sensor.data
-  predict:
-    routing:
-      key: txt.predict
   bindings:
-    - queueName: aircleanerQueue
-      routingKey: aircleanerRouterKey
-    - queueName: lightQueue
-      routingKey: lightRouterKey
-    - queueName: airconditionerQueue
-      routingKey: airconditionerRouterKey
-    - queueName: occupancyQueue
-      routingKey: occupancyRouterKey
-    - queueName: batteryQueue
-      routingKey: batteryRouterKey
-    - queueName: predictQueue
-      routingKey: predictRouterKey
+    - queueName: txt.aircleaner.queue
+      routingKey: txt.aircleaner
+    - queueName: txt.light.queue
+      routingKey: txt.light
+    - queueName: txt.airconditioner.queue
+      routingKey: txt.airconditioner
+    - queueName: txt.occupancy.queue
+      routingKey: txt.occupancy
+    - queueName: txt.battery.queue
+      routingKey: txt.battery
+    - queueName: txt.predict.queue
+      routingKey: txt.predict
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://admin:1234@133.186.220.58:8761/eureka,http://admin:1234@133.186.220.58:8762/eureka
+      defaultZone: http://admin:1234@localhost:8761/eureka
