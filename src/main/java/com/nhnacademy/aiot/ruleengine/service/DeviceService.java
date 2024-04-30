@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class DeviceRedisService {
+public class DeviceService {
     private final RedisAdapter redisAdapter;
 
     public boolean isAirConditionerPowered() {

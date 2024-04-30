@@ -20,46 +20,46 @@ public class AirCleanerFlowConfig {
     private final SensorService sensorService;
     private final MessageService messageService;
     private final AirCleanerService airCleanerService;
-    private final DeviceRedisService deviceRedisService;
+    private final DeviceService deviceService;
     private final OccupancyService occupancyService;
 
     @Bean
     public IntegrationFlow airCleanerProcess() {
         return IntegrationFlows.from(Constants.AIR_CLEANER_CHANNEL)
-                .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus()),
-                        e -> e.discardFlow(airCleanerVacantOffFlow()))
-                .transform(sensorService::convertStringToPayload)
-                .handle(Payload.class, (payload, headers) -> airCleanerService.setTimer(payload))
-                .filter(Payload.class, payload -> !airCleanerService.isTimerActive(payload),
-                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airCleanerService.saveVoc(payload))))
-                .handle(Payload.class, (payload, headers) -> {
-                    float avg = airCleanerService.getAvg();
-                    DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCLEANER)
-                            .get(0);
+                               .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus()),
+                                       e -> e.discardFlow(airCleanerVacantOffFlow()))
+                               .transform(sensorService::convertStringToPayload)
+                               .handle(Payload.class, (payload, headers) -> airCleanerService.setTimer(payload))
+                               .filter(Payload.class, payload -> !airCleanerService.isTimerActive(payload),
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airCleanerService.saveVoc(payload)).nullChannel()))
+                               .handle(Payload.class, (payload, headers) -> {
+                                   float avg = airCleanerService.getAvg();
+                                   DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCLEANER)
+                                                                                .get(0);
 
-                    if (avg > response.getOnValue() && !deviceRedisService.isAirCleanerPowered()) {
-                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(true));
-                    }
+                                   if (avg > response.getOnValue() && !deviceService.isAirCleanerPowered()) {
+                                       messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(true));
+                                   }
 
-                    if (avg < response.getOffValue() && deviceRedisService.isAirCleanerPowered()) {
-                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
-                    }
+                                   if (avg < response.getOffValue() && deviceService.isAirCleanerPowered()) {
+                                       messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
+                                   }
 
-                    airCleanerService.deleteListAndTimer();
+                                   airCleanerService.deleteListAndTimer();
 
-                    return null;
-                })
-                .get();
+                                   return null;
+                               })
+                               .nullChannel();
     }
 
     @Bean
     public IntegrationFlow airCleanerVacantOffFlow() {
         return flow ->
                 flow.handle(Payload.class, (payload, headers) -> {
-                    if (deviceRedisService.isAirCleanerPowered()) {
+                    if (deviceService.isAirCleanerPowered()) {
                         messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
                     }
                     return null;
-                });
+                }).nullChannel();
     }
 }

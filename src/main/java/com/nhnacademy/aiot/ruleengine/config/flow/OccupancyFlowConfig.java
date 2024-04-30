@@ -26,6 +26,6 @@ public class OccupancyFlowConfig {
                                .filter(payload -> occupancyService.hasTimer())
                                // redis에 저장
                                .handle(Payload.class, (payload, headers) -> occupancyService.updateOccupancy(payload))
-                               .get();
+                               .nullChannel();
     }
 }

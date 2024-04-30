@@ -7,7 +7,7 @@ import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.service.AirConditionerService;
-import com.nhnacademy.aiot.ruleengine.service.DeviceRedisService;
+import com.nhnacademy.aiot.ruleengine.service.DeviceService;
 import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import java.util.Map;
 public class AirConditionerFlowConfig {
 
     private final CommonAdapter commonAdapter;
-    private final DeviceRedisService deviceRedisService;
+    private final DeviceService deviceService;
     private final SensorService sensorService;
     private final AirConditionerService airConditionerService;
     private final MessageService messageService;
@@ -34,22 +34,24 @@ public class AirConditionerFlowConfig {
     @Bean
     public IntegrationFlow checkAutoMode() {
         return IntegrationFlows.from("airConditionerChannel")
-                               .filter(p -> deviceRedisService.isAirConditionerAutoMode(),
+                               .filter(p -> deviceService.isAirConditionerAutoMode(),
                                        e -> e.discardChannel(airConditionerProcessChannel()))
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AUTO_AIRCONDITIONER, payload))
                                .filter(Payload.class, payload -> airConditionerService.isTimerActive(Constants.AUTO_AIRCONDITIONER, payload),
-                                       e -> e.discardFlow(flow -> {
-                                           Map<String, Float> avg = airConditionerService.getAvgForAutoMode();
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> {
+                                                                          Map<String, Float> avg = airConditionerService.getAvgForAutoMode();
 
-                                           PredictMessage predictMessage = new PredictMessage();
-                                           messageService.injectPredictMessage(avg, predictMessage);
-                                           messageService.sendPredictMessage(predictMessage);
+                                                                          PredictMessage predictMessage = new PredictMessage();
+                                                                          messageService.injectPredictMessage(avg, predictMessage);
+                                                                          messageService.sendPredictMessage(predictMessage);
 
-                                           airConditionerService.deleteForAutoMode();
-                                       }))
+                                                                          airConditionerService.deleteForAutoMode();
+                                                                          return null;
+                                                                      })
+                                                                      .nullChannel()))
                                .handle(Payload.class, (payload, headers) -> airConditionerService.saveForAutoMode(headers, payload))
-                               .get();
+                               .nullChannel();
     }
 
     @Bean
@@ -65,22 +67,23 @@ public class AirConditionerFlowConfig {
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AIRCONDITIONER, payload))
                                .filter(Payload.class, payload -> !airConditionerService.isTimerActive(Constants.AIRCONDITIONER, payload),
-                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airConditionerService.saveTemperature(payload))))
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airConditionerService.saveTemperature(payload)).nullChannel()))
                                .handle(Payload.class, (payload, headers) -> {
                                    float avg = airConditionerService.getAvg(Constants.TEMPERATURE);
                                    DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCONDITIONER)
                                                                                 .get(0);
 
-                                   if (avg > response.getOnValue() && !deviceRedisService.isAirConditionerPowered()) {
+                                   if (avg > response.getOnValue() && !deviceService.isAirConditionerPowered()) {
                                        messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(true));
                                    }
 
-                                   if (avg < response.getOffValue() && deviceRedisService.isAirCleanerPowered()) {
+                                   if (avg < response.getOffValue() && deviceService.isAirCleanerPowered()) {
                                        messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(false));
                                    }
 
                                    airConditionerService.deleteListAndTimer();
                                    return null;
-                               }).get();
+                               })
+                               .nullChannel();
     }
 }
