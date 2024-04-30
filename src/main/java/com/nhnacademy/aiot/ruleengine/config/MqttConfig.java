@@ -101,7 +101,6 @@ public class MqttConfig {
             String payload = message.getPayload().toString();
 
             influxService.save(topic, payload);
-            messageService.sendValidateMessage(Objects.requireNonNull(topic), payload);
         };
     }
 
@@ -117,9 +116,6 @@ public class MqttConfig {
         return message -> {
             String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             String payload = message.getPayload().toString();
-
-            if (Objects.requireNonNull(topic).contains("battery_level") || topic.contains("temperature") || topic.contains("humidity") || topic.contains("total_people_count"))
-                messageService.sendValidateMessage(topic, payload);
             influxService.save(topic, payload);
         };
     }
