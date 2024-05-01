@@ -34,17 +34,18 @@ public class AirCleanerService {
         return payload;
     }
 
-    public float getAvg() {
-        List<Float> list = redisAdapter.getAllFloatList(Constants.VOC);
-        return (float) list.stream().mapToDouble(Float::doubleValue).average().orElseThrow();
+    public Double getAvg() {
+        List<Double> list = redisAdapter.getAllDoubleList(Constants.VOC);
+        return list.stream().mapToDouble(value -> value).average().getAsDouble();
     }
 
     public void deleteListAndTimer() {
-        redisAdapter.deleteListAndTimer(Constants.VOC);
+        redisAdapter.delete(Constants.VOC);
+        redisAdapter.deleteTimer(Constants.AIRCLEANER);
     }
 
     public boolean isTimerActive(Payload payload) {
-        return payload.getTime() - getTimer() <= 60000;
+        return payload.getTime() - getTimer() <= 900000;
     }
 
 }

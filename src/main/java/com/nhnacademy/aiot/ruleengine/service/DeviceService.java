@@ -21,6 +21,18 @@ public class DeviceService {
         return redisAdapter.isDevicePowered("light");
     }
 
+    public void setAirConditionerPower(boolean power) {
+        redisAdapter.setDevicePower("airconditioner", power);
+    }
+
+    public void setAirCleanerPower(boolean power) {
+        redisAdapter.setDevicePower("aircleaner", power);
+    }
+
+    public void setLightPower(boolean power) {
+        redisAdapter.setDevicePower("light", power);
+    }
+
     public boolean isAirConditionerAutoMode() {
         return redisAdapter.isDeviceAutoMode("airconditioner");
     }

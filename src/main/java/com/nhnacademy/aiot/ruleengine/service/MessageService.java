@@ -28,12 +28,11 @@ public class MessageService {
     }
 
     public void sendDeviceMessage(String measurement, ValueMessage message) {
-        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message, new CustomMessagePostProcessor(0));
+        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
     }
 
-    public void injectPredictMessage(Map<String, Float> avg, PredictMessage predictMessage) {
-        for(Map.Entry<String,Float> entry : avg.entrySet())
-        {
+    public void injectPredictMessage(Map<String, Object> avg, PredictMessage predictMessage) {
+        for (Map.Entry<String, Object> entry : avg.entrySet()) {
             String key = entry.getKey();
             switch (key) {
                 case "outdoorTemperature":
@@ -52,7 +51,7 @@ public class MessageService {
                     predictMessage.setTotalPeopleCount(new ValueMessage(avg.get(key)));
                     break;
                 case "time":
-                    predictMessage.setTime(avg.get(key));
+                    predictMessage.setTime((Long) avg.get(key));
                     break;
                 default:
                     break;
