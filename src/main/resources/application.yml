@@ -2,10 +2,10 @@ spring:
   application:
     name: rule-engine
   rabbitmq:
-    host: 133.186.221.92
-    port: '5672'
-    username: user
-    password: user
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
   redis:
     host: 133.186.244.96
     port: 6379

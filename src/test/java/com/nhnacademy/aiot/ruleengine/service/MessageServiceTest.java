@@ -3,6 +3,8 @@ package com.nhnacademy.aiot.ruleengine.service;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,13 +31,12 @@ public class MessageServiceTest {
         verify(rabbitTemplate, times(1)).convertAndSend(any(), eq("txt.predict"), any(PredictMessage.class));
     }
 
-//    @Test
-//    public void testSendDeviceMessage() {
-//        String measurement = "battery";
-//        ValueMessage message = new ValueMessage(3);
-//        messageService.sendDeviceMessage(measurement, message);
-//
-//        verify(rabbitTemplate, times(1)).convertAndSend(any(), eq(measurement),
-//                any(ValueMessage.class));
-//    }
+    @ParameterizedTest
+    @ValueSource(strings = {"airconditioner", "aircleaner", "light"})
+    public void testSendDeviceMessage(String measurement) {
+        ValueMessage message = new ValueMessage(true);
+        messageService.sendDeviceMessage(measurement, message);
+
+        verify(rabbitTemplate, times(1)).convertAndSend(any(), eq("txt." + measurement), any(ValueMessage.class));
+    }
 }

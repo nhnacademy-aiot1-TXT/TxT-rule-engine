@@ -131,9 +131,7 @@ public class MqttConfig {
     @ServiceActivator(inputChannel = "influxInputChannel")
     public MessageHandler handler() {
         return message -> {
-            String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             String payload = message.getPayload().toString();
-
             influxService.save(message.getHeaders(), payload);
         };
     }
