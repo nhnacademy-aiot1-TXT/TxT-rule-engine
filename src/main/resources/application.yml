@@ -22,27 +22,45 @@ server:
   port: '9897'
 
 rabbitmq:
+  airconditioner:
+    queue:
+      name: txt.airconditioner.queue
+    routing:
+      key: txt.airconditioner
+  occupancy:
+    routing:
+      key: txt.occupancy
+    queue:
+      name: txt.occupancy.queue
+  aircleaner:
+    queue:
+      name: txt.aircleaner.queue
+    routing:
+      key: txt.aircleaner
+  light:
+    routing:
+      key: txt.light
+    queue:
+      name: txt.light.queue
+  predict:
+    queue:
+      name: txt.predict.queue
+    routing:
+      key: txt.predict
+  battery:
+    routing:
+      key: txt.battery
+    queue:
+      name: txt.battery.queue
   exchange:
-    name: txt.device.control
     sensor:
       name: txt.sensor.data
-  bindings:
-    - queueName: txt.aircleaner.queue
-      routingKey: txt.aircleaner
-    - queueName: txt.light.queue
-      routingKey: txt.light
-    - queueName: txt.airconditioner.queue
-      routingKey: txt.airconditioner
-    - queueName: txt.occupancy.queue
-      routingKey: txt.occupancy
-    - queueName: txt.battery.queue
-      routingKey: txt.battery
-    - queueName: txt.predict.queue
-      routingKey: txt.predict
+    name: txt.device.control
+
 
 eureka:
   client:
-    register-with-eureka: true
-    fetch-registry: true
+    register-with-eureka: 'true'
+    fetch-registry: 'true'
     service-url:
       defaultZone: http://admin:1234@localhost:8761/eureka

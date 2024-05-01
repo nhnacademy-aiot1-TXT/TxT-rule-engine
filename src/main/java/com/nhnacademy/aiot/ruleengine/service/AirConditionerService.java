@@ -36,7 +36,7 @@ public class AirConditionerService {
     }
 
     public boolean isTimerActive(String key, Payload payload) {
-
+        System.out.println(payload.getTime() - getTimer(key));
         return payload.getTime() - getTimer(key) <= 600000;
     }
 

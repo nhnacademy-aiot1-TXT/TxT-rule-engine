@@ -1,7 +1,5 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
-import com.nhnacademy.aiot.ruleengine.config.property.RabbitMqProperties;
-import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -15,16 +13,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * RabbitMQ 서비스와 관련된 설정을 정의하는 클래스
  *
  * @author jjunho50
  */
 @Configuration
-@RequiredArgsConstructor
 public class RabbitMQConfig {
 
     @Value("${spring.rabbitmq.host}")
@@ -44,7 +38,42 @@ public class RabbitMQConfig {
 
     @Value("${rabbitmq.exchange.sensor.name}")
     private String exchangeSensorName;
-    private final RabbitMqProperties rabbitMqProperties;
+
+    @Value("${rabbitmq.aircleaner.queue.name}")
+    private String aircleanerQueue;
+
+    @Value("${rabbitmq.aircleaner.routing.key}")
+    private String aircleanerRouterKey;
+
+    @Value("${rabbitmq.light.queue.name}")
+    private String lightQueue;
+
+    @Value("${rabbitmq.light.routing.key}")
+    private String lightRouterKey;
+
+    @Value("${rabbitmq.airconditioner.queue.name}")
+    private String airconditionerQueue;
+
+    @Value("${rabbitmq.airconditioner.routing.key}")
+    private String airconditionerRouterKey;
+
+    @Value("${rabbitmq.occupancy.queue.name}")
+    private String occupancyQueue;
+
+    @Value("${rabbitmq.occupancy.routing.key}")
+    private String occupancyRouterKey;
+
+    @Value("${rabbitmq.battery.queue.name}")
+    private String batteryQueue;
+
+    @Value("${rabbitmq.battery.routing.key}")
+    private String batteryRouterKey;
+
+    @Value("${rabbitmq.predict.queue.name}")
+    private String predictQueue;
+
+    @Value("${rabbitmq.predict.routing.key}")
+    private String predictRouterKey;
 
     @Bean
     public DirectExchange exchange() {
@@ -52,24 +81,67 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public DirectExchange sensorExchange() {
-        return new DirectExchange(exchangeSensorName);
+    public DirectExchange sensorExchange() {return new DirectExchange(exchangeSensorName);}
+
+
+    @Bean
+    public Queue aircleanerQueue() {
+        return new Queue(aircleanerQueue);
     }
 
     @Bean
-    public List<Queue> queues() {
-        return rabbitMqProperties.getBindings().stream()
-                .map(binding -> new Queue(binding.getQueueName()))
-                .collect(Collectors.toList());
+    public Binding aircleanerBinding(Queue aircleanerQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(aircleanerQueue).to(exchange).with(aircleanerRouterKey);
     }
 
     @Bean
-    public List<Binding> bindings() {
-        return rabbitMqProperties.getBindings().stream()
-                .map(binding -> BindingBuilder.bind(new Queue(binding.getQueueName()))
-                        .to(exchange())
-                        .with(binding.getRoutingKey()))
-                .collect(Collectors.toList());
+    public Queue lightQueue() {
+        return new Queue(lightQueue);
+    }
+
+    @Bean
+    public Binding lightBinding(Queue lightQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(lightQueue).to(exchange).with(lightRouterKey);
+    }
+
+    @Bean
+    public Queue airconditionerQueue() {
+        return new Queue(airconditionerQueue);
+    }
+
+    @Bean
+    public Binding airconditionerBinding(Queue airconditionerQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(airconditionerQueue).to(exchange).with(airconditionerRouterKey);
+    }
+
+    @Bean
+    public Queue occupancyQueue() {
+        return new Queue(occupancyQueue);
+    }
+
+    @Bean
+    public Binding occupancyBinding(Queue occupancyQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(occupancyQueue).to(sensorExchange).with(occupancyRouterKey);
+    }
+
+    @Bean
+    public Queue batteryQueue() {
+        return new Queue(batteryQueue);
+    }
+
+    @Bean
+    public Binding batteryBinding(Queue batteryQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(batteryQueue).to(sensorExchange).with(batteryRouterKey);
+    }
+
+    @Bean
+    public Queue predictQueue() {
+        return new Queue(predictQueue);
+    }
+
+    @Bean
+    public Binding predictBinding(Queue predictQueue, DirectExchange sensorExchange) {
+        return BindingBuilder.bind(predictQueue).to(sensorExchange).with(predictRouterKey);
     }
 
     /**
