@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class AirConditionerService {
     private final SensorService sensorService;
 
     public Payload setTimer(String key, Payload payload) {
-        if (shouldSetTimer(key, payload)) {
+        if (!redisAdapter.hasTimer(key)) {
             redisAdapter.setTimer(key, payload.getTime());
         }
         return payload;
@@ -35,7 +36,8 @@ public class AirConditionerService {
     }
 
     public boolean isTimerActive(String key, Payload payload) {
-        return payload.getTime() - getTimer(key) <= 60000;
+
+        return payload.getTime() - getTimer(key) <= 600000;
     }
 
     public Payload saveForAutoMode(MessageHeaders headers, Payload payload) {
@@ -48,6 +50,9 @@ public class AirConditionerService {
         if ("class_a".equals(place) && "temperature".equals(measurement)) {
             redisAdapter.saveLongToList("airconditioner:time:" + measurement, payload.getTime());
         }
+        if ("outdoor".equals(place)) {
+            redisAdapter.saveHashes("previous_outdoor", measurement, payload.getValue());
+        }
 
         return null;
     }
@@ -58,33 +63,35 @@ public class AirConditionerService {
     }
 
 
-    public Map<String, Float> getAvgForAutoMode() {
-        Map<String, Float> map = new HashMap<>();
-        map.put("outdoorTemperature", getAvg("airconditioner:outdoor:temperature"));
-        map.put("outdoorHumidity", getAvg("airconditioner:outdoor:humidity"));
+    public Map<String, Object> getAvgForAutoMode() {
+        Map<String, Object> map = new HashMap<>();
+        try {
+            map.put("outdoorTemperature", getAvg("airconditioner:outdoor:temperature"));
+            map.put("outdoorHumidity", getAvg("airconditioner:outdoor:humidity"));
+        } catch (NoSuchElementException e) {
+            map.put("outdoorTemperature", redisAdapter.getDoubleHashes("previous_outdoor", "temperature"));
+            map.put("outdoorHumidity", redisAdapter.getDoubleHashes("previous_outdoor", "humidity"));
+        }
         map.put("indoorTemperature", getAvg("airconditioner:class_a:temperature"));
-        map.put("indoorHumiditiy", getAvg("airconditioner:class_a:humidity"));
+        map.put("indoorHumidity", getAvg("airconditioner:class_a:humidity"));
         map.put("totalPeopleCount", getAvg("airconditioner:class_a:total_people_count"));
-        map.put("time", redisAdapter.getLastFloat("airconditioner:time:temperature"));
+        map.put("time", redisAdapter.getLastLong("airconditioner:time:temperature"));
         return map;
     }
 
     public void deleteForAutoMode() {
         redisAdapter.deleteListWithPrefix("airconditioner:");
-        redisAdapter.deleteListWithPrefix(Constants.AUTO_AIRCONDITIONER);
+        redisAdapter.deleteTimer(Constants.AUTO_AIRCONDITIONER);
     }
 
     public void deleteListAndTimer() {
-        redisAdapter.deleteListAndTimer(Constants.AIRCONDITIONER);
+        redisAdapter.delete(Constants.TEMPERATURE);
+        redisAdapter.deleteTimer(Constants.AIRCONDITIONER);
     }
 
-    public Float getAvg(String key) {
-        List<Float> list = redisAdapter.getAllFloatList(key);
-        return (float) list.stream().mapToDouble(Float::doubleValue).average().orElseThrow();
-    }
-
-    private boolean shouldSetTimer(String key, Payload payload) {
-        return !redisAdapter.hasTimer(key) || !isTimerActive(key, payload);
+    public Double getAvg(String key) {
+        List<Double> list = redisAdapter.getAllDoubleList(key);
+        return list.stream().mapToDouble(value -> value).average().getAsDouble();
     }
 
     private Long getTimer(String key) {
