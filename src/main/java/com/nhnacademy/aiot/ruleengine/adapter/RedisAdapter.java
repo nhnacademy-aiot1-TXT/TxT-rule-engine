@@ -18,6 +18,7 @@ public class RedisAdapter {
     private final RedisTemplate<String, Long> longRedisTemplate;
     private final RedisTemplate<String, Float> floatRedisTemplate;
     private final RedisTemplate<String, String> stringRedisTemplate;
+    private final RedisTemplate<String, Double> doubleRedisTemplate;
 
     public boolean hasTimer(String key) {
         return Boolean.TRUE.equals(stringRedisTemplate.hasKey(key + Constants.TIMER));
@@ -51,16 +52,16 @@ public class RedisAdapter {
         stringRedisTemplate.opsForValue().set(key + Constants.STATUS, value);
     }
 
-    public List<Float> getAllFloatList(String key) {
-        List<Float> list = floatRedisTemplate.opsForList().range(key, 0, -1);
+    public List<Double> getAllDoubleList(String key) {
+        List<Double> list = doubleRedisTemplate.opsForList().range(key, 0, -1);
         if (list != null) {
             return list;
         }
         throw new NosuchRedisListException();
     }
 
-    public Float getLastFloat(String key) {
-        return floatRedisTemplate.opsForList().rightPop(key);
+    public Long getLastLong(String key) {
+        return longRedisTemplate.opsForList().rightPop(key);
     }
 
     public List<String> getAllStringList(String key) {
@@ -71,20 +72,35 @@ public class RedisAdapter {
         throw new NosuchRedisListException();
     }
 
-    public void deleteListAndTimer(String key) {
+    public void delete(String key) {
         stringRedisTemplate.delete(key);
+    }
+
+    public void deleteTimer(String key) {
         longRedisTemplate.delete(key + Constants.TIMER);
     }
 
     public void deleteListWithPrefix(String prefix) {
-        stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix)));
+        stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix+"*")));
     }
 
     public boolean isDevicePowered(String deviceName) {
         return Boolean.parseBoolean((String) stringRedisTemplate.opsForHash().get("device_power_status", deviceName));
     }
 
+    public void setDevicePower(String deviceName, boolean power) {
+        stringRedisTemplate.opsForHash().put("device_power_status", deviceName, String.valueOf(power));
+    }
+
     public boolean isDeviceAutoMode(String deviceName) {
         return Boolean.parseBoolean(stringRedisTemplate.opsForValue().get("auto_mode:" + deviceName));
+    }
+
+    public void saveHashes(String key, String hashkey, String value) {
+        floatRedisTemplate.opsForHash().put(key, hashkey, value);
+    }
+
+    public Double getDoubleHashes(String key, String hashkey) {
+        return (Double) floatRedisTemplate.opsForHash().get(key, hashkey);
     }
 }

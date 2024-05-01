@@ -10,6 +10,10 @@ public final class Constants {
     public static final String ACADEMY_MQTT = "tcp://133.186.153.19:1883";
     public static final String OCCUPIED = "occupied";
     public static final String AIRCLEANER = "aircleaner";
+    public static final Long AIRCLEANER_DEVICE_ID = 1L;
+    public static final Long AIRCLEANER_SENSOR_ID = 1L;
+    public static final Long AIRCONDITIONER_DEVICE_ID = 2L;
+    public static final Long AIRCONDITIONER_SENSOR_ID = 6L;
     public static final String AIR_CLEANER_CHANNEL = "airCleanerChannel";
 
     public static final String VOC = "voc";
