@@ -37,7 +37,7 @@ public class AirConditionerService {
 
     public boolean isTimerActive(String key, Payload payload) {
         System.out.println(payload.getTime() - getTimer(key));
-        return payload.getTime() - getTimer(key) <= 600000;
+        return payload.getTime() - getTimer(key) <= 60000;
     }
 
     public Payload saveForAutoMode(MessageHeaders headers, Payload payload) {
@@ -54,7 +54,7 @@ public class AirConditionerService {
             redisAdapter.saveHashes("previous_outdoor", measurement, payload.getValue());
         }
 
-        return null;
+        return payload;
     }
 
     public Payload saveTemperature(Payload payload) {
