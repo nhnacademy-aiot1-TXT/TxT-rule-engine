@@ -99,7 +99,7 @@ public class OccupancyServiceTest {
         Payload payload = new Payload(1713406102466L, Constants.OCCUPIED);
         Payload result = occupancyService.updateOccupancy(payload);
 
-        assertThat(result).isNull();
+        assertThat(result).isNotNull();
         Mockito.verify(redisAdapter, Mockito.times(1)).saveStringToList(Constants.OCCUPANCY, Constants.OCCUPIED);
     }
 }
