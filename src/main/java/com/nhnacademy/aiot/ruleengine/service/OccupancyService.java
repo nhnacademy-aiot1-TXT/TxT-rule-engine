@@ -46,7 +46,7 @@ public class OccupancyService {
 
     public void setOccupancyStatus() {
         if (!getOccupancyStatus().equals(isOcucpied())) {
-        redisAdapter.setStatus(Constants.OCCUPANCY,isOcucpied());
+            redisAdapter.setStatus(Constants.OCCUPANCY, isOcucpied());
         }
         redisAdapter.delete(Constants.OCCUPANCY);
         redisAdapter.deleteTimer(Constants.OCCUPANCY);
@@ -64,11 +64,11 @@ public class OccupancyService {
         } else {
             setOccupancyStatus();
         }
-        return null;
+        return payload;
     }
 
     private boolean isTimerActive(Payload payload) {
-        return payload.getTime() - getTimer() <= 6000000;
+        return payload.getTime() - getTimer() <= 600000;
     }
 }
 

@@ -34,28 +34,27 @@ public class AirConditionerFlowConfig {
     @Bean
     public IntegrationFlow checkAutoMode() {
         return IntegrationFlows.from("airConditionerChannel")
-                .filter(p -> deviceService.isAirConditionerAutoMode(),
-                        e -> e.discardChannel(airConditionerProcessChannel()))
-                .transform(sensorService::convertStringToPayload)
-                .handle(Payload.class, (payload, headers) -> {
-                    airConditionerService.deleteListAndTimer();
-                    return payload;
-                })
-                .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AUTO_AIRCONDITIONER, payload))
-                .filter(Payload.class, payload -> airConditionerService.isTimerActive(Constants.AUTO_AIRCONDITIONER, payload),
-                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> {
-                                    Map<String, Object> avg = airConditionerService.getAvgForAutoMode();
-                                    System.out.println(avg.get("outdoorHumidity"));
-                                    PredictMessage predictMessage = new PredictMessage();
-                                    messageService.injectPredictMessage(avg, predictMessage);
-                                    messageService.sendPredictMessage(predictMessage);
+                               .filter(p -> deviceService.isAirConditionerAutoMode(),
+                                       e -> e.discardChannel(airConditionerProcessChannel()))
+                               .transform(sensorService::convertStringToPayload)
+                               .handle(Payload.class, (payload, headers) -> {
+                                   airConditionerService.deleteListAndTimer();
+                                   return payload;
+                               })
+                               .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AUTO_AIRCONDITIONER, payload))
+                               .filter(Payload.class, payload -> airConditionerService.isTimerActive(Constants.AUTO_AIRCONDITIONER, payload),
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> {
+                                           Map<String, Object> avg = airConditionerService.getAvgForAutoMode();
 
-                                    airConditionerService.deleteForAutoMode();
-                                    return null;
-                                })
-                                .nullChannel()))
-                .handle(Payload.class, (payload, headers) -> airConditionerService.saveForAutoMode(headers, payload))
-                .nullChannel();
+                                           PredictMessage predictMessage = new PredictMessage();
+                                           messageService.injectPredictMessage(avg, predictMessage);
+                                           messageService.sendPredictMessage(predictMessage);
+
+                                           airConditionerService.deleteForAutoMode();
+                                           return payload;
+                                       }).nullChannel()))
+                               .handle(Payload.class, (payload, headers) -> airConditionerService.saveForAutoMode(headers, payload))
+                               .nullChannel();
     }
 
     @Bean
@@ -91,9 +90,9 @@ public class AirConditionerFlowConfig {
                         deviceService.setAirConditionerPower(false);
                     }
 
-                    airConditionerService.deleteListAndTimer();
-                    return null;
-                })
-                .nullChannel();
+                                   airConditionerService.deleteListAndTimer();
+                                   return payload;
+                               })
+                               .nullChannel();
     }
 }

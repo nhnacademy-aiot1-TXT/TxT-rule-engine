@@ -31,7 +31,8 @@ public class AirCleanerFlowConfig {
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> airCleanerService.setTimer(payload))
                                .filter(Payload.class, payload -> !airCleanerService.isTimerActive(payload),
-                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airCleanerService.saveVoc(payload)).nullChannel()))
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airCleanerService.saveVoc(payload))
+                                                                      .nullChannel()))
                                .handle(Payload.class, (payload, headers) -> {
                                    double avg = airCleanerService.getAvg();
                                    DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCLEANER_DEVICE_ID, Constants.AIRCLEANER_SENSOR_ID);
@@ -48,7 +49,7 @@ public class AirCleanerFlowConfig {
 
                                    airCleanerService.deleteListAndTimer();
 
-                                   return null;
+                                   return payload;
                                })
                                .nullChannel();
     }
@@ -60,7 +61,7 @@ public class AirCleanerFlowConfig {
                     if (deviceService.isAirCleanerPowered()) {
                         messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
                     }
-                    return null;
+                    return payload;
                 }).nullChannel();
     }
 }

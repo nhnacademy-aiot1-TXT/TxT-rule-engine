@@ -26,18 +26,18 @@ public class LightFlowConfig {
     public IntegrationFlow lightProcess() {
         return IntegrationFlows.from("occupancyChannel")
                                .transform(sensorService::convertStringToPayload)
-                               .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()) || !deviceService.isLightPowered(),
+                               .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()) && !deviceService.isLightPowered(),
                                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> {
-                                           messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(true));
-                                           deviceService.setLightPower(true);
-                                           return null;
+                                           if (Constants.VACANT.equals(occupancyService.getOccupancyStatus()) && deviceService.isLightPowered()) {
+                                               messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(false));
+                                               deviceService.setLightPower(false);
+                                           }
+                                           return payload;
                                        }).nullChannel()))
                                .handle(Payload.class, (payload, headers) -> {
-                                   if (Constants.VACANT.equals(occupancyService.getOccupancyStatus()) || deviceService.isLightPowered()) {
-                                       messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(false));
-                                       deviceService.setLightPower(false);
-                                   }
-                                   return null;
+                                   messageService.sendDeviceMessage(Constants.LIGHT, new ValueMessage(true));
+                                   deviceService.setLightPower(true);
+                                   return payload;
                                })
                                .nullChannel();
     }
