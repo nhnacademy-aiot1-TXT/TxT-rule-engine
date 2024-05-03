@@ -138,11 +138,9 @@ public class MqttConfig {
     public MessageHandler handler() {
         return message -> {
             String payload = message.getPayload().toString();
-            boolean b = checkInfluxDBAvailable();
-            if (b) {
+            if (checkInfluxDBAvailable()) {
                 LAST_INFLUXDB_STATE = true;
                 influxService.save(message.getHeaders(), payload);
-
             } else if (LAST_INFLUXDB_STATE) {
                 messageSender.send("influxDB", "서버가 터졌습니다. 흑흑");
                 LAST_INFLUXDB_STATE = false;

@@ -14,7 +14,6 @@ public class DoorayMessageSender implements MessageSender {
                 .botName(botName)
                 .text(message)
                 .build();
-
         doorayHookSender.send(hook);
     }
 }
