@@ -64,3 +64,8 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://admin:1234@133.186.220.58:8761/eureka
+
+
+message:
+  dooray:
+    hook-url: https://hook.dooray.com/services/3204376758577275363/3772073147956280223/OmZv69qVQtCrOPJIIcHAjw

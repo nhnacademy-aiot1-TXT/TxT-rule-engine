@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
+import com.nhnacademy.aiot.ruleengine.send.MessageSender;
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,9 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.LAST_INFLUXDB_STATE;
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.checkInfluxDBAvailable;
+
 
 /**
  * MQTT와 관련된 설정을 정의하는 클래스
@@ -26,6 +30,7 @@ import org.springframework.messaging.MessageHandler;
 public class MqttConfig {
 
     private final InfluxService influxService;
+    private final MessageSender messageSender;
 
     @Bean
     public MessageChannel influxInputChannel() {
@@ -74,12 +79,12 @@ public class MqttConfig {
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(Constants.ACADEMY_MQTT, "rule-engine-academy",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -125,6 +130,7 @@ public class MqttConfig {
     /**
      * MQTT 메시지를 처리하는 MessageHandler 빈을 생성하고 반환합니다.
      * 이 메소드는 TxT 팀의 커스텀 MQTT 메시지를 InfluxDB에 저장합니다.
+     *
      * @return MessageHandler 객체
      */
     @Bean
@@ -132,7 +138,15 @@ public class MqttConfig {
     public MessageHandler handler() {
         return message -> {
             String payload = message.getPayload().toString();
-            influxService.save(message.getHeaders(), payload);
+            boolean b = checkInfluxDBAvailable();
+            if (b) {
+                LAST_INFLUXDB_STATE = true;
+                influxService.save(message.getHeaders(), payload);
+
+            } else if (LAST_INFLUXDB_STATE) {
+                messageSender.send("influxDB", "서버가 터졌습니다. 흑흑");
+                LAST_INFLUXDB_STATE = false;
+            }
         };
     }
 
