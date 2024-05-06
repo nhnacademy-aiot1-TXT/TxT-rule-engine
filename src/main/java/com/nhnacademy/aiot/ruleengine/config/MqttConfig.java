@@ -11,6 +11,7 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
+import org.springframework.integration.mqtt.support.MqttHeaders;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
@@ -47,6 +48,11 @@ public class MqttConfig {
         return new DirectChannel();
     }
 
+    @Bean
+    public MessageChannel batteryLevelChannel() {
+        return new DirectChannel();
+    }
+
     /**
      * 이 메소드는 TxT 팀이 별도로 설치한 센서 메시지를 수신하는 데 필요한 설정을 정의하며,
      * 수신된 메시지는 txtSensorInputChannel을 통해 전달됩니다.
@@ -74,12 +80,12 @@ public class MqttConfig {
     public MessageProducer academySensorInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(Constants.ACADEMY_MQTT, "rule-engine-academy",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
+                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -123,8 +129,53 @@ public class MqttConfig {
     }
 
     /**
+     * TxT팀이 설치한 센서들의 batteryLevel 메시지
+     * vs330 : 재실센서
+     * ws301 : 도어센서(에어컨)
+     * em300 : 외부 온도, 습도 센서
+     */
+    @Bean
+    public MessageProducer batteryLevelInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-battery1",
+                "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        adapter.setOutputChannel(batteryLevelChannel());
+        log.debug("batteryLevelInbound 실행");
+        return adapter;
+    }
+
+    /**
+     * 학원 강의실 A에 설치된 센서들의 batteryLevel 메시지
+     * 24e124785c389818, 24e124785c421885 : 온도, 습도 센서
+     * 24e124128c067999 : 실내환경 모니터링 센서(온도, 습도, 조명, 이산화탄소, VOC 등)
+     */
+    @Bean
+    public MessageProducer batteryLevelInbound2() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-battery2",
+                "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        adapter.setOutputChannel(batteryLevelChannel());
+        log.debug("batteryLevelInbound2 실행");
+        return adapter;
+    }
+
+    @Bean
+    @ServiceActivator(inputChannel = "batteryLevelChannel")
+    public MessageHandler batteryHandler() {
+        return message -> {
+            String topic = message.getHeaders().get(MqttHeaders.RECEIVED_TOPIC, String.class);
+            String payload = message.getPayload().toString();
+
+            log.debug("***** Topic: {}", topic);
+            log.debug("***** payload1: {}", payload);
+            log.debug("***** payload2: {}", message.getPayload());
+
+//            influxService.save(message.getHeaders(), payload);
+        };
+    }
+
+    /**
      * MQTT 메시지를 처리하는 MessageHandler 빈을 생성하고 반환합니다.
      * 이 메소드는 TxT 팀의 커스텀 MQTT 메시지를 InfluxDB에 저장합니다.
+     *
      * @return MessageHandler 객체
      */
     @Bean

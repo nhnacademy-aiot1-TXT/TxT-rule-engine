@@ -81,7 +81,7 @@ public class RedisAdapter {
     }
 
     public void deleteListWithPrefix(String prefix) {
-        stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix+"*")));
+        stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix + "*")));
     }
 
     public boolean isDevicePowered(String deviceName) {
@@ -102,5 +102,15 @@ public class RedisAdapter {
 
     public Double getDoubleHashes(String key, String hashkey) {
         return (Double) floatRedisTemplate.opsForHash().get(key, hashkey);
+    }
+
+    // 디바이스의 배터리 상태를 설정하는 메소드
+    public void setBatteryStatus(String deviceId, String status) {
+        stringRedisTemplate.opsForValue().set("battery_status:" + deviceId, status);
+    }
+
+    // 디바이스의 현재 배터리 상태를 가져오는 메소드
+    public String getBatteryStatus(String deviceId) {
+        return stringRedisTemplate.opsForValue().get("battery_status:" + deviceId);
     }
 }

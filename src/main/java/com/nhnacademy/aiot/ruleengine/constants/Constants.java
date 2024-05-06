@@ -26,5 +26,10 @@ public final class Constants {
     public static final String OCCUPANCY = "occupancy";
     public static final String TEMPERATURE = "temperature";
     public static final String LIGHT = "light";
+
+    public static final String BATTERY = "battery";
+    public static final String LOW = "low";
+    public static final String CRITICAL = "critical";
+    public static final String BATTERY_LEVEL_CHANNEL = "batteryLevelChannel";
 }
 
