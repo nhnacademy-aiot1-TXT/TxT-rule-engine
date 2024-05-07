@@ -5,7 +5,6 @@ import com.nhnacademy.aiot.ruleengine.send.MessageSender;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,9 +20,6 @@ public class DoorayMessageConfigTest {
 
     @Autowired
     private RestTemplate restTemplate;
-
-    @MockBean
-    private DoorayHookSender mockDoorayHookSender;
 
     @Test
     public void restTemplateTest() {
