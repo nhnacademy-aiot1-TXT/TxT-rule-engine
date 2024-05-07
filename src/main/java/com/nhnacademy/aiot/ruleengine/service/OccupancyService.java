@@ -39,7 +39,6 @@ public class OccupancyService {
         return redisAdapter.getStatus(Constants.OCCUPANCY);
     }
 
-
     public void saveToList(String value) {
         redisAdapter.saveStringToList(Constants.OCCUPANCY, value);
     }

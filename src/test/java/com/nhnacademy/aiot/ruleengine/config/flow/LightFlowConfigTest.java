@@ -63,9 +63,9 @@ class LightFlowConfigTest {
 
         occupancyChannel.send(message);
 
-        verify(messageService, times(1)).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
+        verify(messageService).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
         assertTrue((Boolean) captor.getValue().getValue());
-        verify(redisAdapter, times(1)).setDevicePower(eq(Constants.LIGHT), eq(true));
+        verify(redisAdapter).setDevicePower(eq(Constants.LIGHT), eq(true));
         verify(redisAdapter, never()).getStatus(anyString());
         verify(redisAdapter, never()).setDevicePower(eq(Constants.LIGHT), eq(false));
     }
@@ -79,9 +79,9 @@ class LightFlowConfigTest {
 
         occupancyChannel.send(message);
 
-        verify(messageService, times(1)).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
+        verify(messageService).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
         assertFalse((Boolean) captor.getValue().getValue());
-        verify(redisAdapter, times(1)).setDevicePower(eq(Constants.LIGHT), eq(false));
+        verify(redisAdapter).setDevicePower(eq(Constants.LIGHT), eq(false));
         verify(redisAdapter, never()).setDevicePower(eq(Constants.LIGHT), eq(true));
     }
 

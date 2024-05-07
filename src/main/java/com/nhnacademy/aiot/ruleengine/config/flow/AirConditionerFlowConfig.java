@@ -32,10 +32,10 @@ public class AirConditionerFlowConfig {
     private final MessageService messageService;
 
     @Bean
-    public IntegrationFlow checkAutoMode() {
+    public IntegrationFlow autoMode() {
         return IntegrationFlows.from("airConditionerChannel")
                                .filter(p -> deviceService.isAirConditionerAutoMode(),
-                                       e -> e.discardChannel(airConditionerProcessChannel()))
+                                       e -> e.discardChannel(manualModeChannel()))
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> {
                                    airConditionerService.deleteListAndTimer();
@@ -58,14 +58,13 @@ public class AirConditionerFlowConfig {
     }
 
     @Bean
-    public MessageChannel airConditionerProcessChannel() {
+    public MessageChannel manualModeChannel() {
         return new DirectChannel();
     }
 
     @Bean
-    public IntegrationFlow airConditionerProcess() {
-        // 수동모드일때
-        return IntegrationFlows.from(airConditionerProcessChannel())
+    public IntegrationFlow manualMode() {
+        return IntegrationFlows.from(manualModeChannel())
                                .filter(Message.class, airConditionerService::isIndoorTempMsg)
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> {
@@ -85,7 +84,7 @@ public class AirConditionerFlowConfig {
                                        deviceService.setAirConditionerPower(true);
                                    }
 
-                                   if (avg < response.getOffValue() && deviceService.isAirCleanerPowered()) {
+                                   if (avg < response.getOffValue() && deviceService.isAirConditionerPowered()) {
                                        messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(false));
                                        deviceService.setAirConditionerPower(false);
                                    }
