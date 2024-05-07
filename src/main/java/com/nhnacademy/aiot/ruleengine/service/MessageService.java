@@ -1,134 +1,61 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.aiot.ruleengine.dto.message.*;
-import com.nhnacademy.aiot.ruleengine.dto.Payload;
-import com.nhnacademy.aiot.ruleengine.exception.PayloadParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class MessageService {
-    private final ObjectMapper objectMapper;
+
 
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
 
     @Value("${rabbitmq.exchange.sensor.name}")
     private String exchangeSensorName;
-    @Value("${rabbitmq.aircleaner.routing.key}")
-    private String aircleanerRoutingKey;
-    @Value("${rabbitmq.light.routing.key}")
-    private String lightRoutingKey;
-    @Value("${rabbitmq.airconditioner.routing.key}")
-    private String airconditionerRoutingKey;
-
-    @Value("${rabbitmq.occupancy.routing.key}")
-    private String occupancyRoutingKey;
-
-    @Value("${rabbitmq.battery.routing.key}")
-    private String batteryRoutingKey;
-
-    @Value("${rabbitmq.predict.routing.key}")
-    private String predictRoutingKey;
-    @Value("${rabbitmq.outdoor.routing.key}")
-    private String outdoorRoutingKey;
-
 
     private final RabbitTemplate rabbitTemplate;
-    private PredictMessage predictMessage = new PredictMessage();
-    private OutdoorMessage outdoorMessage = new OutdoorMessage();
 
-    public void sendValidateMessage(String topic, String payload) {
-        if (topic.contains("magnet_status")) {
-            sendDeviceMessage(new SwitchState(payload.contains("open")), airconditionerRoutingKey);
-        } else if (topic.contains("occupancy")) {
-            sendSensorMessage(new SwitchState(payload.contains("occupied")), occupancyRoutingKey);
-        } else if (topic.contains("battery_level")) {
-            sendSensorMessage(handleMessageWithIntegerResult(topic, payload), batteryRoutingKey);
-        } else if (topic.contains("outdoor")) {
-            inputOutdoorMessage(topic, payload);
-            if (Objects.nonNull(outdoorMessage.getTemperatureMessage()) && Objects.nonNull(outdoorMessage.getHumidityMessage())) {
-                JSONObject json = new JSONObject(payload);
-                outdoorMessage.setTime(json.getLong("time"));
-                sendSensorMessage(outdoorMessage, outdoorRoutingKey);
-                outdoorMessage = new OutdoorMessage();
+    public void sendPredictMessage(PredictMessage message) {
+        rabbitTemplate.convertAndSend(exchangeSensorName, "txt.predict", message);
+    }
+
+    public void sendDeviceMessage(String measurement, ValueMessage message) {
+        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
+    }
+
+    public void injectPredictMessage(Map<String, Object> avg, PredictMessage predictMessage) {
+        for (Map.Entry<String, Object> entry : avg.entrySet()) {
+            String key = entry.getKey();
+            switch (key) {
+                case "outdoorTemperature":
+                    predictMessage.setOutdoorTemperature(new ValueMessage(avg.get(key)));
+                    break;
+                case "outdoorHumidity":
+                    predictMessage.setOutdoorHumidity(new ValueMessage(avg.get(key)));
+                    break;
+                case "indoorTemperature":
+                    predictMessage.setIndoorTemperature(new ValueMessage(avg.get(key)));
+                    break;
+                case "indoorHumidity":
+                    predictMessage.setIndoorHumidity(new ValueMessage(avg.get(key)));
+                    break;
+                case "totalPeopleCount":
+                    predictMessage.setTotalPeopleCount(new ValueMessage(avg.get(key)));
+                    break;
+                case "time":
+                    predictMessage.setTime((Long) avg.get(key));
+                    break;
+                default:
+                    break;
             }
-        } else {
-            inputPredictMessage(topic, payload);
-            if (Objects.nonNull(predictMessage.getTemperatureMessage()) && Objects.nonNull(predictMessage.getHumidityMessage()) && Objects.nonNull(predictMessage.getTotalPeopleCountMessage())) {
-                JSONObject json = new JSONObject(payload);
-                predictMessage.setTime(json.getLong("time"));
-                sendSensorMessage(predictMessage, predictRoutingKey);
-                predictMessage = new PredictMessage();
-            }
-        }
-    }
-
-    private <T> void sendSensorMessage(T message, String routingKey) {
-        rabbitTemplate.convertAndSend(exchangeSensorName, routingKey, message);
-    }
-
-    private <T> void sendDeviceMessage(T message, String routingKey) {
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, message, new CustomMessagePostProcessor(0));
-    }
-
-    private IntegerMessage handleMessageWithIntegerResult(String topic, String payload) {
-        Result result = getResult(topic, payload);
-        return new IntegerMessage(Integer.parseInt(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
-    }
-
-    private FloatMessage handleMessageWithFloatResult(String topic, String payload) {
-        Result result = getResult(topic, payload);
-        return new FloatMessage(Float.parseFloat(result.payloadObject.getValue()), result.topics[8], result.topics[6]);
-    }
-
-    private void inputOutdoorMessage(String topic, String payload) {
-        if (topic.contains("temperature")) {
-            outdoorMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
-        } else {
-            outdoorMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
-        }
-    }
-
-    private void inputPredictMessage(String topic, String payload) {
-        if (topic.contains("temperature"))
-            predictMessage.setTemperatureMessage(handleMessageWithFloatResult(topic, payload));
-        else if (topic.contains("humidity"))
-            predictMessage.setHumidityMessage(handleMessageWithFloatResult(topic, payload));
-        else
-            predictMessage.setTotalPeopleCountMessage(handleMessageWithIntegerResult(topic, payload));
-    }
-
-    @NotNull
-    private Result getResult(String topic, String payload) {
-        String[] topics = topic.split("/");
-        Payload payloadObject;
-        try {
-            payloadObject = objectMapper.readValue(payload, Payload.class);
-        } catch (JsonProcessingException e) {
-            throw new PayloadParseException();
-        }
-        return new Result(topics, payloadObject);
-    }
-
-    private static class Result {
-        public final String[] topics;
-        public final Payload payloadObject;
-
-        public Result(String[] topics, Payload payloadObject) {
-            this.topics = topics;
-            this.payloadObject = payloadObject;
         }
     }
 }

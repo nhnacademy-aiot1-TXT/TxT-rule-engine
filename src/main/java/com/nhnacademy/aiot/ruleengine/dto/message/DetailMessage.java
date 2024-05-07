@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
-public class IntegerMessage {
-    private Integer value;
-    private String device;
+public class DetailMessage {
+    private Object value;
     private String place;
+    private String device;
 }
