@@ -13,8 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 
-import java.util.Map;
-
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -25,22 +23,17 @@ public class BatteryFlowConfig {
     public static final int LOW_LEVEL = 20;
     public static final int CRITICAL_LEVEL = 10;
 
+
     @Bean
     public IntegrationFlow batteryLevelProcess() {
         return IntegrationFlows.from(Constants.BATTERY_LEVEL_CHANNEL)
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> {
                                    int batteryLevel = Integer.parseInt(payload.getValue());
-                                   String topic = headers.get("mqtt_receivedTopic", String.class);
+                                   String[] topics = sensorService.getTopics(headers);
 
-                                   if (topic == null) {
-                                       log.error("topic is null!");
-                                       return payload;
-                                   }
-
-                                   Map<String, String> topicInfo = batteryLevelService.parseTopic(topic);
-                                   String place = topicInfo.get("place");
-                                   String deviceId = topicInfo.get("device");
+                                   String place = topics[Constants.PLACE_INDEX];
+                                   String deviceId = topics[Constants.DEVICE_INDEX];
 
                                    String currentStatus = batteryLevelService.getBatteryStatus(deviceId);
 

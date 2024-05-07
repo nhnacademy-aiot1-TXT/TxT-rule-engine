@@ -31,5 +31,8 @@ public final class Constants {
     public static final String LOW = "low";
     public static final String CRITICAL = "critical";
     public static final String BATTERY_LEVEL_CHANNEL = "batteryLevelChannel";
+
+    public static final int PLACE_INDEX = 6;
+    public static final int DEVICE_INDEX = 8;
 }
 
