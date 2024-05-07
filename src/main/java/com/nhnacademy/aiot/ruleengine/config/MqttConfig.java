@@ -142,7 +142,7 @@ public class MqttConfig {
                 LAST_INFLUXDB_STATE = true;
                 influxService.save(message.getHeaders(), payload);
             } else if (LAST_INFLUXDB_STATE) {
-                messageSender.send("influxDB", "서버가 터졌습니다. 흑흑");
+                messageSender.send("influxDB", "비상!!!!!! InfluxDB 서버가 터졌습니다 비상 !!!!!!!");
                 LAST_INFLUXDB_STATE = false;
             }
         };
