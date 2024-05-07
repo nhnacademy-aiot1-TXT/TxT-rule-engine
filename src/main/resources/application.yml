@@ -65,5 +65,13 @@ influxdb:
   url: http://133.186.217.132:8086
   org: TXT
   bucket: TxT-iot
+  
 server:
   port: '9897'
+  
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 30000
