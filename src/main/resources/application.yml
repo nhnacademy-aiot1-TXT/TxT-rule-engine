@@ -12,15 +12,6 @@ spring:
     password: '*N2vya7H@muDTwdNMR!'
     database: 13
 
-influxdb:
-  token: noC68n9KNe6HJd20B9HFaRf68SuYV2lLVdGuuj1aFZb9xaJ4wlkL7Wxf02_ajEVxgw8PupjrTAwQo7kX6K65fA==
-  url: http://133.186.217.132:8086
-  org: TXT
-  bucket: TxT-iot
-
-server:
-  port: '9897'
-
 rabbitmq:
   airconditioner:
     queue:
@@ -57,10 +48,17 @@ rabbitmq:
       name: txt.sensor.data
     name: txt.device.control
 
-
 eureka:
   client:
     register-with-eureka: 'true'
     fetch-registry: 'true'
     service-url:
-      defaultZone: http://admin:1234@localhost:8761/eureka
+      defaultZone: http://admin:1234@133.186.220.58:8761/eureka
+
+influxdb:
+  token: noC68n9KNe6HJd20B9HFaRf68SuYV2lLVdGuuj1aFZb9xaJ4wlkL7Wxf02_ajEVxgw8PupjrTAwQo7kX6K65fA==
+  url: http://133.186.217.132:8086
+  org: TXT
+  bucket: TxT-iot
+server:
+  port: '9897'

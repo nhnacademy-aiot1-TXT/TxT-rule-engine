@@ -138,7 +138,6 @@ public class MqttConfig {
         };
     }
 
-
     private MqttPahoMessageDrivenChannelAdapter createMqttAdapter(String url, String clientId, String... topic) {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(url, clientId, topic);
