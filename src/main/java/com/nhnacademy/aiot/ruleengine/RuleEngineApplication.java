@@ -9,7 +9,7 @@ import org.springframework.integration.config.EnableIntegration;
 
 @EnableIntegration
 @EnableFeignClients
-@EnableEurekaClient
+@EnableDiscoveryClient
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class RuleEngineApplication {
