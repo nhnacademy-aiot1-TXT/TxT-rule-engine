@@ -34,27 +34,27 @@ public class AirConditionerFlowConfig {
     @Bean
     public IntegrationFlow autoMode() {
         return IntegrationFlows.from("airConditionerChannel")
-                               .filter(p -> deviceService.isAirConditionerAutoMode(),
-                                       e -> e.discardChannel(manualModeChannel()))
-                               .transform(sensorService::convertStringToPayload)
-                               .handle(Payload.class, (payload, headers) -> {
-                                   airConditionerService.deleteListAndTimer();
-                                   return payload;
-                               })
-                               .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AUTO_AIRCONDITIONER, payload))
-                               .filter(Payload.class, payload -> airConditionerService.isTimerActive(Constants.AUTO_AIRCONDITIONER, payload),
-                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> {
-                                           Map<String, Object> avg = airConditionerService.getAvgForAutoMode();
+                .filter(p -> deviceService.isAirConditionerAutoMode(),
+                        e -> e.discardChannel(manualModeChannel()))
+                .transform(sensorService::convertStringToPayload)
+                .handle(Payload.class, (payload, headers) -> {
+                    airConditionerService.deleteListAndTimer();
+                    return payload;
+                })
+                .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AUTO_AIRCONDITIONER, payload))
+                .filter(Payload.class, payload -> airConditionerService.isTimerActive(Constants.AUTO_AIRCONDITIONER, payload),
+                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> {
+                            Map<String, Object> avg = airConditionerService.getAvgForAutoMode();
 
-                                           PredictMessage predictMessage = new PredictMessage();
-                                           messageService.injectPredictMessage(avg, predictMessage);
-                                           messageService.sendPredictMessage(predictMessage);
+                            PredictMessage predictMessage = new PredictMessage();
+                            messageService.injectPredictMessage(avg, predictMessage);
+                            messageService.sendPredictMessage(predictMessage);
 
-                                           airConditionerService.deleteForAutoMode();
-                                           return payload;
-                                       }).nullChannel()))
-                               .handle(Payload.class, (payload, headers) -> airConditionerService.saveForAutoMode(headers, payload))
-                               .nullChannel();
+                            airConditionerService.deleteForAutoMode();
+                            return payload;
+                        }).nullChannel()))
+                .handle(Payload.class, (payload, headers) -> airConditionerService.saveForAutoMode(headers, payload))
+                .nullChannel();
     }
 
     @Bean
@@ -65,33 +65,33 @@ public class AirConditionerFlowConfig {
     @Bean
     public IntegrationFlow manualMode() {
         return IntegrationFlows.from(manualModeChannel())
-                               .filter(Message.class, airConditionerService::isIndoorTempMsg)
-                               .transform(sensorService::convertStringToPayload)
-                               .handle(Payload.class, (payload, headers) -> {
-                                   airConditionerService.deleteForAutoMode();
-                                   return payload;
-                               })
-                               .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AIRCONDITIONER, payload))
-                               .filter(Payload.class, payload -> !airConditionerService.isTimerActive(Constants.AIRCONDITIONER, payload),
-                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airConditionerService.saveTemperature(payload))
-                                                                      .nullChannel()))
-                               .handle(Payload.class, (payload, headers) -> {
-                                   double avg = airConditionerService.getAvg(Constants.TEMPERATURE);
-                                   DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCONDITIONER_DEVICE_ID, Constants.AIRCONDITIONER_SENSOR_ID);
+                .filter(Message.class, airConditionerService::isIndoorTempMsg)
+                .transform(sensorService::convertStringToPayload)
+                .handle(Payload.class, (payload, headers) -> {
+                    airConditionerService.deleteForAutoMode();
+                    return payload;
+                })
+                .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AIRCONDITIONER, payload))
+                .filter(Payload.class, payload -> !airConditionerService.isTimerActive(Constants.AIRCONDITIONER, payload),
+                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airConditionerService.saveTemperature(payload))
+                                .nullChannel()))
+                .handle(Payload.class, (payload, headers) -> {
+                    double avg = airConditionerService.getAvg(Constants.TEMPERATURE);
+                    DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCONDITIONER_DEVICE_ID, Constants.AIRCONDITIONER_SENSOR_ID);
 
                     if (avg > response.getOnValue() && !deviceService.isAirConditionerPowered()) {
                         messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(true));
                         deviceService.setAirConditionerPower(true);
                     }
 
-                                   if (avg < response.getOffValue() && deviceService.isAirConditionerPowered()) {
-                                       messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(false));
-                                       deviceService.setAirConditionerPower(false);
-                                   }
+                    if (avg < response.getOffValue() && deviceService.isAirConditionerPowered()) {
+                        messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(false));
+                        deviceService.setAirConditionerPower(false);
+                    }
 
-                                   airConditionerService.deleteListAndTimer();
-                                   return payload;
-                               })
-                               .nullChannel();
+                    airConditionerService.deleteListAndTimer();
+                    return payload;
+                })
+                .nullChannel();
     }
 }

@@ -81,7 +81,7 @@ public class RedisAdapter {
     }
 
     public void deleteListWithPrefix(String prefix) {
-        stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix+"*")));
+        stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix + "*")));
     }
 
     public boolean isDevicePowered(String deviceName) {
