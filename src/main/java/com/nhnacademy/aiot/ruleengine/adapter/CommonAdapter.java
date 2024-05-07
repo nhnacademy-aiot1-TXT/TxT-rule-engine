@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(value = "common-api", path = "/api/common/device-sensor")
+@FeignClient(value = "common-api", url = "http://133.186.208.129:8400", path = "/api/common/device-sensor")
 public interface CommonAdapter {
 
     @GetMapping("/{deviceId}/{sensorId}")
