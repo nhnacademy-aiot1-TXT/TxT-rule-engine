@@ -16,12 +16,12 @@ public class OccupancyService {
     private final RedisAdapter redisAdapter;
 
     public boolean hasTimer() {
-        return redisAdapter.hasTimer(Constants.OCCUPANCY);
+        return redisAdapter.hasKey(Constants.OCCUPANCY + Constants.TIMER);
     }
 
     public Payload setTimer(Payload payload) {
         if (shouldStartTimer(payload)) {
-            redisAdapter.setTimer(Constants.OCCUPANCY, payload.getTime());
+            redisAdapter.setValue(Constants.OCCUPANCY + Constants.TIMER, payload.getTime());
         }
         return payload;
     }
@@ -32,11 +32,11 @@ public class OccupancyService {
     }
 
     public Long getTimer() {
-        return redisAdapter.getTimer(Constants.OCCUPANCY);
+        return redisAdapter.getLongValue(Constants.OCCUPANCY + Constants.TIMER);
     }
 
     public String getOccupancyStatus() {
-        return redisAdapter.getStatus(Constants.OCCUPANCY);
+        return redisAdapter.getStringValue(Constants.OCCUPANCY + Constants.STATUS);
     }
 
     public void saveToList(String value) {
@@ -45,10 +45,10 @@ public class OccupancyService {
 
     public void setOccupancyStatus() {
         if (!getOccupancyStatus().equals(isOcucpied())) {
-            redisAdapter.setStatus(Constants.OCCUPANCY, isOcucpied());
+            redisAdapter.setValue(Constants.OCCUPANCY + Constants.STATUS, isOcucpied());
         }
         redisAdapter.delete(Constants.OCCUPANCY);
-        redisAdapter.deleteTimer(Constants.OCCUPANCY);
+        redisAdapter.delete(Constants.OCCUPANCY + Constants.TIMER);
     }
 
     private String isOcucpied() {

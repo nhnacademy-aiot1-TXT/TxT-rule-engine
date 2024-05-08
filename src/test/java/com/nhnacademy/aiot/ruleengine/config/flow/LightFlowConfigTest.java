@@ -51,50 +51,51 @@ class LightFlowConfigTest {
             flowContext.registration(lightProcess).id("lightProcess").register();
         }
         doNothing().when(messageService).sendDeviceMessage(anyString(), any(ValueMessage.class));
-        doNothing().when(redisAdapter).setDevicePower(anyString(), anyBoolean());
+        doNothing().when(redisAdapter).setValueToHash(anyString(), anyString(), anyBoolean());
+        when(redisAdapter.getBooleanValue(Constants.AUTO_MODE)).thenReturn(true);
     }
 
     @Test
     void sendOnMessageWhenOccupiedLightOff() {
         Message<String> message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
-        when(redisAdapter.getStatus(anyString())).thenReturn(Constants.VACANT);
-        when(redisAdapter.isDevicePowered(Constants.LIGHT)).thenReturn(false);
+        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.VACANT);
+        when(redisAdapter.getBooleanFromHash(Constants.AUTO_MODE, Constants.LIGHT)).thenReturn(false);
         ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 
         occupancyChannel.send(message);
 
         verify(messageService).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
         assertTrue((Boolean) captor.getValue().getValue());
-        verify(redisAdapter).setDevicePower(eq(Constants.LIGHT), eq(true));
-        verify(redisAdapter, never()).getStatus(anyString());
-        verify(redisAdapter, never()).setDevicePower(eq(Constants.LIGHT), eq(false));
+        verify(redisAdapter).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(true));
+        verify(redisAdapter, never()).getStringValue(anyString());
+        verify(redisAdapter, never()).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(false));
     }
 
     @Test
     void sendOffMessageWhenVacantLightOn() {
         Message<String> message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"vacant\"}");
-        when(redisAdapter.getStatus(anyString())).thenReturn(Constants.VACANT);
-        when(redisAdapter.isDevicePowered(Constants.LIGHT)).thenReturn(true);
+        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.VACANT);
+        when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT)).thenReturn(true);
         ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 
         occupancyChannel.send(message);
 
         verify(messageService).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
         assertFalse((Boolean) captor.getValue().getValue());
-        verify(redisAdapter).setDevicePower(eq(Constants.LIGHT), eq(false));
-        verify(redisAdapter, never()).setDevicePower(eq(Constants.LIGHT), eq(true));
+        verify(redisAdapter).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(false));
+        verify(redisAdapter, never()).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(true));
     }
 
     @Test
     void doNotSendAnyMessage() {
         Message<String> message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
-        when(redisAdapter.getStatus(anyString())).thenReturn(Constants.OCCUPIED);
-        when(redisAdapter.isDevicePowered(Constants.LIGHT)).thenReturn(true);
+        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.OCCUPIED);
+        when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT)).thenReturn(true);
 
         occupancyChannel.send(message);
 
         verify(messageService, never()).sendDeviceMessage(anyString(), any(ValueMessage.class));
-        verify(redisAdapter, never()).setDevicePower(anyString(), anyBoolean());
+        verify(redisAdapter, never()).setValueToHash(anyString(), anyString(), anyBoolean());
     }
 
     @Configuration

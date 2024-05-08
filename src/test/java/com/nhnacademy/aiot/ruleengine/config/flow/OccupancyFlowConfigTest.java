@@ -49,27 +49,27 @@ class OccupancyFlowConfigTest {
         Message<String> vacantMsg = new GenericMessage<>("{\"time\":1714029200000,\"value\":\"vacant\"}");
         Message<String> occupiedMsg2 = new GenericMessage<>("{\"time\":1714029500000,\"value\":\"occupied\"}");
         Message<String> occupiedMsg3 = new GenericMessage<>("{\"time\":1714029700000,\"value\":\"occupied\"}");
-        when(redisAdapter.hasTimer(anyString())).thenReturn(false);
-        when(redisAdapter.getStatus(anyString())).thenReturn(Constants.VACANT);
-        doNothing().when(redisAdapter).setTimer(anyString(), anyLong());
-        when(redisAdapter.getTimer(anyString())).thenReturn(1714029000000L);
+        when(redisAdapter.hasKey(anyString())).thenReturn(false);
+        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.VACANT);
+        doNothing().when(redisAdapter).setValue(anyString(), anyLong());
+        when(redisAdapter.getLongValue(anyString())).thenReturn(1714029000000L);
         doNothing().when(redisAdapter).saveStringToList(anyString(), anyString());
-        doNothing().when(redisAdapter).setStatus(anyString(), anyString());
+        doNothing().when(redisAdapter).setValue(anyString(), anyString());
         doNothing().when(redisAdapter).delete(anyString());
-        doNothing().when(redisAdapter).deleteTimer(anyString());
+        doNothing().when(redisAdapter).delete(anyString());
         ArgumentCaptor<String> captor = forClass(String.class);
 
         occupancyChannel.send(occupiedMsg);
 
-        when(redisAdapter.hasTimer(anyString())).thenReturn(true);
+        when(redisAdapter.hasKey(anyString())).thenReturn(true);
 
         occupancyChannel.send(vacantMsg);
         occupancyChannel.send(occupiedMsg2);
         occupancyChannel.send(occupiedMsg3);
 
-        verify(redisAdapter).setTimer(anyString(), anyLong());
+        verify(redisAdapter).setValue(anyString(), anyLong());
         verify(redisAdapter, times(2)).saveStringToList(anyString(), anyString());
-        verify(redisAdapter).setStatus(anyString(), captor.capture());
+        verify(redisAdapter).setValue(anyString(), captor.capture());
         assertEquals("occupied", captor.getValue());
     }
 

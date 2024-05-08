@@ -26,6 +26,7 @@ public class AirCleanerFlowConfig {
     @Bean
     public IntegrationFlow airCleanerProcess() {
         return IntegrationFlows.from(Constants.AIR_CLEANER_CHANNEL)
+                               .filter(p -> deviceService.isAutoMode())
                                .transform(sensorService::convertStringToPayload)
                                .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus()),
                                        e -> e.discardFlow(airCleanerVacantOffFlow()))

@@ -7,7 +7,6 @@ import com.nhnacademy.aiot.ruleengine.dto.DeviceSensorResponse;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.service.*;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -62,6 +61,7 @@ class AirCleanerFlowConfigTest {
         }
         doNothing().when(messageService).sendDeviceMessage(anyString(), any(ValueMessage.class));
         message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"600\"}");
+        when(deviceService.isAutoMode()).thenReturn(true);
     }
 
     @Test
@@ -132,7 +132,6 @@ class AirCleanerFlowConfigTest {
 
 
     @Configuration
-    @RequiredArgsConstructor
     static class TestConfig {
         @Bean
         MessageChannel airCleanerChannel() {

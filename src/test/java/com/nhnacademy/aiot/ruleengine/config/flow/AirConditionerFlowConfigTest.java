@@ -11,7 +11,6 @@ import com.nhnacademy.aiot.ruleengine.service.AirConditionerService;
 import com.nhnacademy.aiot.ruleengine.service.DeviceService;
 import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -73,7 +72,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void autoModeTimerEnd() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(true);
+        when(deviceService.isAutoMode()).thenReturn(true);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
         doNothing().when(airConditionerService).deleteListAndTimer();
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
@@ -91,7 +90,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void autoModeTimerActive() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(true);
+        when(deviceService.isAutoMode()).thenReturn(true);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(true);
         doNothing().when(airConditionerService).deleteListAndTimer();
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
@@ -103,7 +102,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void manualModeTimerActive() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(false);
+        when(deviceService.isAutoMode()).thenReturn(false);
         when(airConditionerService.isIndoorTempMsg(any(Message.class))).thenReturn(true);
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(true);
@@ -116,7 +115,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void manualModePowerOn() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(false);
+        when(deviceService.isAutoMode()).thenReturn(false);
         when(airConditionerService.isIndoorTempMsg(any(Message.class))).thenReturn(true);
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
@@ -137,7 +136,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void manualModePowerOff() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(false);
+        when(deviceService.isAutoMode()).thenReturn(false);
         when(airConditionerService.isIndoorTempMsg(any(Message.class))).thenReturn(true);
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
@@ -158,7 +157,6 @@ class AirConditionerFlowConfigTest {
 
 
     @Configuration
-    @RequiredArgsConstructor
     static class TestConfig {
         @Bean
         MessageChannel airConditionerChannel() {

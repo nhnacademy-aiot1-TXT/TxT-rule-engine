@@ -24,7 +24,8 @@ public class LightFlowConfig {
 
     @Bean
     public IntegrationFlow lightProcess() {
-        return IntegrationFlows.from("occupancyChannel")
+        return IntegrationFlows.from(Constants.OCCUPANCY_CHANNEL)
+                               .filter(p -> deviceService.isAutoMode())
                                .transform(sensorService::convertStringToPayload)
                                .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()) && !deviceService.isLightPowered(),
                                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> {

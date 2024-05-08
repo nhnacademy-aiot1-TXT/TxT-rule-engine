@@ -33,8 +33,8 @@ public class AirConditionerFlowConfig {
 
     @Bean
     public IntegrationFlow autoMode() {
-        return IntegrationFlows.from("airConditionerChannel")
-                               .filter(p -> deviceService.isAirConditionerAutoMode(),
+        return IntegrationFlows.from(Constants.AIR_CONDITIONER_CHANNEL)
+                               .filter(p -> deviceService.isAutoMode(),
                                        e -> e.discardChannel(manualModeChannel()))
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> {
