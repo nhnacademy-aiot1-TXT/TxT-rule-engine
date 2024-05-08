@@ -51,6 +51,12 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.light.routing.key}")
     private String lightRouterKey;
 
+    @Value("${rabbitmq.intrusion.queue.name}")
+    private String intrusionQueue;
+
+    @Value("${rabbitmq.intrusion.routing.key}")
+    private String intrusionRouterKey;
+
     @Value("${rabbitmq.airconditioner.queue.name}")
     private String airconditionerQueue;
 
@@ -102,6 +108,16 @@ public class RabbitMQConfig {
     @Bean
     public Binding lightBinding(Queue lightQueue, DirectExchange exchange) {
         return BindingBuilder.bind(lightQueue).to(exchange).with(lightRouterKey);
+    }
+
+    @Bean
+    public Queue intrusionQueue() {
+        return new Queue(intrusionQueue);
+    }
+
+    @Bean
+    public Binding intrusionBinding(Queue intrusionQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(intrusionQueue).to(exchange).with(intrusionRouterKey);
     }
 
     @Bean
