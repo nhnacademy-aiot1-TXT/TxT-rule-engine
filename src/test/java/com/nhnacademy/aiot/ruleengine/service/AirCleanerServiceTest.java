@@ -1,10 +1,9 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.nhnacademy.aiot.ruleengine.constants.Constants;
-import org.junit.jupiter.api.Test;
-
 import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,6 +19,7 @@ public class AirCleanerServiceTest {
 
     @MockBean
     private RedisAdapter redisAdapter;
+
     @Test
     public void testSetTimer() {
         Mockito.when(redisAdapter.hasTimer(Constants.AIRCLEANER)).thenReturn(false);

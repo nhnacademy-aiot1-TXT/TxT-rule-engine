@@ -2,6 +2,7 @@ package com.nhnacademy.aiot.ruleengine.config;
 
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -10,12 +11,11 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
-import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
-
-import java.util.HashMap;
 
 @ExtendWith(MockitoExtension.class)
 public class MqttConfigTest {

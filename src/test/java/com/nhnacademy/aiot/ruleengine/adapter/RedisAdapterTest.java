@@ -85,6 +85,7 @@ public class RedisAdapterTest {
         String value = "1.0f";
 
         ListOperations<String, Float> listOperationsMock = mock(ListOperations.class);
+
         when(floatRedisTemplateMock.opsForList()).thenReturn(listOperationsMock);
         when(sensorServiceMock.parseToFloatValue(value)).thenReturn(1.0f);
 
