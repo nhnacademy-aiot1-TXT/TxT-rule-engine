@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.nhnacademy.aiot.ruleengine.dto.message.*;
+import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
+import com.nhnacademy.aiot.ruleengine.send.MessageSender;
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,9 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.LAST_INFLUXDB_STATE;
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.checkInfluxDBAvailable;
+
 
 /**
  * MQTT와 관련된 설정을 정의하는 클래스
@@ -26,6 +30,7 @@ import org.springframework.messaging.MessageHandler;
 public class MqttConfig {
 
     private final InfluxService influxService;
+    private final MessageSender messageSender;
 
     @Bean
     public MessageChannel influxInputChannel() {
@@ -55,9 +60,7 @@ public class MqttConfig {
      */
     @Bean
     public MessageProducer txtSensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(Constants.TXT_MQTT, "rule-engine-txt",
-                                                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
+        MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(Constants.TXT_MQTT, "rule-engine-txt", "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -72,14 +75,7 @@ public class MqttConfig {
      */
     @Bean
     public MessageProducer academySensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(Constants.ACADEMY_MQTT, "rule-engine-academy",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(Constants.ACADEMY_MQTT, "rule-engine-academy", "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2", "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc", "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity", "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature", "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination", "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);
@@ -89,35 +85,28 @@ public class MqttConfig {
 
     @Bean
     public MessageProducer occupancySensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-occupancy",
-                                                                        "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-occupancy", "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
         adapter.setOutputChannel(occupancyChannel());
         return adapter;
     }
 
     @Bean
     public MessageProducer vocSensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-voc",
-                                                                        "data/s/nhnacademy/b/gyeongnam/p/class_a/d/24e124128c067999/e/tvoc");
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-voc", "data/s/nhnacademy/b/gyeongnam/p/class_a/d/24e124128c067999/e/tvoc");
         adapter.setOutputChannel(airCleanerChannel());
         return adapter;
     }
 
     @Bean
     public MessageProducer airConditionerInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-airconditioner",
-                                                                        "data/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/temperature",
-                                                                        "data/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/humidity");
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-airconditioner", "data/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/temperature", "data/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/humidity");
         adapter.setOutputChannel(airConditionerChannel());
         return adapter;
     }
 
     @Bean
     public MessageProducer airConditionerInbound2() {
-        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-airconditioner2",
-                                                                        "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/temperature",
-                                                                        "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/humidity",
-                                                                        "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/total_people_count");
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-airconditioner2", "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/temperature", "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/humidity", "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/total_people_count");
         adapter.setOutputChannel(airConditionerChannel());
         return adapter;
     }
@@ -133,14 +122,18 @@ public class MqttConfig {
     public MessageHandler handler() {
         return message -> {
             String payload = message.getPayload().toString();
-
-            influxService.save(message.getHeaders(), payload);
+            if (checkInfluxDBAvailable()) {
+                LAST_INFLUXDB_STATE = true;
+                influxService.save(message.getHeaders(), payload);
+            } else if (LAST_INFLUXDB_STATE) {
+                messageSender.send("influxDB", "비상!!!!!! InfluxDB 서버가 터졌습니다 비상 !!!!!!!");
+                LAST_INFLUXDB_STATE = false;
+            }
         };
     }
 
     private MqttPahoMessageDrivenChannelAdapter createMqttAdapter(String url, String clientId, String... topic) {
-        MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(url, clientId, topic);
+        MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(url, clientId, topic);
         adapter.setCompletionTimeout(5000);
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(2);

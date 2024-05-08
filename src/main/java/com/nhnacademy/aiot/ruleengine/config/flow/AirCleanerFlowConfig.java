@@ -26,32 +26,32 @@ public class AirCleanerFlowConfig {
     @Bean
     public IntegrationFlow airCleanerProcess() {
         return IntegrationFlows.from(Constants.AIR_CLEANER_CHANNEL)
-                               .transform(sensorService::convertStringToPayload)
-                               .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus()),
-                                       e -> e.discardFlow(airCleanerVacantOffFlow()))
-                               .handle(Payload.class, (payload, headers) -> airCleanerService.setTimer(payload))
-                               .filter(Payload.class, payload -> !airCleanerService.isTimerActive(payload),
-                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airCleanerService.saveVoc(payload))
-                                                                      .nullChannel()))
-                               .handle(Payload.class, (payload, headers) -> {
-                                   double avg = airCleanerService.getAvg();
-                                   DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCLEANER_DEVICE_ID, Constants.AIRCLEANER_SENSOR_ID);
+                .transform(sensorService::convertStringToPayload)
+                .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus()),
+                        e -> e.discardFlow(airCleanerVacantOffFlow()))
+                .handle(Payload.class, (payload, headers) -> airCleanerService.setTimer(payload))
+                .filter(Payload.class, payload -> !airCleanerService.isTimerActive(payload),
+                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airCleanerService.saveVoc(payload))
+                                .nullChannel()))
+                .handle(Payload.class, (payload, headers) -> {
+                    double avg = airCleanerService.getAvg();
+                    DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCLEANER_DEVICE_ID, Constants.AIRCLEANER_SENSOR_ID);
 
-                                   if (avg > response.getOnValue() && !deviceService.isAirCleanerPowered()) {
-                                       messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(true));
-                                       deviceService.setAirCleanerPower(true);
-                                   }
+                    if (avg > response.getOnValue() && !deviceService.isAirCleanerPowered()) {
+                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(true));
+                        deviceService.setAirCleanerPower(true);
+                    }
 
-                                   if (avg < response.getOffValue() && deviceService.isAirCleanerPowered()) {
-                                       messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
-                                       deviceService.setAirCleanerPower(false);
-                                   }
+                    if (avg < response.getOffValue() && deviceService.isAirCleanerPowered()) {
+                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(false));
+                        deviceService.setAirCleanerPower(false);
+                    }
 
-                                   airCleanerService.deleteListAndTimer();
+                    airCleanerService.deleteListAndTimer();
 
-                                   return payload;
-                               })
-                               .nullChannel();
+                    return payload;
+                })
+                .nullChannel();
     }
 
     @Bean

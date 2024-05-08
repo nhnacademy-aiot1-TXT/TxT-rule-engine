@@ -1,37 +1,41 @@
-//package com.nhnacademy.aiot.ruleengine.service;
-//
-//import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.junit.jupiter.params.ParameterizedTest;
-//import org.junit.jupiter.params.provider.CsvSource;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.springframework.amqp.rabbit.core.RabbitTemplate;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.test.context.junit.jupiter.SpringExtension;
-//import org.springframework.test.util.ReflectionTestUtils;
-//
-//import static org.mockito.Mockito.*;
-//
-//@ExtendWith(SpringExtension.class)
-//@SpringBootTest
-//class MessageServiceTest {
-//    @Mock
-//    private RabbitTemplate rabbitTemplate;
-//    @InjectMocks
-//    private MessageService messageService;
-//
-//    @BeforeEach
-//    public void setup() {
-//        ReflectionTestUtils.setField(messageService, "exchangeName", "exchangeName");
-//        ReflectionTestUtils.setField(messageService, "exchangeSensorName", "exchangeSensorName");
-//        ReflectionTestUtils.setField(messageService, "predictRoutingKey", "predictRoutingKey");
-//    }
-//
-//    @ParameterizedTest
-//    @CsvSource(value = {"exchangeSensorName;battery"}, delimiter = ';')
-//    void testSendValidateMessage(String exchange, String measurement) {
-//        verify(rabbitTemplate, times(1)).convertAndSend(eq(exchange), eq(measurement), any(DetailMessage.class));
-//    }
-//}
+package com.nhnacademy.aiot.ruleengine.service;
+
+import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class MessageServiceTest {
+
+    @Mock
+    RabbitTemplate rabbitTemplate;
+
+    @InjectMocks
+    MessageService messageService;
+
+    @Test
+    public void testSendPredictMessage() {
+        PredictMessage message = new PredictMessage();
+        messageService.sendPredictMessage(message);
+
+        verify(rabbitTemplate, times(1)).convertAndSend(any(), eq("txt.predict"), any(PredictMessage.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"airconditioner", "aircleaner", "light"})
+    public void testSendDeviceMessage(String measurement) {
+        ValueMessage message = new ValueMessage(true);
+        messageService.sendDeviceMessage(measurement, message);
+
+        verify(rabbitTemplate, times(1)).convertAndSend(any(), eq("txt." + measurement), any(ValueMessage.class));
+    }
+}

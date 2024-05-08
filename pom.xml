@@ -92,8 +92,25 @@
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.influxdb</groupId>
+            <artifactId>influxdb-java</artifactId>
+            <version>2.21</version>
+        </dependency>
 
+        <dependency>
+            <groupId>com.nhn.dooray.messenger</groupId>
+            <artifactId>dooray-hook-sender</artifactId>
+            <version>1.2.0-RELEASE</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>dooray-hook-sender</id>
+            <url>https://github.com/edu-springboot/edu-springboot-maven-repo/raw/master/releases</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
