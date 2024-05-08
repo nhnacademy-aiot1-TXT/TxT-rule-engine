@@ -12,7 +12,7 @@ spring:
     password: '*N2vya7H@muDTwdNMR!'
     database: 13
   profiles:
-    active: prod
+    active: dev
 
 rabbitmq:
   airconditioner:
