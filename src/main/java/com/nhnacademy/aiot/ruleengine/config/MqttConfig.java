@@ -47,6 +47,11 @@ public class MqttConfig {
         return new DirectChannel();
     }
 
+    @Bean
+    public MessageChannel intrusionChannel() {
+        return new DirectChannel();
+    }
+
     /**
      * 이 메소드는 TxT 팀이 별도로 설치한 센서 메시지를 수신하는 데 필요한 설정을 정의하며,
      * 수신된 메시지는 txtSensorInputChannel을 통해 전달됩니다.
@@ -55,12 +60,8 @@ public class MqttConfig {
      */
     @Bean
     public MessageProducer txtSensorInbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(Constants.TXT_MQTT, "rule-engine-txt",
-                                                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
-        adapter.setCompletionTimeout(5000);
-        adapter.setConverter(new DefaultPahoMessageConverter());
-        adapter.setQos(2);
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-txt",
+                                                                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
         adapter.setOutputChannel(influxInputChannel());
         return adapter;
     }
@@ -72,17 +73,15 @@ public class MqttConfig {
      */
     @Bean
     public MessageProducer academySensorInbound() {
+
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(Constants.ACADEMY_MQTT, "rule-engine-academy",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
-                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
-        adapter.setCompletionTimeout(5000);
-        adapter.setConverter(new DefaultPahoMessageConverter());
-        adapter.setQos(2);
+                createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-academy",
+                                  "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/co2",
+                                  "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/tvoc",
+                                  "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/humidity",
+                                  "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/temperature",
+                                  "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/illumination",
+                                  "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setOutputChannel(influxInputChannel());
         return adapter;
     }
@@ -119,6 +118,14 @@ public class MqttConfig {
                                                                         "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/humidity",
                                                                         "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/total_people_count");
         adapter.setOutputChannel(airConditionerChannel());
+        return adapter;
+    }
+
+    @Bean
+    public MessageProducer intrusionInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-intrusion",
+                                                                        "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
+        adapter.setOutputChannel(intrusionChannel());
         return adapter;
     }
 
