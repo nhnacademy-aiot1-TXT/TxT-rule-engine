@@ -81,8 +81,9 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public DirectExchange sensorExchange() {return new DirectExchange(exchangeSensorName);}
-
+    public DirectExchange sensorExchange() {
+        return new DirectExchange(exchangeSensorName);
+    }
 
     @Bean
     public Queue aircleanerQueue() {

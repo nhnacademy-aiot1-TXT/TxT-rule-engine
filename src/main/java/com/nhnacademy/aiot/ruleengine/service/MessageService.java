@@ -1,6 +1,5 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
+@Service
 public class MessageService {
 
 
@@ -31,10 +30,6 @@ public class MessageService {
 
     public void sendDeviceMessage(String measurement, ValueMessage message) {
         rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
-    }
-
-    public void sendSensorMessage(String measurement, DetailMessage message) {
-        rabbitTemplate.convertAndSend(exchangeSensorName, "txt." + measurement, message);
     }
 
     public void injectPredictMessage(Map<String, Object> avg, PredictMessage predictMessage) {

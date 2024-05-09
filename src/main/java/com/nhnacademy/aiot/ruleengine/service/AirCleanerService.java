@@ -47,5 +47,4 @@ public class AirCleanerService {
     public boolean isTimerActive(Payload payload) {
         return payload.getTime() - getTimer() <= 90000;
     }
-
 }
