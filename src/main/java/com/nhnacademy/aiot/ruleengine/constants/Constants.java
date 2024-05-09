@@ -5,6 +5,8 @@ import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Pong;
 
+import java.util.Objects;
+
 
 @Slf4j
 public final class Constants {
@@ -35,11 +37,15 @@ public final class Constants {
     public static final String LIGHT = "light";
     public static boolean LAST_INFLUXDB_STATE = true;
 
+
+    //    private
+    private static final String INFLUXDB_URL = "http://133.186.217.132:8086";
+
     public static boolean checkInfluxDBAvailable() {
-        InfluxDB influxDB = InfluxDBFactory.connect("http://133.186.217.132:8086");
+        InfluxDB influxDB = InfluxDBFactory.connect(INFLUXDB_URL);
         try {
             Pong response = influxDB.ping();
-            return response.getVersion().equalsIgnoreCase("v2.7.6");
+            return Objects.nonNull(response.getVersion());
         } catch (Exception e) {
             log.debug("InfluxDB 에서 예외 발생 : " + e);
             return false;

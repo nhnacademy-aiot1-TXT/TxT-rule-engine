@@ -9,11 +9,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ServerClosedMessageSender implements ApplicationListener<ContextClosedEvent> {
+public class ServerClosedListener implements ApplicationListener<ContextClosedEvent> {
     private final MessageSender messageSender;
 
     @Override
     public void onApplicationEvent(@NotNull ContextClosedEvent event) {
-        messageSender.send("RuleEngine", "룰엔진 서버가 종료되었습니다.");
+        String activeProfile = event.getApplicationContext().getEnvironment().getActiveProfiles()[0];
+
+        if (!activeProfile.equals("test")) {
+            messageSender.send("RuleEngine", "룰엔진 서버가 종료되었습니다.");
+        }
     }
 }
