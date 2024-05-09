@@ -35,6 +35,15 @@ public final class Constants {
     public static final String LIGHT = "light";
     public static boolean LAST_INFLUXDB_STATE = true;
 
+    public static final String BATTERY = "battery";
+    public static final String LOW = "low";
+    public static final String CRITICAL = "critical";
+    public static final String BATTERY_LEVEL_CHANNEL = "batteryLevelChannel";
+
+    public static final int PLACE_INDEX = 6;
+    public static final int DEVICE_INDEX = 8;
+
+
     public static boolean checkInfluxDBAvailable() {
         InfluxDB influxDB = InfluxDBFactory.connect("http://133.186.217.132:8086");
         try {

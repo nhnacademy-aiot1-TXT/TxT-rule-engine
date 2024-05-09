@@ -63,6 +63,12 @@ public class MqttConfigTest {
     }
 
     @Test
+    public void testBatteryLevelChannelBean() {
+        MessageChannel channel = mqttConfig.batteryLevelChannel();
+        assertNotNull(channel);
+    }
+
+    @Test
     public void testTxtSensorInboundBean() {
         MessageProducer producer = mqttConfig.txtSensorInbound();
         assertNotNull(producer);
@@ -95,6 +101,18 @@ public class MqttConfigTest {
     @Test
     public void testAirConditionerInbound2Bean() {
         MessageProducer producer = mqttConfig.airConditionerInbound2();
+        assertNotNull(producer);
+    }
+
+    @Test
+    public void testBatteryLevelInboundBean() {
+        MessageProducer producer = mqttConfig.batteryLevelInbound();
+        assertNotNull(producer);
+    }
+
+    @Test
+    public void testBatteryLevelInbound2Bean() {
+        MessageProducer producer = mqttConfig.batteryLevelInbound2();
         assertNotNull(producer);
     }
 

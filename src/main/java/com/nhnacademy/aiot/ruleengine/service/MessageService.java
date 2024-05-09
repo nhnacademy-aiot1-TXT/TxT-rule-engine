@@ -1,5 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
+import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,10 @@ public class MessageService {
     }
 
     public void sendDeviceMessage(String measurement, ValueMessage message) {
+        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
+    }
+
+    public void sendSensorMessage(String measurement, DetailMessage message) {
         rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
     }
 

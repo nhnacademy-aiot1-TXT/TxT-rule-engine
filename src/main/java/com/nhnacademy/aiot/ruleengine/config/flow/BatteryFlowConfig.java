@@ -20,29 +20,29 @@ public class BatteryFlowConfig {
     private final SensorService sensorService;
     private final MessageService messageService;
     private final BatteryLevelService batteryLevelService;
-    public static final int LOW_LEVEL = 20;
-    public static final int CRITICAL_LEVEL = 10;
-
 
     @Bean
     public IntegrationFlow batteryLevelProcess() {
         return IntegrationFlows.from(Constants.BATTERY_LEVEL_CHANNEL)
                                .transform(sensorService::convertStringToPayload)
                                .handle(Payload.class, (payload, headers) -> {
-                                   int batteryLevel = Integer.parseInt(payload.getValue());
                                    String[] topics = sensorService.getTopics(headers);
 
                                    String place = topics[Constants.PLACE_INDEX];
                                    String deviceId = topics[Constants.DEVICE_INDEX];
 
-                                   String currentStatus = batteryLevelService.getBatteryStatus(deviceId);
-
-                                   if (batteryLevel <= CRITICAL_LEVEL && !Constants.CRITICAL.equals(currentStatus)) {
-                                       batteryLevelService.setBatteryStatus(deviceId, Constants.CRITICAL);
-                                       messageService.sendSensorMessage(Constants.BATTERY, new DetailMessage(Constants.CRITICAL, place, deviceId));
-                                   } else if (batteryLevel <= LOW_LEVEL && batteryLevel > CRITICAL_LEVEL && !Constants.LOW.equals(currentStatus)) {
-                                       batteryLevelService.setBatteryStatus(deviceId, Constants.LOW);
-                                       messageService.sendSensorMessage(Constants.BATTERY, new DetailMessage(Constants.LOW, place, deviceId));
+                                   if (batteryLevelService.isCriticalLevel(payload)) {
+                                       if (!batteryLevelService.alreadyReportCriticalStatus(deviceId)) {
+                                           batteryLevelService.setBatteryStatus(deviceId, Constants.CRITICAL);
+                                           messageService.sendSensorMessage(Constants.BATTERY, new DetailMessage(Constants.CRITICAL, place, deviceId));
+                                           return payload;
+                                       }
+                                   } else if (batteryLevelService.isLowLevel(payload)) {
+                                       if (!batteryLevelService.alreadyReportLowStatus(deviceId)) {
+                                           batteryLevelService.setBatteryStatus(deviceId, Constants.LOW);
+                                           messageService.sendSensorMessage(Constants.BATTERY, new DetailMessage(Constants.LOW, place, deviceId));
+                                           return payload;
+                                       }
                                    }
                                    return payload;
                                })

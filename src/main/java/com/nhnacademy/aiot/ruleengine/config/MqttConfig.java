@@ -52,6 +52,11 @@ public class MqttConfig {
         return new DirectChannel();
     }
 
+    @Bean
+    public MessageChannel batteryLevelChannel() {
+        return new DirectChannel();
+    }
+
     /**
      * 이 메소드는 TxT 팀이 별도로 설치한 센서 메시지를 수신하는 데 필요한 설정을 정의하며,
      * 수신된 메시지는 txtSensorInputChannel을 통해 전달됩니다.
@@ -108,6 +113,28 @@ public class MqttConfig {
     public MessageProducer airConditionerInbound2() {
         MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-airconditioner2", "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/temperature", "data/s/nhnacademy/b/gyeongnam/p/outdoor/d/+/e/humidity", "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/+/e/total_people_count");
         adapter.setOutputChannel(airConditionerChannel());
+        return adapter;
+    }
+
+    /**
+     * TxT팀이 설치한 센서들의 batteryLevel 메시지
+     */
+    @Bean
+    public MessageProducer batteryLevelInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-battery1",
+                "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        adapter.setOutputChannel(batteryLevelChannel());
+        return adapter;
+    }
+
+    /**
+     * 학원 강의실 A에 설치된 센서들의 batteryLevel 메시지
+     */
+    @Bean
+    public MessageProducer batteryLevelInbound2() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-battery2",
+                "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        adapter.setOutputChannel(batteryLevelChannel());
         return adapter;
     }
 
