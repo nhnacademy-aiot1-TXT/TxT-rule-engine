@@ -1,5 +1,8 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
+import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
@@ -37,26 +40,30 @@ public class MessageService {
         rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
     }
 
+    public void sendIntrusionMessage(ValueMessage message) {
+        rabbitTemplate.convertAndSend(exchangeName, "txt.intrusion", message);
+    }
+
     public void injectPredictMessage(Map<String, Object> avg, PredictMessage predictMessage) {
         for (Map.Entry<String, Object> entry : avg.entrySet()) {
             String key = entry.getKey();
             switch (key) {
-                case "outdoorTemperature":
+                case Constants.OUTDOOR_TEMPERATURE:
                     predictMessage.setOutdoorTemperature(new ValueMessage(avg.get(key)));
                     break;
-                case "outdoorHumidity":
+                case Constants.OUTDOOR_HUMIDITY:
                     predictMessage.setOutdoorHumidity(new ValueMessage(avg.get(key)));
                     break;
-                case "indoorTemperature":
+                case Constants.INDOOR_TEMPERATURE:
                     predictMessage.setIndoorTemperature(new ValueMessage(avg.get(key)));
                     break;
-                case "indoorHumidity":
+                case Constants.INDOOR_HUMIDITY:
                     predictMessage.setIndoorHumidity(new ValueMessage(avg.get(key)));
                     break;
-                case "totalPeopleCount":
+                case Constants.TOTAL_PEOPLE_COUNT:
                     predictMessage.setTotalPeopleCount(new ValueMessage(avg.get(key)));
                     break;
-                case "time":
+                case Constants.TIME:
                     predictMessage.setTime((Long) avg.get(key));
                     break;
                 default:

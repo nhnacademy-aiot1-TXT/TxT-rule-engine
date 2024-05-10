@@ -15,18 +15,18 @@ public class AirCleanerService {
     private final RedisAdapter redisAdapter;
 
     private boolean hasTimer() {
-        return redisAdapter.hasTimer(Constants.AIRCLEANER);
+        return redisAdapter.hasKey(Constants.AIRCLEANER + Constants.TIMER);
     }
 
     public Payload setTimer(Payload payload) {
         if (!hasTimer()) {
-            redisAdapter.setTimer(Constants.AIRCLEANER, payload.getTime());
+            redisAdapter.setValue(Constants.AIRCLEANER + Constants.TIMER, payload.getTime());
         }
         return payload;
     }
 
     private Long getTimer() {
-        return redisAdapter.getTimer(Constants.AIRCLEANER);
+        return redisAdapter.getLongValue(Constants.AIRCLEANER + Constants.TIMER);
     }
 
     public Payload saveVoc(Payload payload) {
@@ -41,10 +41,10 @@ public class AirCleanerService {
 
     public void deleteListAndTimer() {
         redisAdapter.delete(Constants.VOC);
-        redisAdapter.deleteTimer(Constants.AIRCLEANER);
+        redisAdapter.delete(Constants.AIRCLEANER + Constants.TIMER);
     }
 
     public boolean isTimerActive(Payload payload) {
-        return payload.getTime() - getTimer() <= 90000;
+        return payload.getTime() - getTimer() <= Constants.ONE_MINUTE_THIRTY_SECONDS;
     }
 }
