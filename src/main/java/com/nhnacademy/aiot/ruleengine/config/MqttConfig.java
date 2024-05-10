@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
+import com.nhnacademy.aiot.ruleengine.send.MessageSender;
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,9 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.LAST_INFLUXDB_STATE;
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.checkInfluxDBAvailable;
+
 
 /**
  * MQTT와 관련된 설정을 정의하는 클래스
@@ -26,6 +30,7 @@ import org.springframework.messaging.MessageHandler;
 public class MqttConfig {
 
     private final InfluxService influxService;
+    private final MessageSender messageSender;
 
     @Bean
     public MessageChannel influxInputChannel() {
@@ -44,6 +49,11 @@ public class MqttConfig {
 
     @Bean
     public MessageChannel airConditionerChannel() {
+        return new DirectChannel();
+    }
+
+    @Bean
+    public MessageChannel batteryLevelChannel() {
         return new DirectChannel();
     }
 
@@ -121,6 +131,28 @@ public class MqttConfig {
         return adapter;
     }
 
+    /**
+     * TxT팀이 설치한 센서들의 batteryLevel 메시지
+     */
+    @Bean
+    public MessageProducer batteryLevelInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-battery1",
+                "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        adapter.setOutputChannel(batteryLevelChannel());
+        return adapter;
+    }
+
+    /**
+     * 학원 강의실 A에 설치된 센서들의 batteryLevel 메시지
+     */
+    @Bean
+    public MessageProducer batteryLevelInbound2() {
+        MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-battery2",
+                "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+        adapter.setOutputChannel(batteryLevelChannel());
+        return adapter;
+    }
+
     @Bean
     public MessageProducer intrusionInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-intrusion",
@@ -140,8 +172,13 @@ public class MqttConfig {
     public MessageHandler handler() {
         return message -> {
             String payload = message.getPayload().toString();
-
-            influxService.save(message.getHeaders(), payload);
+            if (checkInfluxDBAvailable()) {
+                LAST_INFLUXDB_STATE = true;
+                influxService.save(message.getHeaders(), payload);
+            } else if (LAST_INFLUXDB_STATE) {
+                messageSender.send("influxDB", "비상!!!!!! InfluxDB 서버가 터졌습니다 비상 !!!!!!!");
+                LAST_INFLUXDB_STATE = false;
+            }
         };
     }
 

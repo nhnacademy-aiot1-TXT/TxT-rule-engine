@@ -11,6 +11,8 @@ spring:
     port: 6379
     password: '*N2vya7H@muDTwdNMR!'
     database: 13
+  profiles:
+    active: dev
 
 rabbitmq:
   intrusion:
@@ -55,8 +57,8 @@ rabbitmq:
 
 eureka:
   client:
-    register-with-eureka: 'true'
-    fetch-registry: 'true'
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
       defaultZone: http://admin:1234@133.186.220.58:8761/eureka
 
@@ -65,10 +67,10 @@ influxdb:
   url: http://133.186.217.132:8086
   org: TXT
   bucket: TxT-iot
-
+  
 server:
   port: '9897'
-
+  
 feign:
   client:
     config:

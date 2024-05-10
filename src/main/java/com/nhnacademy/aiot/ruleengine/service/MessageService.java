@@ -3,6 +3,9 @@ package com.nhnacademy.aiot.ruleengine.service;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
+import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -30,6 +33,10 @@ public class MessageService {
     }
 
     public void sendDeviceMessage(String measurement, ValueMessage message) {
+        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
+    }
+
+    public void sendSensorMessage(String measurement, DetailMessage message) {
         rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
     }
 
