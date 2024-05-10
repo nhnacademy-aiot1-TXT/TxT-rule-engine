@@ -74,3 +74,13 @@ feign:
       default:
         connect-timeout: 5000
         read-timeout: 30000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: beans, conditions, configprops, env, health, httpexchanges, info, loggers, metrics, mappings, threaddump, shutdown
+      base-path: /rule-engine-server/manage
+  endpoint:
+    health:
+      show-details: always
