@@ -1,7 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.config.flow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.service.DeviceService;
@@ -17,8 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
@@ -31,71 +28,66 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @EnableIntegration
-@SpringJUnitConfig(classes = {LightFlowConfig.class, DeviceService.class, SensorService.class, OccupancyService.class, LightFlowConfigTest.Testconfig.class})
+@SpringJUnitConfig(classes = {LightFlowConfig.class, SensorService.class, LightFlowConfigTest.Testconfig.class})
 class LightFlowConfigTest {
 
     @Autowired
-    private IntegrationFlowContext flowContext;
-    @Autowired
     private MessageChannel occupancyChannel;
-    @Autowired
-    private IntegrationFlow lightProcess;
     @MockBean
     private MessageService messageService;
     @MockBean
-    private RedisAdapter redisAdapter;
+    private DeviceService deviceService;
+    @MockBean
+    private OccupancyService occupancyService;
 
     @BeforeEach
     void setUp() {
-        if (!flowContext.getRegistry().containsKey("lightProcess")) {
-            flowContext.registration(lightProcess).id("lightProcess").register();
-        }
         doNothing().when(messageService).sendDeviceMessage(anyString(), any(ValueMessage.class));
-        doNothing().when(redisAdapter).setValueToHash(anyString(), anyString(), anyBoolean());
-        when(redisAdapter.getBooleanValue(Constants.AUTO_MODE)).thenReturn(true);
+        doNothing().when(deviceService).setLightPower(anyBoolean());
+        when(deviceService.isAutoMode()).thenReturn(true);
     }
 
     @Test
     void sendOnMessageWhenOccupiedLightOff() {
         Message<String> message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
-        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.VACANT);
-        when(redisAdapter.getBooleanFromHash(Constants.AUTO_MODE, Constants.LIGHT)).thenReturn(false);
+        when(occupancyService.getOccupancyStatus(Constants.LIGHT)).thenReturn(Constants.OCCUPIED);
+        when(deviceService.isLightPowered()).thenReturn(false);
         ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 
         occupancyChannel.send(message);
 
         verify(messageService).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
         assertTrue((Boolean) captor.getValue().getValue());
-        verify(redisAdapter).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(true));
-        verify(redisAdapter, never()).getStringValue(anyString());
-        verify(redisAdapter, never()).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(false));
+        verify(deviceService).setLightPower(true);
+        verify(occupancyService, never()).getOccupancyStatus(Constants.LIGHT);
+        verify(deviceService, never()).setLightPower(false);
     }
 
     @Test
     void sendOffMessageWhenVacantLightOn() {
         Message<String> message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"vacant\"}");
-        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.VACANT);
-        when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT)).thenReturn(true);
+        when(occupancyService.getOccupancyStatus(Constants.LIGHT)).thenReturn(Constants.VACANT);
+        when(deviceService.isLightPowered()).thenReturn(true);
         ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 
         occupancyChannel.send(message);
 
         verify(messageService).sendDeviceMessage(eq(Constants.LIGHT), captor.capture());
         assertFalse((Boolean) captor.getValue().getValue());
-        verify(redisAdapter).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(false));
-        verify(redisAdapter, never()).setValueToHash(eq(Constants.DEVICE_POWER_STATUS), eq(Constants.LIGHT), eq(true));
+        verify(deviceService).setLightPower(false);
+        verify(deviceService, never()).setLightPower(true);
     }
 
     @Test
     void doNotSendAnyMessage() {
         Message<String> message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
-        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.OCCUPIED);
-        when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT)).thenReturn(true);
+        when(occupancyService.getOccupancyStatus(Constants.LIGHT)).thenReturn(Constants.OCCUPIED);
+        when(deviceService.isLightPowered()).thenReturn(true);
 
         occupancyChannel.send(message);
 
         verify(messageService, never()).sendDeviceMessage(anyString(), any(ValueMessage.class));
-        verify(redisAdapter, never()).setValueToHash(anyString(), anyString(), anyBoolean());
+        verify(deviceService, never()).setLightPower(anyBoolean());
     }
 
     @Configuration

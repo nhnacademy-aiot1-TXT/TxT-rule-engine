@@ -21,10 +21,11 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import java.time.LocalTime;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @EnableIntegration
@@ -54,7 +55,7 @@ class IntrusionFlowConfigTest {
     void alertTimeInactive() {
         Message<String> occupied = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
         Message<String> vacant = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"vacant\"}");
-        when(intrusionService.isAlertTimeActive(anyLong())).thenReturn(false);
+        when(intrusionService.isAlertTimeActive(any(LocalTime.class))).thenReturn(false);
 
         intrusionChannel.send(occupied);
         intrusionChannel.send(vacant);
@@ -66,7 +67,7 @@ class IntrusionFlowConfigTest {
     void alertTimeActive() {
         Message<String> occupied = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
         Message<String> vacant = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"vacant\"}");
-        when(intrusionService.isAlertTimeActive(anyLong())).thenReturn(true);
+        when(intrusionService.isAlertTimeActive(any(LocalTime.class))).thenReturn(true);
         ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 
         intrusionChannel.send(occupied);

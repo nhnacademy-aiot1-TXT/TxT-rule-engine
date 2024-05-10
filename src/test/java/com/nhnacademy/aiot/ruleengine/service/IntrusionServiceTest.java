@@ -1,12 +1,15 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
+import com.nhnacademy.aiot.ruleengine.adapter.CommonAdapter;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
+import com.nhnacademy.aiot.ruleengine.dto.TimeIntervalResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,25 +22,24 @@ class IntrusionServiceTest {
     @Autowired
     private IntrusionService intrusionService;
     @MockBean
-    private RedisAdapter redisAdapter;
+    private CommonAdapter commonAdapter;
 
-    private Long time1400;
-    private Long time0200;
-    private Long time2200;
-    private Long time2330;
+    private LocalTime time1400;
+    private LocalTime time0200;
+    private LocalTime time2200;
+    private LocalTime time2330;
 
     @BeforeEach
     void setUp() {
-        time0200 = 1715014800000L;
-        time1400 = 1715058000000L;
-        time2200 = 1715086800000L;
-        time2330 = 1715092200000L;
+        time0200 = LocalTime.of(2, 0);
+        time1400 = LocalTime.of(14, 0);
+        time2200 = LocalTime.of(22, 0);
+        time2330 = LocalTime.of(23, 30);
     }
 
     @Test
     void test0To6() {
-        when(redisAdapter.getIntFromHash(Constants.INTRUSION_TIME, Constants.START)).thenReturn(0);
-        when(redisAdapter.getIntFromHash(Constants.INTRUSION_TIME, Constants.END)).thenReturn(6);
+        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, Constants.OCCUPANCY, LocalTime.of(0, 0, 0), LocalTime.of(6, 0, 0)));
 
         assertTrue(intrusionService.isAlertTimeActive(time0200));
         assertFalse(intrusionService.isAlertTimeActive(time1400));
@@ -47,8 +49,7 @@ class IntrusionServiceTest {
 
     @Test
     void test22To6() {
-        when(redisAdapter.getIntFromHash(Constants.INTRUSION_TIME, Constants.START)).thenReturn(22);
-        when(redisAdapter.getIntFromHash(Constants.INTRUSION_TIME, Constants.END)).thenReturn(6);
+        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, Constants.OCCUPANCY, LocalTime.of(22, 0, 0), LocalTime.of(6, 0, 0)));
 
         assertTrue(intrusionService.isAlertTimeActive(time0200));
         assertFalse(intrusionService.isAlertTimeActive(time1400));
@@ -58,8 +59,7 @@ class IntrusionServiceTest {
 
     @Test
     void test22To22() {
-        when(redisAdapter.getIntFromHash(Constants.INTRUSION_TIME, Constants.START)).thenReturn(22);
-        when(redisAdapter.getIntFromHash(Constants.INTRUSION_TIME, Constants.END)).thenReturn(22);
+        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, Constants.OCCUPANCY, LocalTime.of(22, 0, 0), LocalTime.of(22, 0, 0)));
 
         assertFalse(intrusionService.isAlertTimeActive(time0200));
         assertFalse(intrusionService.isAlertTimeActive(time1400));

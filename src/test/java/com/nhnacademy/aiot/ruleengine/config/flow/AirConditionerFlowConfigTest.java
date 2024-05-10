@@ -39,7 +39,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @EnableIntegration
-@SuppressWarnings("unchecked")
 @SpringJUnitConfig(classes = {AirConditionerFlowConfig.class, SensorService.class, AirConditionerFlowConfigTest.TestConfig.class})
 class AirConditionerFlowConfigTest {
 
@@ -120,7 +119,7 @@ class AirConditionerFlowConfigTest {
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
         when(airConditionerService.getAvg(Constants.TEMPERATURE)).thenReturn(30D);
-        when(commonAdapter.getOnOffValue(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
+        when(commonAdapter.getSensorByDeviceAndSensor(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
         when(deviceService.isAirConditionerPowered()).thenReturn(false);
         ArgumentCaptor<Boolean> captor = forClass(Boolean.class);
         ArgumentCaptor<ValueMessage> captorValue = forClass(ValueMessage.class);
@@ -141,7 +140,7 @@ class AirConditionerFlowConfigTest {
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
         when(airConditionerService.getAvg(Constants.TEMPERATURE)).thenReturn(16D);
-        when(commonAdapter.getOnOffValue(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
+        when(commonAdapter.getSensorByDeviceAndSensor(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
         when(deviceService.isAirConditionerPowered()).thenReturn(true);
         ArgumentCaptor<Boolean> captor = forClass(Boolean.class);
         ArgumentCaptor<ValueMessage> captorValue = forClass(ValueMessage.class);

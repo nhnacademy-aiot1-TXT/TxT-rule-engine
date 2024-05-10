@@ -1,76 +1,62 @@
 package com.nhnacademy.aiot.ruleengine.config.flow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
-import com.nhnacademy.aiot.ruleengine.constants.Constants;
+import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.service.OccupancyService;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
-import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentCaptor.forClass;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @EnableIntegration
-@SpringJUnitConfig(classes = {OccupancyFlowConfig.class, SensorService.class, OccupancyService.class, OccupancyFlowConfigTest.TestConfig.class})
+@SpringJUnitConfig(classes = {OccupancyFlowConfig.class, SensorService.class, OccupancyFlowConfigTest.TestConfig.class})
 class OccupancyFlowConfigTest {
     @Autowired
-    private IntegrationFlowContext flowContext;
-    @Autowired
     private MessageChannel occupancyChannel;
-    @Autowired
-    private OccupancyFlowConfig occupancyFlowConfig;
     @MockBean
-    private RedisAdapter redisAdapter;
+    private OccupancyService occupancyService;
+    private Message<String> message;
 
     @BeforeEach
     void setUp() {
-        flowContext.registration(occupancyFlowConfig.occupancyProcess()).id("occupancyProcess").register();
+        message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
+        when(occupancyService.shouldStartProcess(any(Payload.class), anyString())).thenReturn(true);
+        when(occupancyService.setTimer(any(Payload.class), anyString())).then(returnsFirstArg());
+        when(occupancyService.save(any(Payload.class), anyString())).then(returnsFirstArg());
+        when(occupancyService.updateOccupancy(any(Payload.class), anyString())).then(returnsFirstArg());
     }
 
     @Test
-    void setOccupied() {
-        Message<String> occupiedMsg = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
-        Message<String> vacantMsg = new GenericMessage<>("{\"time\":1714029200000,\"value\":\"vacant\"}");
-        Message<String> occupiedMsg2 = new GenericMessage<>("{\"time\":1714029500000,\"value\":\"occupied\"}");
-        Message<String> occupiedMsg3 = new GenericMessage<>("{\"time\":1714029700000,\"value\":\"occupied\"}");
-        when(redisAdapter.hasKey(anyString())).thenReturn(false);
-        when(redisAdapter.getStringValue(anyString())).thenReturn(Constants.VACANT);
-        doNothing().when(redisAdapter).setValue(anyString(), anyLong());
-        when(redisAdapter.getLongValue(anyString())).thenReturn(1714029000000L);
-        doNothing().when(redisAdapter).saveStringToList(anyString(), anyString());
-        doNothing().when(redisAdapter).setValue(anyString(), anyString());
-        doNothing().when(redisAdapter).delete(anyString());
-        doNothing().when(redisAdapter).delete(anyString());
-        ArgumentCaptor<String> captor = forClass(String.class);
+    void updateOccupancy() {
+        when(occupancyService.isTimerActive(any(Payload.class), anyString())).thenReturn(false);
 
-        occupancyChannel.send(occupiedMsg);
+        occupancyChannel.send(message);
 
-        when(redisAdapter.hasKey(anyString())).thenReturn(true);
+        verify(occupancyService).updateOccupancy(any(Payload.class), anyString());
+    }
 
-        occupancyChannel.send(vacantMsg);
-        occupancyChannel.send(occupiedMsg2);
-        occupancyChannel.send(occupiedMsg3);
+    @Test
+    void saveOccupancySave() {
+        when(occupancyService.isTimerActive(any(Payload.class), anyString())).thenReturn(true);
 
-        verify(redisAdapter).setValue(anyString(), anyLong());
-        verify(redisAdapter, times(2)).saveStringToList(anyString(), anyString());
-        verify(redisAdapter).setValue(anyString(), captor.capture());
-        assertEquals("occupied", captor.getValue());
+        occupancyChannel.send(message);
+
+        verify(occupancyService).save(any(Payload.class), anyString());
     }
 
     @Configuration
