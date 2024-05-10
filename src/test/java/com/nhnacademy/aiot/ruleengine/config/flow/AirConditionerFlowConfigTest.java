@@ -11,7 +11,6 @@ import com.nhnacademy.aiot.ruleengine.service.AirConditionerService;
 import com.nhnacademy.aiot.ruleengine.service.DeviceService;
 import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -40,7 +39,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @EnableIntegration
-@SuppressWarnings("unchecked")
 @SpringJUnitConfig(classes = {AirConditionerFlowConfig.class, SensorService.class, AirConditionerFlowConfigTest.TestConfig.class})
 class AirConditionerFlowConfigTest {
 
@@ -73,7 +71,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void autoModeTimerEnd() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(true);
+        when(deviceService.isAutoMode()).thenReturn(true);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
         doNothing().when(airConditionerService).deleteListAndTimer();
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
@@ -91,7 +89,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void autoModeTimerActive() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(true);
+        when(deviceService.isAutoMode()).thenReturn(true);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(true);
         doNothing().when(airConditionerService).deleteListAndTimer();
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
@@ -103,7 +101,7 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void manualModeTimerActive() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(false);
+        when(deviceService.isAutoMode()).thenReturn(false);
         when(airConditionerService.isIndoorTempMsg(any(Message.class))).thenReturn(true);
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(true);
@@ -116,12 +114,12 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void manualModePowerOn() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(false);
+        when(deviceService.isAutoMode()).thenReturn(false);
         when(airConditionerService.isIndoorTempMsg(any(Message.class))).thenReturn(true);
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
         when(airConditionerService.getAvg(Constants.TEMPERATURE)).thenReturn(30D);
-        when(commonAdapter.getOnOffValue(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
+        when(commonAdapter.getSensorByDeviceAndSensor(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
         when(deviceService.isAirConditionerPowered()).thenReturn(false);
         ArgumentCaptor<Boolean> captor = forClass(Boolean.class);
         ArgumentCaptor<ValueMessage> captorValue = forClass(ValueMessage.class);
@@ -137,12 +135,12 @@ class AirConditionerFlowConfigTest {
 
     @Test
     void manualModePowerOff() {
-        when(deviceService.isAirConditionerAutoMode()).thenReturn(false);
+        when(deviceService.isAutoMode()).thenReturn(false);
         when(airConditionerService.isIndoorTempMsg(any(Message.class))).thenReturn(true);
         when(airConditionerService.setTimer(anyString(), any(Payload.class))).thenReturn(payload);
         when(airConditionerService.isTimerActive(anyString(), any(Payload.class))).thenReturn(false);
         when(airConditionerService.getAvg(Constants.TEMPERATURE)).thenReturn(16D);
-        when(commonAdapter.getOnOffValue(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
+        when(commonAdapter.getSensorByDeviceAndSensor(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airconditioner", 27f, 18f));
         when(deviceService.isAirConditionerPowered()).thenReturn(true);
         ArgumentCaptor<Boolean> captor = forClass(Boolean.class);
         ArgumentCaptor<ValueMessage> captorValue = forClass(ValueMessage.class);
@@ -158,7 +156,6 @@ class AirConditionerFlowConfigTest {
 
 
     @Configuration
-    @RequiredArgsConstructor
     static class TestConfig {
         @Bean
         MessageChannel airConditionerChannel() {
