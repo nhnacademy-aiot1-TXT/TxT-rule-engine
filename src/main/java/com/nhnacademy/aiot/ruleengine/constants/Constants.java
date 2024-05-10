@@ -39,10 +39,11 @@ public final class Constants {
     public static final String PLACE = "place";
     public static final String TOPIC = "topic";
     public static final String VALUE = "value";
-    public static final String START = "start";
-    public static final String INTRUSION_TIME = "intrusion_time";
-    public static final String END = "end";
     public static final String INTRUSION_CHANNEL = "intrusionChannel";
+    public static final int ONE_MINUTE_THIRTY_SECONDS = 90000;
+    public static final int ONE_MINUTE = 60000;
+    public static final int TEN_MINUTES = 600000;
+    public static final String OCCUPANCY_LABEL = "_occupancy";
 
 
     private Constants() {

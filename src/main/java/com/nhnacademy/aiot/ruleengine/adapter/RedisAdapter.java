@@ -27,16 +27,8 @@ public class RedisAdapter {
         longRedisTemplate.opsForValue().set(key, time);
     }
 
-    public void setValue(String key, String value) {
-        stringRedisTemplate.opsForValue().set(key, value);
-    }
-
     public Long getLongValue(String key) {
         return longRedisTemplate.opsForValue().get(key);
-    }
-
-    public String getStringValue(String key) {
-        return String.valueOf(stringRedisTemplate.opsForValue().get(key));
     }
 
     public boolean getBooleanValue(String key) {
@@ -83,16 +75,16 @@ public class RedisAdapter {
         stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix + "*")));
     }
 
-    public boolean getBooleanFromHash(String key, String deviceName) {
-        return Boolean.parseBoolean((String) stringRedisTemplate.opsForHash().get(key, deviceName));
+    public boolean getBooleanFromHash(String key, String hashKey) {
+        return Boolean.parseBoolean((String) stringRedisTemplate.opsForHash().get(key, hashKey));
     }
 
     public Double getDoubleFromHash(String key, String hashKey) {
         return (Double) floatRedisTemplate.opsForHash().get(key, hashKey);
     }
 
-    public int getIntFromHash(String key, String hashKey) {
-        return (int) floatRedisTemplate.opsForHash().get(key, hashKey);
+    public String getStringFromHash(String key, String hashKey) {
+        return (String) stringRedisTemplate.opsForHash().get(key, hashKey);
     }
 
     public void setValueToHash(String key, String hashKey, boolean power) {

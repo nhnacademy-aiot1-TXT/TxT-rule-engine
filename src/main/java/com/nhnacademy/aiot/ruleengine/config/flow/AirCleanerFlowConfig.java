@@ -28,7 +28,7 @@ public class AirCleanerFlowConfig {
         return IntegrationFlows.from(Constants.AIR_CLEANER_CHANNEL)
                                .filter(p -> deviceService.isAutoMode())
                                .transform(sensorService::convertStringToPayload)
-                               .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus()),
+                               .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(Constants.AIRCLEANER)),
                                        e -> e.discardFlow(airCleanerVacantOffFlow()))
                                .handle(Payload.class, (payload, headers) -> airCleanerService.setTimer(payload))
                                .filter(Payload.class, payload -> !airCleanerService.isTimerActive(payload),
@@ -36,7 +36,7 @@ public class AirCleanerFlowConfig {
                                                                       .nullChannel()))
                                .handle(Payload.class, (payload, headers) -> {
                                    double avg = airCleanerService.getAvg();
-                                   DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCLEANER_DEVICE_ID, Constants.AIRCLEANER_SENSOR_ID);
+                                   DeviceSensorResponse response = commonAdapter.getSensorByDeviceAndSensor(Constants.AIRCLEANER_DEVICE_ID, Constants.AIRCLEANER_SENSOR_ID);
 
                                    if (avg > response.getOnValue() && !deviceService.isAirCleanerPowered()) {
                                        messageService.sendDeviceMessage(Constants.AIRCLEANER, new ValueMessage(true));

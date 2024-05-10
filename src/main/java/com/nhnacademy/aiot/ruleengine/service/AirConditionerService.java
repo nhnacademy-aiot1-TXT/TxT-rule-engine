@@ -36,7 +36,7 @@ public class AirConditionerService {
     }
 
     public boolean isTimerActive(String key, Payload payload) {
-        return payload.getTime() - getTimer(key) <= 60000;
+        return payload.getTime() - getTimer(key) <= Constants.ONE_MINUTE;
     }
 
     public Payload saveForAutoMode(MessageHeaders headers, Payload payload) {

@@ -6,10 +6,7 @@ import com.nhnacademy.aiot.ruleengine.dto.DeviceSensorResponse;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
-import com.nhnacademy.aiot.ruleengine.service.AirConditionerService;
-import com.nhnacademy.aiot.ruleengine.service.DeviceService;
-import com.nhnacademy.aiot.ruleengine.service.MessageService;
-import com.nhnacademy.aiot.ruleengine.service.SensorService;
+import com.nhnacademy.aiot.ruleengine.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +27,7 @@ public class AirConditionerFlowConfig {
     private final SensorService sensorService;
     private final AirConditionerService airConditionerService;
     private final MessageService messageService;
+    private final OccupancyService occupancyService;
 
     @Bean
     public IntegrationFlow autoMode() {
@@ -71,13 +69,15 @@ public class AirConditionerFlowConfig {
                                    airConditionerService.deleteForAutoMode();
                                    return payload;
                                })
+                               .filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(Constants.AIRCONDITIONER)),
+                                       e -> e.discardFlow(airconditionerVacantOffFlow()))
                                .handle(Payload.class, (payload, headers) -> airConditionerService.setTimer(Constants.AIRCONDITIONER, payload))
                                .filter(Payload.class, payload -> !airConditionerService.isTimerActive(Constants.AIRCONDITIONER, payload),
                                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> airConditionerService.saveTemperature(payload))
                                                                       .nullChannel()))
                                .handle(Payload.class, (payload, headers) -> {
                                    double avg = airConditionerService.getAvg(Constants.TEMPERATURE);
-                                   DeviceSensorResponse response = commonAdapter.getOnOffValue(Constants.AIRCONDITIONER_DEVICE_ID, Constants.AIRCONDITIONER_SENSOR_ID);
+                                   DeviceSensorResponse response = commonAdapter.getSensorByDeviceAndSensor(Constants.AIRCONDITIONER_DEVICE_ID, Constants.AIRCONDITIONER_SENSOR_ID);
 
                                    if (avg > response.getOnValue() && !deviceService.isAirConditionerPowered()) {
                                        messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(true));
@@ -93,5 +93,16 @@ public class AirConditionerFlowConfig {
                                    return payload;
                                })
                                .nullChannel();
+    }
+
+    @Bean
+    public IntegrationFlow airconditionerVacantOffFlow() {
+        return flow ->
+                flow.handle(Payload.class, (payload, headers) -> {
+                    if (deviceService.isAirConditionerPowered()) {
+                        messageService.sendDeviceMessage(Constants.AIRCONDITIONER, new ValueMessage(false));
+                    }
+                    return payload;
+                }).nullChannel();
     }
 }

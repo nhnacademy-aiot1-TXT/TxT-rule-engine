@@ -24,7 +24,7 @@ public class IntrusionFlowConfig {
     public IntegrationFlow intrusionProcess() {
         return IntegrationFlows.from(Constants.INTRUSION_CHANNEL)
                                .transform(sensorService::convertStringToPayload)
-                               .filter(Payload.class, payload -> intrusionService.isAlertTimeActive(payload.getTime()))
+                               .filter(Payload.class, payload -> intrusionService.isAlertTimeActive(payload.getLocalTime()))
                                .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()))
                                .handle(Payload.class, (payload, headers) -> {
                                    messageService.sendIntrusionMessage(new ValueMessage(true));
