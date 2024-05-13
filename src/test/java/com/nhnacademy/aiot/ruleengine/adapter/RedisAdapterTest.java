@@ -1,220 +1,234 @@
 package com.nhnacademy.aiot.ruleengine.adapter;
 
-import com.nhnacademy.aiot.ruleengine.constants.Constants;
-import com.nhnacademy.aiot.ruleengine.exception.NosuchRedisListException;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class RedisAdapterTest {
-    private SensorService sensorServiceMock;
-    private RedisTemplate<String, Float> floatRedisTemplateMock;
-    private RedisTemplate<String, String> stringRedisTemplateMock;
-    private RedisTemplate<String, Double> doubleRedisTemplateMock;
-    private RedisTemplate<String, Long> longRedisTemplateMock;
+@ExtendWith(MockitoExtension.class)
+class RedisAdapterTest {
+    @Mock
+    private SensorService sensorService;
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+    @Mock
+    private ValueOperations<String, Object> valueOps;
+    @Mock
+    private ListOperations<String, Object> listOps;
+    @Mock
+    private HashOperations<String, Object, Object> hashOps;
     private RedisAdapter redisAdapter;
+    private final String testKey = "testKey";
+    private final String testHashKey = "testHashKey";
+    private final String testValue = "testValue";
+    private final Long testLong = 123L;
 
     @BeforeEach
-    public void setup() {
-        sensorServiceMock = mock(SensorService.class);
-        longRedisTemplateMock = mock(RedisTemplate.class);
-        floatRedisTemplateMock = mock(RedisTemplate.class);
-        stringRedisTemplateMock = mock(RedisTemplate.class);
-        doubleRedisTemplateMock = mock(RedisTemplate.class);
-        longRedisTemplateMock = mock(RedisTemplate.class);
-
-        redisAdapter = new RedisAdapter(
-                sensorServiceMock,
-                longRedisTemplateMock,
-                floatRedisTemplateMock,
-                stringRedisTemplateMock,
-                doubleRedisTemplateMock);
+    void setup() {
+        redisAdapter = new RedisAdapter(sensorService, redisTemplate);
     }
 
     @Test
-    public void testHasTimer() {
-        String key = "test";
-        when(stringRedisTemplateMock.hasKey(key)).thenReturn(true);
+    void hasKey() {
+        when(redisTemplate.hasKey(testKey)).thenReturn(true);
 
-        boolean actualResult = redisAdapter.hasTimer(key);
-        assertFalse(actualResult);
+        boolean result = redisAdapter.hasKey(testKey);
+
+        assertTrue(result);
     }
 
     @Test
-    public void testSetTimer() {
-        String key = "test";
-        Long time = 1000L;
+    void setValue() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        doNothing().when(valueOps).set(testKey, testValue);
 
-        ValueOperations<String, Long> valueOperationsMock = mock(ValueOperations.class);
-        when(longRedisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
+        redisAdapter.setValue(testKey, testValue);
 
-        redisAdapter.setTimer(key, time);
-
-        Mockito.verify(valueOperationsMock).set(key + Constants.TIMER, time);
+        verify(valueOps).set(testKey, testValue);
     }
 
     @Test
-    public void testGetAllDoubleList() {
-        String key = "test";
+    void testSetValue() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        doNothing().when(valueOps).set(testKey, testLong);
 
-        ListOperations<String, Double> listOperationsMock = mock(ListOperations.class);
+        redisAdapter.setValue(testKey, testLong);
 
-        when(doubleRedisTemplateMock.opsForList()).thenReturn(listOperationsMock);
-        when(listOperationsMock.range(key, 0, -1)).thenReturn(null);
-
-        Assertions.assertThrows(NosuchRedisListException.class, () -> {
-            redisAdapter.getAllDoubleList(key);
-        });
+        verify(valueOps).set(testKey, testLong);
     }
 
     @Test
-    public void testSaveFloatToList() {
-        String key = "test";
-        String value = "1.0f";
+    void getLongValue() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(valueOps.get(testKey)).thenReturn(testLong);
 
-        ListOperations<String, Float> listOperationsMock = mock(ListOperations.class);
+        Long result = redisAdapter.getLongValue(testKey);
 
-        when(floatRedisTemplateMock.opsForList()).thenReturn(listOperationsMock);
-        when(sensorServiceMock.parseToFloatValue(value)).thenReturn(1.0f);
-
-        redisAdapter.saveFloatToList(key, value);
-
-        Mockito.verify(listOperationsMock).rightPush(key, 1.0f);
+        assertEquals(testLong, result);
     }
 
     @Test
-    public void testDelete() {
-        String key = "test";
+    void getStringValue() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(valueOps.get(testKey)).thenReturn(testValue);
 
-        redisAdapter.delete(key);
+        String result = redisAdapter.getStringValue(testKey);
 
-        Mockito.verify(stringRedisTemplateMock).delete(key);
+        assertEquals(testValue, result);
     }
 
     @Test
-    public void testSaveStringToList() {
-        String key = "test";
-        String value = "value";
+    void getBooleanValue() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOps);
+        when(valueOps.get(testKey)).thenReturn("true");
 
-        ListOperations<String, String> listOperationsMock = mock(ListOperations.class);
-        when(stringRedisTemplateMock.opsForList()).thenReturn(listOperationsMock);
+        boolean result = redisAdapter.getBooleanValue(testKey);
 
-        redisAdapter.saveStringToList(key, value);
-
-        Mockito.verify(listOperationsMock).rightPush(key, value);
+        assertTrue(result);
     }
 
     @Test
-    public void testGetLastLong() {
-        String key = "test";
-        Long value = 100L;
+    void saveFloatToList() {
+        when(sensorService.parseToFloatValue(testValue)).thenReturn(123f);
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+        when(listOps.rightPush(testKey, 123f)).thenReturn(testLong);
 
-        ListOperations<String, Long> listOperationsMock = mock(ListOperations.class);
-        when(longRedisTemplateMock.opsForList()).thenReturn(listOperationsMock);
-        when(listOperationsMock.rightPop(key)).thenReturn(value);
+        redisAdapter.saveFloatToList(testKey, testValue);
 
-        Long result = redisAdapter.getLastLong(key);
-
-        Mockito.verify(listOperationsMock).rightPop(key);
-        assertEquals(value, result);
+        verify(sensorService).parseToFloatValue(testValue);
+        verify(listOps).rightPush(testKey, 123.0f);
     }
 
     @Test
-    public void testDeleteListWithPrefix() {
-        String prefix = "test*";
+    void saveStringToList() {
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+        when(listOps.rightPush(testKey, testValue)).thenReturn(testLong);
 
-        Set<String> keys = new HashSet<>();
-        keys.add("testKey1");
-        keys.add("testKey2");
+        redisAdapter.saveStringToList(testKey, testValue);
 
-        when(stringRedisTemplateMock.keys(prefix + "*")).thenReturn(keys);
-
-        redisAdapter.deleteListWithPrefix(prefix);
-
-        Mockito.verify(stringRedisTemplateMock).delete(keys);
+        verify(listOps).rightPush(testKey, testValue);
     }
 
     @Test
-    public void testIsDevicePowered() {
-        String deviceName = "device";
-        String powerStatus = "true";
+    void saveLongToList() {
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+        when(listOps.rightPush(testKey, testLong)).thenReturn(testLong);
 
-        HashOperations opsForHashMock = mock(HashOperations.class);
-        when(stringRedisTemplateMock.opsForHash()).thenReturn(opsForHashMock);
-        when(opsForHashMock.get("device_power_status", deviceName)).thenReturn(powerStatus);
+        redisAdapter.saveLongToList(testKey, testLong);
 
-        boolean isPowered = redisAdapter.isDevicePowered(deviceName);
-
-        assertTrue(isPowered);
+        verify(listOps).rightPush(testKey, testLong);
     }
 
     @Test
-    public void testSetDevicePower() {
-        String deviceName = "device";
-        boolean power = true;
+    void getAllDoubleList() {
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+        when(listOps.range((testKey), 0, -1)).thenReturn(List.of(18.0, 25.0, 23.2));
 
-        HashOperations opsForHashMock = mock(HashOperations.class);
-        when(stringRedisTemplateMock.opsForHash()).thenReturn(opsForHashMock);
+        List<Double> list = redisAdapter.getAllDoubleList(testKey);
 
-        redisAdapter.setDevicePower(deviceName, power);
-
-
-        Mockito.verify(opsForHashMock).put("device_power_status", deviceName, String.valueOf(power));
+        assertEquals(3, list.size());
     }
 
     @Test
-    public void testIsDeviceAutoMode() {
-        String deviceName = "device";
-        ValueOperations stringOpsMock = mock(ValueOperations.class);
+    void getAllStringList() {
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+        when(listOps.range((testKey), 0, -1)).thenReturn(List.of("a", "b"));
 
-        when(stringRedisTemplateMock.opsForValue()).thenReturn(stringOpsMock);
-        when(stringOpsMock.get("auto_mode:" + deviceName)).thenReturn("true");
+        List<String> list = redisAdapter.getAllStringList(testKey);
 
-        boolean isAutoMode = redisAdapter.isDeviceAutoMode(deviceName);
-
-        assertTrue(isAutoMode);
-        verify(stringRedisTemplateMock.opsForValue(), times(1)).get("auto_mode:" + deviceName);
+        assertEquals(2, list.size());
     }
 
     @Test
-    public void testSaveHashes() {
-        String key = "key";
-        String hashKey = "hashKey";
-        String value = "value";
+    void getLastLongValue() {
+        when(redisTemplate.opsForList()).thenReturn(listOps);
+        when(listOps.rightPop(testKey)).thenReturn(123.0);
 
-        HashOperations opsForHashMock = mock(HashOperations.class);
-        when(floatRedisTemplateMock.opsForHash()).thenReturn(opsForHashMock);
+        Long result = redisAdapter.getLastLongValue(testKey);
 
-        redisAdapter.saveHashes(key, hashKey, value);
-
-        verify(floatRedisTemplateMock.opsForHash(), times(1)).put(key, hashKey, value);
+        assertEquals(testLong, result);
     }
 
     @Test
-    public void testGetDoubleHashes() {
-        String key = "key";
-        String hashKey = "hashKey";
-        Double expectedValue = 123.45;
+    void delete() {
+        when(redisTemplate.delete(testKey)).thenReturn(true);
 
-        HashOperations opsForHashMock = mock(HashOperations.class);
-        when(floatRedisTemplateMock.opsForHash()).thenReturn(opsForHashMock);
-        when(floatRedisTemplateMock.opsForHash().get(key, hashKey)).thenReturn(expectedValue);
+        redisAdapter.delete(testKey);
 
-        Double actualValue = redisAdapter.getDoubleHashes(key, hashKey);
+        verify(redisTemplate).delete(testKey);
+    }
 
-        assertEquals(expectedValue, actualValue);
-        verify(floatRedisTemplateMock.opsForHash(), times(1)).get(key, hashKey);
+    @Test
+    void deleteListWithPrefix() {
+        when(redisTemplate.keys(testKey + "*")).thenReturn(Set.of("testKey1", "testKey2", "testKey3"));
+        when(redisTemplate.delete(anyCollection())).thenReturn(testLong);
+
+        redisAdapter.deleteListWithPrefix(testKey);
+
+        verify(redisTemplate).keys(testKey + "*");
+        verify(redisTemplate).delete(anyCollection());
+    }
+
+    @Test
+    void getBooleanFromHash() {
+        when(redisTemplate.opsForHash()).thenReturn(hashOps);
+        when(hashOps.get(testKey, testHashKey)).thenReturn("true");
+
+        boolean result = redisAdapter.getBooleanFromHash(testKey, testHashKey);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void getDoubleFromHash() {
+        when(redisTemplate.opsForHash()).thenReturn(hashOps);
+        when(hashOps.get(testKey, testHashKey)).thenReturn(123.0);
+
+        Double result = redisAdapter.getDoubleFromHash(testKey, testHashKey);
+
+        assertEquals(123d, result);
+    }
+
+    @Test
+    void getStringFromHash() {
+        when(redisTemplate.opsForHash()).thenReturn(hashOps);
+        when(hashOps.get(testKey, testHashKey)).thenReturn(testValue);
+
+        String result = redisAdapter.getStringFromHash(testKey, testHashKey);
+
+        assertEquals(testValue, result);
+    }
+
+    @Test
+    void setValueToHash() {
+        when(redisTemplate.opsForHash()).thenReturn(hashOps);
+        doNothing().when(hashOps).put(testKey, testHashKey, "true");
+
+        redisAdapter.setValueToHash(testKey, testHashKey, true);
+
+        verify(hashOps).put(testKey, testHashKey, "true");
+    }
+
+    @Test
+    void setValueToHashTest() {
+        when(redisTemplate.opsForHash()).thenReturn(hashOps);
+        doNothing().when(hashOps).put(testKey, testHashKey, testValue);
+
+        redisAdapter.setValueToHash(testKey, testHashKey, testValue);
+
+        verify(hashOps).put(testKey, testHashKey, testValue);
     }
 }

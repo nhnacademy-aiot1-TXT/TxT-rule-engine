@@ -6,41 +6,36 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
-public class DoorayMessageSenderTest {
+@SpringJUnitConfig(classes = DoorayMessageSender.class)
+class DoorayMessageSenderTest {
 
-    @Mock
+    @MockBean
     private DoorayHookSender doorayHookSender;
-
     @Captor
     private ArgumentCaptor<DoorayHook> doorayHookArgumentCaptor;
-
     private DoorayMessageSender doorayMessageSender;
 
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
         doorayMessageSender = new DoorayMessageSender(doorayHookSender);
     }
 
     @Test
-    public void send_SendsMessageWithBotNameAndText_WhenCalled() {
+    void send_SendsMessageWithBotNameAndText_WhenCalled() {
         String botName = "bot";
         String message = "message";
+        doNothing().when(doorayHookSender).send(any(DoorayHook.class));
 
         doorayMessageSender.send(botName, message);
 
-        verify(doorayHookSender, times(1)).send(doorayHookArgumentCaptor.capture());
-
-        DoorayHook sentHook = doorayHookArgumentCaptor.getValue();
-
-        assertEquals(botName, sentHook.getBotName());
-        assertEquals(message, sentHook.getText());
+        verify(doorayHookSender).send(doorayHookArgumentCaptor.capture());
+        assertEquals(botName, doorayHookArgumentCaptor.getValue().getBotName());
+        assertEquals(message, doorayHookArgumentCaptor.getValue().getText());
     }
 }

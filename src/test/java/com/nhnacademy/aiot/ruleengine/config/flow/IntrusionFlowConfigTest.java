@@ -1,6 +1,7 @@
 package com.nhnacademy.aiot.ruleengine.config.flow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.service.IntrusionService;
 import com.nhnacademy.aiot.ruleengine.service.MessageService;
@@ -48,7 +49,7 @@ class IntrusionFlowConfigTest {
         if (!flowContext.getRegistry().containsKey("intrusionProcess")) {
             flowContext.registration(intrusionProcess).id("intrusionProcess").register();
         }
-        doNothing().when(messageService).sendIntrusionMessage(any(ValueMessage.class));
+        doNothing().when(messageService).sendDeviceMessage(anyString(), any(ValueMessage.class));
     }
 
     @Test
@@ -60,7 +61,7 @@ class IntrusionFlowConfigTest {
         intrusionChannel.send(occupied);
         intrusionChannel.send(vacant);
 
-        verify(messageService, never()).sendIntrusionMessage(any(ValueMessage.class));
+        verify(messageService, never()).sendDeviceMessage(eq(Constants.INTRUSION), any(ValueMessage.class));
     }
 
     @Test
@@ -73,7 +74,7 @@ class IntrusionFlowConfigTest {
         intrusionChannel.send(occupied);
         intrusionChannel.send(vacant);
 
-        verify(messageService).sendIntrusionMessage(captor.capture());
+        verify(messageService).sendDeviceMessage(eq(Constants.INTRUSION), captor.capture());
         assertTrue((Boolean) captor.getValue().getValue());
     }
 
