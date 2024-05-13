@@ -1,5 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.listener;
 
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.send.MessageSender;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,6 @@ public class ServerClosedMessageSender implements ApplicationListener<ContextClo
 
     @Override
     public void onApplicationEvent(@NotNull ContextClosedEvent event) {
-        messageSender.send("RuleEngine", "룰엔진 서버가 종료되었습니다.");
+        messageSender.send(Constants.RULE_ENGINE, Constants.RULE_ENGINE_STOP_MESSAGE);
     }
 }

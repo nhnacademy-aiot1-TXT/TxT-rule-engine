@@ -36,7 +36,7 @@ public class AirCleanerService {
 
     public Double getAvg() {
         List<Double> list = redisAdapter.getAllDoubleList(Constants.VOC);
-        return list.stream().mapToDouble(value -> value).average().getAsDouble();
+        return list.stream().mapToDouble(value -> value).average().orElseThrow();
     }
 
     public void deleteListAndTimer() {

@@ -7,21 +7,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.CRITICAL_LEVEL;
+import static com.nhnacademy.aiot.ruleengine.constants.Constants.LOW_LEVEL;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BatteryLevelService {
-    public static final int LOW_LEVEL = 20;
-    public static final int CRITICAL_LEVEL = 10;
-
     private final RedisAdapter redisAdapter;
 
     public void setBatteryStatus(String deviceId, String status) {
-        redisAdapter.setBatteryStatus(deviceId, status);
+        redisAdapter.setValue("battery_status:" + deviceId, status);
     }
 
     public String getBatteryStatus(String deviceId) {
-        return redisAdapter.getBatteryStatus(deviceId);
+        return redisAdapter.getStringValue("battery_status:" + deviceId);
     }
 
     public boolean isLowLevel(Payload payload) {

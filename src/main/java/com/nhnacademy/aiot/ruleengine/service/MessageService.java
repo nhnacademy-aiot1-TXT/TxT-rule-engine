@@ -1,8 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
-import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
-import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
@@ -19,7 +17,6 @@ import java.util.Map;
 @Service
 public class MessageService {
 
-
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
 
@@ -32,16 +29,12 @@ public class MessageService {
         rabbitTemplate.convertAndSend(exchangeSensorName, "txt.predict", message);
     }
 
-    public void sendDeviceMessage(String measurement, ValueMessage message) {
-        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
+    public void sendDeviceMessage(String deviceName, ValueMessage message) {
+        rabbitTemplate.convertAndSend(exchangeName, "txt." + deviceName, message);
     }
 
     public void sendSensorMessage(String measurement, DetailMessage message) {
         rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
-    }
-
-    public void sendIntrusionMessage(ValueMessage message) {
-        rabbitTemplate.convertAndSend(exchangeName, "txt.intrusion", message);
     }
 
     public void injectPredictMessage(Map<String, Object> avg, PredictMessage predictMessage) {

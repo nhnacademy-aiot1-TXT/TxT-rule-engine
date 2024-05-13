@@ -27,7 +27,7 @@ public class IntrusionFlowConfig {
                                .filter(Payload.class, payload -> intrusionService.isAlertTimeActive(payload.getLocalTime()))
                                .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()))
                                .handle(Payload.class, (payload, headers) -> {
-                                   messageService.sendIntrusionMessage(new ValueMessage(true));
+                                   messageService.sendDeviceMessage(Constants.INTRUSION, new ValueMessage(true));
                                    return payload;
                                }).nullChannel();
     }

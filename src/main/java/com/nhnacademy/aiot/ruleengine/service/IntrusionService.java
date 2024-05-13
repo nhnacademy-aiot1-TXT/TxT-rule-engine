@@ -20,17 +20,17 @@ public class IntrusionService {
         LocalTime end = response.getEnd();
 
 
-        // e.g., 0시 ~ 6시
+        // e.g. 0시 ~ 6시
         if (start.isBefore(end)) {
             return (start.isBefore(localTime) || start.equals(localTime)) && localTime.isBefore(end);
         }
 
-        // e.g., 22시 ~ 6시
+        // e.g. 22시 ~ 6시
         if (start.isAfter(end)) {
             return (start.isBefore(localTime) || start.equals(localTime)) || localTime.isBefore(end);
         }
 
-        // e.g., 22시 ~ 22시
+        // e.g. 22시 ~ 22시
         return start.equals(localTime);
     }
 }

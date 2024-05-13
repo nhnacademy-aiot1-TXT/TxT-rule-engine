@@ -27,7 +27,7 @@ public class AirConditionerService {
         return payload;
     }
 
-    public boolean isIndoorTempMsg(Message message) {
+    public boolean isIndoorTempMsg(Message<String> message) {
         String topic = message.getHeaders().get(Constants.MQTT_RECEIVED_TOPIC, String.class);
         if (topic == null) {
             return false;
@@ -50,7 +50,7 @@ public class AirConditionerService {
             redisAdapter.saveLongToList(Constants.AIRCONDITIONER + ":" + Constants.TIME + ":" + measurement, payload.getTime());
         }
         if (Constants.OUTDOOR.equals(place)) {
-            redisAdapter.setHashes(Constants.PREVIOUS_OUTDOOR, measurement, payload.getValue());
+            redisAdapter.setValueToHash(Constants.PREVIOUS_OUTDOOR, measurement, payload.getValue());
         }
 
         return payload;
@@ -90,7 +90,7 @@ public class AirConditionerService {
 
     public Double getAvg(String key) {
         List<Double> list = redisAdapter.getAllDoubleList(key);
-        return list.stream().mapToDouble(value -> value).average().getAsDouble();
+        return list.stream().mapToDouble(value -> value).average().orElseThrow();
     }
 
     private Long getTimer(String key) {

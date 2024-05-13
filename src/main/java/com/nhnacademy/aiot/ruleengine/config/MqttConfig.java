@@ -1,5 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.config;
 
+import com.influxdb.exceptions.InfluxException;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.send.MessageSender;
 import com.nhnacademy.aiot.ruleengine.service.InfluxService;
@@ -14,10 +15,6 @@ import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannel
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-
-import static com.nhnacademy.aiot.ruleengine.constants.Constants.LAST_INFLUXDB_STATE;
-import static com.nhnacademy.aiot.ruleengine.constants.Constants.checkInfluxDBAvailable;
-
 
 /**
  * MQTT와 관련된 설정을 정의하는 클래스
@@ -137,7 +134,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer batteryLevelInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.TXT_MQTT, "rule-engine-battery1",
-                "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+                                                                        "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setOutputChannel(batteryLevelChannel());
         return adapter;
     }
@@ -148,7 +145,7 @@ public class MqttConfig {
     @Bean
     public MessageProducer batteryLevelInbound2() {
         MqttPahoMessageDrivenChannelAdapter adapter = createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-battery2",
-                "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+                                                                        "data/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
         adapter.setOutputChannel(batteryLevelChannel());
         return adapter;
     }
@@ -171,13 +168,12 @@ public class MqttConfig {
     @ServiceActivator(inputChannel = "influxInputChannel")
     public MessageHandler handler() {
         return message -> {
-            String payload = message.getPayload().toString();
-            if (checkInfluxDBAvailable()) {
-                LAST_INFLUXDB_STATE = true;
+            try {
+                String payload = message.getPayload().toString();
                 influxService.save(message.getHeaders(), payload);
-            } else if (LAST_INFLUXDB_STATE) {
-                messageSender.send("influxDB", "비상!!!!!! InfluxDB 서버가 터졌습니다 비상 !!!!!!!");
-                LAST_INFLUXDB_STATE = false;
+            } catch (InfluxException e) {
+                log.debug("InfluxDB에 데이터 저장 과정 중 예외 발생:" + System.lineSeparator() + e);
+                messageSender.send(Constants.INFLUX_DB, Constants.INFLUX_SAVE_ERROR_MESSAGE);
             }
         };
     }

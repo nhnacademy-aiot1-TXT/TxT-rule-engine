@@ -50,7 +50,7 @@ public class OccupancyService {
     }
 
     public Payload updateOccupancy(Payload payload, String deviceName) {
-        redisAdapter.setHashes(Constants.OCCUPANCY + Constants.STATUS, deviceName, isOcucpied(deviceName + Constants.OCCUPANCY_LABEL));
+        redisAdapter.setValueToHash(Constants.OCCUPANCY + Constants.STATUS, deviceName, isOccupied(deviceName + Constants.OCCUPANCY_LABEL));
         redisAdapter.delete(deviceName + Constants.OCCUPANCY_LABEL);
         redisAdapter.delete(deviceName + Constants.OCCUPANCY_LABEL + Constants.TIMER);
         return payload;
@@ -60,7 +60,7 @@ public class OccupancyService {
         return redisAdapter.getStringFromHash(Constants.OCCUPANCY + Constants.STATUS, deviceName);
     }
 
-    private String isOcucpied(String key) {
+    private String isOccupied(String key) {
         List<String> list = redisAdapter.getAllStringList(key);
         return Collections.frequency(list, Constants.OCCUPIED) >= Collections.frequency(list, Constants.VACANT) ?
                 Constants.OCCUPIED : Constants.VACANT;
