@@ -1,80 +1,91 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
 import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
 
-@SpringBootTest
-public class DeviceServiceTest {
+@SpringJUnitConfig(classes = DeviceService.class)
+class DeviceServiceTest {
 
     @MockBean
     private RedisAdapter redisAdapter;
+    private DeviceService deviceService;
+
+    @BeforeEach
+    void setUp() {
+        deviceService = new DeviceService(redisAdapter);
+    }
 
     @Test
-    public void testIsAirConditionerPowered() {
-        Mockito.when(redisAdapter.isDevicePowered("airconditioner")).thenReturn(true);
+    void testIsAirConditionerPowered() {
+        Mockito.when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER))
+               .thenReturn(true);
 
-        DeviceService deviceService = new DeviceService(redisAdapter);
         boolean result = deviceService.isAirConditionerPowered();
 
-        assertThat(result).isEqualTo(true);
+        assertTrue(result);
     }
 
     @Test
-    public void testIsAirCleanerPowered() {
-        Mockito.when(redisAdapter.isDevicePowered("aircleaner")).thenReturn(false);
+    void testIsAirCleanerPowered() {
+        Mockito.when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCLEANER))
+               .thenReturn(false);
 
-        DeviceService deviceService = new DeviceService(redisAdapter);
         boolean result = deviceService.isAirCleanerPowered();
 
-        assertThat(result).isEqualTo(false);
+        assertFalse(result);
     }
 
     @Test
-    public void testIsLightPowered() {
-        Mockito.when(redisAdapter.isDevicePowered("light")).thenReturn(true);
+    void testIsLightPowered() {
+        Mockito.when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT)).thenReturn(true);
 
-        DeviceService deviceService = new DeviceService(redisAdapter);
         boolean result = deviceService.isLightPowered();
 
-        assertThat(result).isEqualTo(true);
+        assertTrue(result);
     }
 
     @Test
-    public void testSetAirConditionerPower() {
-        DeviceService deviceService = new DeviceService(redisAdapter);
+    void testSetAirConditionerPower() {
+        doNothing().when(redisAdapter).setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER, true);
+
         deviceService.setAirConditionerPower(true);
 
-        Mockito.verify(redisAdapter, Mockito.times(1)).setDevicePower("airconditioner", true);
+        Mockito.verify(redisAdapter).setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER, true);
     }
 
     @Test
-    public void testSetAirCleanerPower() {
-        DeviceService deviceService = new DeviceService(redisAdapter);
+    void testSetAirCleanerPower() {
+        doNothing().when(redisAdapter).setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCLEANER, false);
+
         deviceService.setAirCleanerPower(false);
 
-        Mockito.verify(redisAdapter, Mockito.times(1)).setDevicePower("aircleaner", false);
+        Mockito.verify(redisAdapter).setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCLEANER, false);
     }
 
     @Test
-    public void testSetLightPower() {
-        DeviceService deviceService = new DeviceService(redisAdapter);
+    void testSetLightPower() {
+        doNothing().when(redisAdapter).setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT, true);
+
         deviceService.setLightPower(true);
 
-        Mockito.verify(redisAdapter, Mockito.times(1)).setDevicePower("light", true);
+        Mockito.verify(redisAdapter).setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT, true);
     }
 
     @Test
-    public void testIsAirConditionerAutoMode() {
-        Mockito.when(redisAdapter.isDeviceAutoMode("airconditioner")).thenReturn(true);
+    void testIsAutoMode() {
+        Mockito.when(redisAdapter.getBooleanValue(Constants.AUTO_MODE)).thenReturn(true);
 
-        DeviceService deviceService = new DeviceService(redisAdapter);
-        boolean result = deviceService.isAirConditionerAutoMode();
+        boolean result = deviceService.isAutoMode();
 
-        assertThat(result).isEqualTo(true);
+        assertTrue(result);
     }
 }

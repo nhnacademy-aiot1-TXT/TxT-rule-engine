@@ -1,7 +1,5 @@
 package com.nhnacademy.aiot.ruleengine.adapter;
 
-import com.nhnacademy.aiot.ruleengine.constants.Constants;
-import com.nhnacademy.aiot.ruleengine.exception.NosuchRedisListException;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -9,98 +7,93 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class RedisAdapter {
 
     private final SensorService sensorService;
-    private final RedisTemplate<String, Long> longRedisTemplate;
-    private final RedisTemplate<String, Float> floatRedisTemplate;
-    private final RedisTemplate<String, String> stringRedisTemplate;
-    private final RedisTemplate<String, Double> doubleRedisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public boolean hasTimer(String key) {
-        return Boolean.TRUE.equals(stringRedisTemplate.hasKey(key + Constants.TIMER));
+    public boolean hasKey(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
-    public void setTimer(String key, Long time) {
-        longRedisTemplate.opsForValue().set(key + Constants.TIMER, time);
+    public void setValue(String key, Long value) {
+        redisTemplate.opsForValue().set(key, value);
     }
 
-    public Long getTimer(String key) {
-        return longRedisTemplate.opsForValue().get(key + Constants.TIMER);
+    public void setValue(String key, String value) {
+        redisTemplate.opsForValue().set(key, value);
+    }
+
+    public Long getLongValue(String key) {
+        return (Long) redisTemplate.opsForValue().get(key);
+    }
+
+    public String getStringValue(String key) {
+        return (String) redisTemplate.opsForValue().get(key);
+    }
+
+    public boolean getBooleanValue(String key) {
+        return Boolean.parseBoolean((String) redisTemplate.opsForValue().get(key));
     }
 
     public void saveFloatToList(String key, String value) {
-        floatRedisTemplate.opsForList().rightPush(key, sensorService.parseToFloatValue(value));
+        redisTemplate.opsForList().rightPush(key, sensorService.parseToFloatValue(value));
     }
 
     public void saveStringToList(String key, String value) {
-        stringRedisTemplate.opsForList().rightPush(key, value);
+        redisTemplate.opsForList().rightPush(key, value);
     }
 
     public void saveLongToList(String key, Long value) {
-        longRedisTemplate.opsForList().rightPush(key, value);
-    }
-
-    public String getStatus(String key) {
-        return String.valueOf(stringRedisTemplate.opsForValue().get(key + Constants.STATUS));
-    }
-
-    public void setStatus(String key, String value) {
-        stringRedisTemplate.opsForValue().set(key + Constants.STATUS, value);
+        redisTemplate.opsForList().rightPush(key, value);
     }
 
     public List<Double> getAllDoubleList(String key) {
-        List<Double> list = doubleRedisTemplate.opsForList().range(key, 0, -1);
-        if (list != null) {
-            return list;
-        }
-        throw new NosuchRedisListException();
-    }
-
-    public Long getLastLong(String key) {
-        return longRedisTemplate.opsForList().rightPop(key);
+        return Objects.requireNonNull(redisTemplate.opsForList().range(key, 0, -1)).stream()
+                      .mapToDouble(value -> Double.parseDouble(value.toString()))
+                      .boxed()
+                      .collect(Collectors.toList());
     }
 
     public List<String> getAllStringList(String key) {
-        List<String> list = stringRedisTemplate.opsForList().range(key, 0, -1);
-        if (list != null) {
-            return list;
-        }
-        throw new NosuchRedisListException();
+        return Objects.requireNonNull(redisTemplate.opsForList().range(key, 0, -1)).stream()
+                      .map(Object::toString)
+                      .collect(Collectors.toList());
+    }
+
+    public Long getLastLongValue(String key) {
+        return ((Double) Objects.requireNonNull(redisTemplate.opsForList().rightPop(key))).longValue();
     }
 
     public void delete(String key) {
-        stringRedisTemplate.delete(key);
-    }
-
-    public void deleteTimer(String key) {
-        longRedisTemplate.delete(key + Constants.TIMER);
+        redisTemplate.delete(key);
     }
 
     public void deleteListWithPrefix(String prefix) {
-        stringRedisTemplate.delete(Objects.requireNonNull(stringRedisTemplate.keys(prefix + "*")));
+        redisTemplate.delete(Objects.requireNonNull(redisTemplate.keys(prefix + "*")));
     }
 
-    public boolean isDevicePowered(String deviceName) {
-        return Boolean.parseBoolean((String) stringRedisTemplate.opsForHash().get("device_power_status", deviceName));
+    public boolean getBooleanFromHash(String key, String hashKey) {
+        return Boolean.parseBoolean((String) redisTemplate.opsForHash().get(key, hashKey));
     }
 
-    public void setDevicePower(String deviceName, boolean power) {
-        stringRedisTemplate.opsForHash().put("device_power_status", deviceName, String.valueOf(power));
+    public Double getDoubleFromHash(String key, String hashKey) {
+        return (Double) redisTemplate.opsForHash().get(key, hashKey);
     }
 
-    public boolean isDeviceAutoMode(String deviceName) {
-        return Boolean.parseBoolean(stringRedisTemplate.opsForValue().get("auto_mode:" + deviceName));
+    public String getStringFromHash(String key, String hashKey) {
+        return (String) redisTemplate.opsForHash().get(key, hashKey);
     }
 
-    public void saveHashes(String key, String hashkey, String value) {
-        floatRedisTemplate.opsForHash().put(key, hashkey, value);
+    public void setValueToHash(String key, String hashKey, boolean power) {
+        redisTemplate.opsForHash().put(key, hashKey, String.valueOf(power));
     }
 
-    public Double getDoubleHashes(String key, String hashkey) {
-        return (Double) floatRedisTemplate.opsForHash().get(key, hashkey);
+    public void setValueToHash(String key, String hashKey, String value) {
+        redisTemplate.opsForHash().put(key, hashKey, value);
     }
 }

@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DeviceSensorResponse {
-    private String sensorName;
-    private Float onValue;
-    private Float offValue;
+public class DeviceResponse {
+    Long deviceId;
+    String deviceName;
+    LocalTime cycle;
 }
