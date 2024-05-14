@@ -1,5 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.listener;
 
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.send.MessageSender;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,6 @@ public class ServerOpenListener implements ApplicationListener<ApplicationReadyE
         String activeProfile = event.getApplicationContext().getEnvironment().getActiveProfiles()[0];
 
         if (!activeProfile.equals("test"))
-            messageSender.send("Rule-Engine", "룰 엔진 서버가 시작되었습니다. = " + activeProfile);
+            messageSender.send(Constants.RULE_ENGINE, Constants.RULE_ENGINE_OPEN_MESSAGE);
     }
 }

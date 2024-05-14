@@ -15,6 +15,10 @@ public class ServerClosedListener implements ApplicationListener<ContextClosedEv
 
     @Override
     public void onApplicationEvent(@NotNull ContextClosedEvent event) {
-        messageSender.send(Constants.RULE_ENGINE, Constants.RULE_ENGINE_STOP_MESSAGE);
+        String activeProfile = event.getApplicationContext().getEnvironment().getActiveProfiles()[0];
+
+        if (!activeProfile.equals("test")) {
+            messageSender.send(Constants.RULE_ENGINE, Constants.RULE_ENGINE_STOP_MESSAGE);
+        }
     }
 }
