@@ -7,7 +7,6 @@ import com.nhnacademy.aiot.ruleengine.dto.DeviceSensorResponse;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.service.*;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -62,11 +61,12 @@ class AirCleanerFlowConfigTest {
         }
         doNothing().when(messageService).sendDeviceMessage(anyString(), any(ValueMessage.class));
         message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"600\"}");
+        when(deviceService.isAutoMode()).thenReturn(true);
     }
 
     @Test
     void vacantStatus() {
-        when(occupancyService.getOccupancyStatus()).thenReturn(Constants.VACANT);
+        when(occupancyService.getOccupancyStatus(Constants.AIRCLEANER)).thenReturn(Constants.VACANT);
         when(deviceService.isAirCleanerPowered()).thenReturn(true);
         ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 
@@ -78,7 +78,7 @@ class AirCleanerFlowConfigTest {
 
     @Test
     void timerActive() {
-        when(occupancyService.getOccupancyStatus()).thenReturn(Constants.OCCUPIED);
+        when(occupancyService.getOccupancyStatus(Constants.AIRCLEANER)).thenReturn(Constants.OCCUPIED);
         when(airCleanerService.setTimer(any(Payload.class))).then(returnsFirstArg());
         when(airCleanerService.isTimerActive(any(Payload.class))).thenReturn(true);
         when(airCleanerService.saveVoc(any(Payload.class))).then(returnsFirstArg());
@@ -90,11 +90,11 @@ class AirCleanerFlowConfigTest {
 
     @Test
     void timerEndPowerOn() {
-        when(occupancyService.getOccupancyStatus()).thenReturn(Constants.OCCUPIED);
+        when(occupancyService.getOccupancyStatus(Constants.AIRCLEANER)).thenReturn(Constants.OCCUPIED);
         when(airCleanerService.setTimer(any(Payload.class))).then(returnsFirstArg());
         when(airCleanerService.isTimerActive(any(Payload.class))).thenReturn(false);
         when(airCleanerService.getAvg()).thenReturn(600D);
-        when(commonAdapter.getOnOffValue(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airCleaner", 300f, 500f));
+        when(commonAdapter.getSensorByDeviceAndSensor(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airCleaner", 300f, 500f));
         when(deviceService.isAirCleanerPowered()).thenReturn(false);
         doNothing().when(deviceService).setAirCleanerPower(anyBoolean());
         ArgumentCaptor<Boolean> captor = forClass(Boolean.class);
@@ -111,11 +111,11 @@ class AirCleanerFlowConfigTest {
 
     @Test
     void timerEndPowerOff() {
-        when(occupancyService.getOccupancyStatus()).thenReturn(Constants.OCCUPIED);
+        when(occupancyService.getOccupancyStatus(Constants.AIRCLEANER)).thenReturn(Constants.OCCUPIED);
         when(airCleanerService.setTimer(any(Payload.class))).then(returnsFirstArg());
         when(airCleanerService.isTimerActive(any(Payload.class))).thenReturn(false);
         when(airCleanerService.getAvg()).thenReturn(200D);
-        when(commonAdapter.getOnOffValue(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airCleaner", 300f, 500f));
+        when(commonAdapter.getSensorByDeviceAndSensor(anyLong(), anyLong())).thenReturn(new DeviceSensorResponse("airCleaner", 300f, 500f));
         when(deviceService.isAirCleanerPowered()).thenReturn(true);
         doNothing().when(deviceService).setAirCleanerPower(anyBoolean());
         ArgumentCaptor<Boolean> captor = forClass(Boolean.class);
@@ -132,7 +132,6 @@ class AirCleanerFlowConfigTest {
 
 
     @Configuration
-    @RequiredArgsConstructor
     static class TestConfig {
         @Bean
         MessageChannel airCleanerChannel() {

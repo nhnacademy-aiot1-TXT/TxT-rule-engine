@@ -1,39 +1,41 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
 import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class DeviceService {
+
     private final RedisAdapter redisAdapter;
 
     public boolean isAirConditionerPowered() {
-        return redisAdapter.isDevicePowered("airconditioner");
+        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER);
     }
 
     public boolean isAirCleanerPowered() {
-        return redisAdapter.isDevicePowered("aircleaner");
+        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCLEANER);
     }
 
     public boolean isLightPowered() {
-        return redisAdapter.isDevicePowered("light");
+        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT);
     }
 
     public void setAirConditionerPower(boolean power) {
-        redisAdapter.setDevicePower("airconditioner", power);
+        redisAdapter.setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER, power);
     }
 
     public void setAirCleanerPower(boolean power) {
-        redisAdapter.setDevicePower("aircleaner", power);
+        redisAdapter.setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCLEANER, power);
     }
 
     public void setLightPower(boolean power) {
-        redisAdapter.setDevicePower("light", power);
+        redisAdapter.setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT, power);
     }
 
-    public boolean isAirConditionerAutoMode() {
-        return redisAdapter.isDeviceAutoMode("airconditioner");
+    public boolean isAutoMode() {
+        return redisAdapter.getBooleanValue(Constants.AUTO_MODE);
     }
 }

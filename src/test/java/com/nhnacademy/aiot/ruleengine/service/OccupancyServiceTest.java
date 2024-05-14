@@ -1,105 +1,112 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
+import com.nhnacademy.aiot.ruleengine.adapter.CommonAdapter;
 import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-public class OccupancyServiceTest {
 
+@SpringJUnitConfig(classes = OccupancyService.class)
+class OccupancyServiceTest {
+
+    public static final String TEST = "test";
     @MockBean
     private RedisAdapter redisAdapter;
+    @MockBean
+    private CommonAdapter commonAdapter;
+    private OccupancyService occupancyService;
+    private Payload payload;
+
+    @BeforeEach
+    void setUp() {
+        payload = new Payload(123L, Constants.OCCUPIED);
+        occupancyService = new OccupancyService(redisAdapter, commonAdapter);
+    }
+
 
     @Test
-    public void testHasTimer() {
-        Mockito.when(redisAdapter.hasTimer(Constants.OCCUPANCY)).thenReturn(true);
+    void shouldStartProcess() {
+        when(redisAdapter.getStringFromHash(Constants.OCCUPANCY + Constants.STATUS, TEST)).thenReturn(Constants.VACANT);
 
-        OccupancyService occupancyService = new OccupancyService(redisAdapter);
+        boolean result = occupancyService.shouldStartProcess(payload, TEST);
 
-        boolean result = occupancyService.hasTimer();
-
-        assertThat(result).isEqualTo(true);
+        assertTrue(result);
     }
 
     @Test
-    public void testSetTimer() {
-        Mockito.when(redisAdapter.hasTimer(Constants.OCCUPANCY)).thenReturn(false);
-        Mockito.when(redisAdapter.getStatus(Constants.OCCUPANCY)).thenReturn(Constants.VACANT);
+    void setTimer() {
+        when(redisAdapter.hasKey(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER)).thenReturn(false);
+        doNothing().when(redisAdapter)
+                   .setValue(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER, payload.getTime());
 
-        OccupancyService occupancyService = new OccupancyService(redisAdapter);
+        Payload result = occupancyService.setTimer(payload, TEST);
 
-        Payload payload = new Payload(1713406102466L, Constants.OCCUPIED);
-        Payload result = occupancyService.setTimer(payload);
+        assertEquals(payload, result);
+        verify(redisAdapter).hasKey(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER);
+        verify(redisAdapter).setValue(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER, payload.getTime());
 
-        assertThat(result).isEqualTo(payload);
-        Mockito.verify(redisAdapter, Mockito.times(1)).setTimer(Constants.OCCUPANCY, payload.getTime());
     }
 
     @Test
-    public void testGetTimer() {
-        Mockito.when(redisAdapter.getTimer(Constants.OCCUPANCY)).thenReturn(1713406102466L);
+    void getTimer() {
+        when(redisAdapter.getLongValue(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER)).thenReturn(1234L);
+        Long result = occupancyService.getTimer(TEST);
 
-        OccupancyService occupancyService = new OccupancyService(redisAdapter);
-
-        Long result = occupancyService.getTimer();
-
-        assertThat(result).isEqualTo(1713406102466L);
+        assertEquals(1234L, result);
+        verify(redisAdapter).getLongValue(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER);
     }
 
     @Test
-    public void testGetOccupancyStatus() {
-        Mockito.when(redisAdapter.getStatus(Constants.OCCUPANCY)).thenReturn(Constants.OCCUPIED);
+    void isTimerActive() {
+        when(redisAdapter.getLongValue(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER)).thenReturn(12L);
+        when(redisAdapter.getStringFromHash(Constants.OCCUPANCY + Constants.STATUS, TEST)).thenReturn(Constants.VACANT);
 
-        OccupancyService occupancyService = new OccupancyService(redisAdapter);
+        boolean result = occupancyService.isTimerActive(payload, TEST);
 
-        String result = occupancyService.getOccupancyStatus();
-
-        assertThat(result).isEqualTo(Constants.OCCUPIED);
+        assertTrue(result);
     }
 
     @Test
-    public void testSaveToList() {
-        OccupancyService occupancyService = new OccupancyService(redisAdapter);
+    void save() {
+        doNothing().when(redisAdapter).saveStringToList(TEST + Constants.OCCUPANCY_LABEL, payload.getValue());
 
-        occupancyService.saveToList(Constants.OCCUPIED);
+        occupancyService.save(payload, TEST);
 
-        Mockito.verify(redisAdapter, Mockito.times(1)).saveStringToList(Constants.OCCUPANCY, Constants.OCCUPIED);
+        verify(redisAdapter).saveStringToList(TEST + Constants.OCCUPANCY_LABEL, payload.getValue());
     }
 
     @Test
-    public void testSetOccupancyStatus() {
-        List<String> list = Arrays.asList(Constants.OCCUPIED, Constants.OCCUPIED, Constants.VACANT);
-        Mockito.when(redisAdapter.getAllStringList(Constants.OCCUPANCY)).thenReturn(list);
-        Mockito.when(redisAdapter.getStatus(Constants.OCCUPANCY)).thenReturn(Constants.VACANT);
+    void updateOccupancy() {
+        when(redisAdapter.getAllStringList(TEST + Constants.OCCUPANCY_LABEL)).thenReturn(List.of(Constants.VACANT, Constants.VACANT, Constants.OCCUPIED));
+        doNothing().when(redisAdapter)
+                   .setValueToHash(eq(Constants.OCCUPANCY + Constants.STATUS), anyString(), anyString());
+        doNothing().when(redisAdapter).delete(TEST + Constants.OCCUPANCY_LABEL);
+        doNothing().when(redisAdapter).delete(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER);
 
-        OccupancyService occupancyService = new OccupancyService(redisAdapter);
+        occupancyService.updateOccupancy(payload, TEST);
 
-        occupancyService.setOccupancyStatus();
-
-        Mockito.verify(redisAdapter, Mockito.times(1)).setStatus(Constants.OCCUPANCY, Constants.OCCUPIED);
-        Mockito.verify(redisAdapter, Mockito.times(1)).delete(Constants.OCCUPANCY);
-        Mockito.verify(redisAdapter, Mockito.times(1)).deleteTimer(Constants.OCCUPANCY);
+        verify(redisAdapter).getAllStringList(TEST + Constants.OCCUPANCY_LABEL);
+        verify(redisAdapter).setValueToHash(Constants.OCCUPANCY + Constants.STATUS, TEST, Constants.VACANT);
+        verify(redisAdapter).delete(TEST + Constants.OCCUPANCY_LABEL);
+        verify(redisAdapter).delete(TEST + Constants.OCCUPANCY_LABEL + Constants.TIMER);
     }
 
     @Test
-    public void testUpdateOccupancy() {
-        Mockito.when(redisAdapter.getTimer(Constants.OCCUPANCY)).thenReturn(1713406102466L);
+    void getOccupancyStatus() {
+        when(redisAdapter.getStringFromHash(Constants.OCCUPANCY + Constants.STATUS, TEST)).thenReturn(Constants.VACANT);
 
-        OccupancyService occupancyService = new OccupancyService(redisAdapter);
+        String result = occupancyService.getOccupancyStatus(TEST);
 
-        Payload payload = new Payload(1713406102466L, Constants.OCCUPIED);
-        Payload result = occupancyService.updateOccupancy(payload);
-
-        assertThat(result).isNotNull();
-        Mockito.verify(redisAdapter, Mockito.times(1)).saveStringToList(Constants.OCCUPANCY, Constants.OCCUPIED);
+        assertEquals(Constants.VACANT, result);
     }
 }

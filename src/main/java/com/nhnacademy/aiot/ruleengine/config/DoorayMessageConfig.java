@@ -18,7 +18,6 @@ import java.time.Duration;
 
 @Slf4j
 @Configuration
-
 public class DoorayMessageConfig {
 
     @Bean

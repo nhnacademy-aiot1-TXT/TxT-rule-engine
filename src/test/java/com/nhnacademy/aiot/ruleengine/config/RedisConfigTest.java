@@ -21,25 +21,7 @@ class RedisConfigTest {
 
     @Test
     void longRedisTemplate() {
-        RedisTemplate<String, Long> redisTemplate = redisConfig.longRedisTemplate(redisConnectionFactory);
-        assertNotNull(redisTemplate);
-    }
-
-    @Test
-    void floatRedisTemplate() {
-        RedisTemplate<String, Float> redisTemplate = redisConfig.floatRedisTemplate(redisConnectionFactory);
-        assertNotNull(redisTemplate);
-    }
-
-    @Test
-    void strRedisTemplate() {
-        RedisTemplate<String, String> redisTemplate = redisConfig.strRedisTemplate(redisConnectionFactory);
-        assertNotNull(redisTemplate);
-    }
-
-    @Test
-    void doubleRedisTemplate() {
-        RedisTemplate<String, Double> redisTemplate = redisConfig.doubleRedisTemplate(redisConnectionFactory);
+        RedisTemplate<String, Object> redisTemplate = redisConfig.redisTemplate(redisConnectionFactory);
         assertNotNull(redisTemplate);
     }
 }

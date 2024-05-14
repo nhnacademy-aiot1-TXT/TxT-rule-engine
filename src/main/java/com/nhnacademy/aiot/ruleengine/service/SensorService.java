@@ -2,6 +2,7 @@ package com.nhnacademy.aiot.ruleengine.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.SensorData;
 import com.nhnacademy.aiot.ruleengine.exception.PayloadParseException;
@@ -44,7 +45,7 @@ public class SensorService {
     }
 
     public String[] getTopics(MessageHeaders headers) {
-        return Objects.requireNonNull(headers.get("mqtt_receivedTopic", String.class)).split("/");
+        return Objects.requireNonNull(headers.get(Constants.MQTT_RECEIVED_TOPIC, String.class)).split("/");
     }
 
 }

@@ -4,6 +4,7 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.write.Point;
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.SensorData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,11 +35,11 @@ public class InfluxService {
 
         SensorData sensorData = sensorService.build(headers, payloadStr);
         Point point = addValueToInfluxPoint(sensorData.getValue(),
-                Point.measurement(sensorData.getMeasurement())
-                     .addField("time", sensorData.getTime())
-                     .addField("device", sensorData.getDevice())
-                     .addField("place", sensorData.getPlace())
-                     .addField("topic", sensorData.getTopic()));
+                                            Point.measurement(sensorData.getMeasurement())
+                                                 .addField(Constants.TIME, sensorData.getTime())
+                                                 .addField(Constants.DEVICE, sensorData.getDevice())
+                                                 .addField(Constants.PLACE, sensorData.getPlace())
+                                                 .addField(Constants.TOPIC, sensorData.getTopic()));
         writeApi.writePoint(point);
         influxDBClient.close();
     }
@@ -54,8 +55,8 @@ public class InfluxService {
 
     private Point addValueToInfluxPoint(String value, Point point) {
         if (isFloat(value)) {
-            return point.addField("value", sensorService.parseToFloatValue(value));
+            return point.addField(Constants.VALUE, sensorService.parseToFloatValue(value));
         }
-        return point.addField("value", value);
+        return point.addField(Constants.VALUE, value);
     }
 }

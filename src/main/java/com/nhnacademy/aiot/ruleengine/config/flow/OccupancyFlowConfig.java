@@ -1,5 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.config.flow;
 
+import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.service.OccupancyService;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
@@ -17,15 +18,29 @@ public class OccupancyFlowConfig {
     private final OccupancyService occupancyService;
 
     @Bean
-    public IntegrationFlow occupancyProcess() {
-        return IntegrationFlows.from("occupancyChannel")
-                // string을 payload 객체로 매핑
-                .transform(sensorService::convertStringToPayload)
-                // 최초로 redis와 다른 ocuupancy 값이 들어왔을 때
-                .handle(Payload.class, (payload, headers) -> occupancyService.setTimer(payload))
-                .filter(payload -> occupancyService.hasTimer())
-                // redis에 저장
-                .handle(Payload.class, (payload, headers) -> occupancyService.updateOccupancy(payload))
-                .nullChannel();
+    public IntegrationFlow aircleanerOccupancy() {
+        return occupancyProcess(Constants.AIRCLEANER);
+    }
+
+    @Bean
+    public IntegrationFlow lightOccupancy() {
+        return occupancyProcess(Constants.LIGHT);
+    }
+
+    @Bean
+    public IntegrationFlow airconditionerOccupancy() {
+        return occupancyProcess(Constants.AIRCONDITIONER);
+    }
+
+    private IntegrationFlow occupancyProcess(String devicenName) {
+        return IntegrationFlows.from(Constants.OCCUPANCY_CHANNEL)
+                               .transform(sensorService::convertStringToPayload)
+                               .filter(Payload.class, payload -> occupancyService.shouldStartProcess(payload, devicenName))
+                               .handle(Payload.class, (payload, headers) -> occupancyService.setTimer(payload, devicenName))
+                               .filter(Payload.class, payload -> !occupancyService.isTimerActive(payload, devicenName),
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) -> occupancyService.save(payload, devicenName))
+                                                                      .nullChannel()))
+                               .handle(Payload.class, (payload, headers) -> occupancyService.updateOccupancy(payload, devicenName))
+                               .nullChannel();
     }
 }

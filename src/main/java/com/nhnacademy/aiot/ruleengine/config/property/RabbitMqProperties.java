@@ -8,11 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @Configuration
 @ConfigurationProperties(prefix = "rabbitmq")
-@Getter
 public class RabbitMqProperties {
     private final List<BindingProperty> bindings = new ArrayList<>();
+
     @Getter
     @Setter
     public static class BindingProperty {

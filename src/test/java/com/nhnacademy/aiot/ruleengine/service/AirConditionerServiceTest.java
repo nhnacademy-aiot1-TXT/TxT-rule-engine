@@ -4,92 +4,87 @@ package com.nhnacademy.aiot.ruleengine.service;
 import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-public class AirConditionerServiceTest {
+@SpringJUnitConfig(classes = AirConditionerService.class)
+class AirConditionerServiceTest {
 
     @MockBean
     private RedisAdapter redisAdapter;
-
     @MockBean
     private SensorService sensorService;
+    private AirConditionerService airConditionerService;
 
-    @Test
-    public void testSetTimer() {
-        Mockito.when(redisAdapter.hasTimer(Constants.AIRCONDITIONER)).thenReturn(false);
-
-        AirConditionerService airConditionerService = new AirConditionerService(redisAdapter, sensorService);
-
-        Payload payload = new Payload(1713406102466L, "25");
-        Payload result = airConditionerService.setTimer(Constants.AIRCONDITIONER, payload);
-
-        assertThat(result).isEqualTo(payload);
-        Mockito.verify(redisAdapter, Mockito.times(1))
-                .setTimer(Constants.AIRCONDITIONER, payload.getTime());
+    @BeforeEach
+    void setUp() {
+        airConditionerService = new AirConditionerService(redisAdapter, sensorService);
     }
 
     @Test
-    public void testIsIndoorTempMsg() {
-        AirConditionerService airConditionerService = new AirConditionerService(redisAdapter, sensorService);
+    void testSetTimer() {
+        Payload payload = new Payload(1713406102466L, "25");
+        Mockito.when(redisAdapter.hasKey(Constants.AIRCONDITIONER + Constants.TIMER)).thenReturn(false);
 
+        Payload result = airConditionerService.setTimer(Constants.AIRCONDITIONER, payload);
+
+        assertEquals(payload, result);
+        Mockito.verify(redisAdapter).setValue(Constants.AIRCONDITIONER + Constants.TIMER, payload.getTime());
+    }
+
+    @Test
+    void testIsIndoorTempMsg() {
         Map<String, Object> headers = new HashMap<>();
         headers.put("mqtt_receivedTopic", "test/class_a/temperature");
         Message<String> message = new GenericMessage<>("Test message", headers);
 
         boolean result = airConditionerService.isIndoorTempMsg(message);
 
-        assertThat(result).isEqualTo(true);
+        assertTrue(result);
     }
 
     @Test
-    public void testIsTimerActive() {
-        AirConditionerService airConditionerService = new AirConditionerService(redisAdapter, sensorService);
-
+    void testIsTimerActive() {
         Payload payload = new Payload(1713406102466L, "25");
+
         boolean result = airConditionerService.isTimerActive(Constants.AIRCONDITIONER, payload);
 
-        assertThat(result).isEqualTo(false);
+        assertFalse(result);
     }
 
     @Test
-    public void testSaveTemperature() {
-        AirConditionerService airConditionerService = new AirConditionerService(redisAdapter, sensorService);
-
+    void testSaveTemperature() {
         Payload payload = new Payload(1713406102466L, "12.5");
 
         Payload result = airConditionerService.saveTemperature(payload);
 
-        assertThat(result).isEqualTo(payload);
-        Mockito.verify(redisAdapter, Mockito.times(1))
-                .saveFloatToList(Constants.TEMPERATURE, payload.getValue());
+        assertEquals(payload, result);
+        Mockito.verify(redisAdapter).saveFloatToList(Constants.TEMPERATURE, payload.getValue());
     }
 
     @Test
-    public void testDeleteForAutoMode() {
-        AirConditionerService airConditionerService = new AirConditionerService(redisAdapter, sensorService);
+    void testDeleteForAutoMode() {
         airConditionerService.deleteForAutoMode();
 
-        Mockito.verify(redisAdapter, Mockito.times(1)).deleteListWithPrefix("airconditioner:");
-        Mockito.verify(redisAdapter, Mockito.times(1)).deleteTimer(Constants.AUTO_AIRCONDITIONER);
+        Mockito.verify(redisAdapter).deleteListWithPrefix("airconditioner:");
+        Mockito.verify(redisAdapter).delete(Constants.AUTO_AIRCONDITIONER + Constants.TIMER);
     }
 
     @Test
-    public void testDeleteListAndTimer() {
-        AirConditionerService airConditionerService = new AirConditionerService(redisAdapter, sensorService);
+    void testDeleteListAndTimer() {
         airConditionerService.deleteListAndTimer();
 
-        Mockito.verify(redisAdapter, Mockito.times(1)).delete(Constants.TEMPERATURE);
-        Mockito.verify(redisAdapter, Mockito.times(1)).deleteTimer(Constants.AIRCONDITIONER);
+        Mockito.verify(redisAdapter).delete(Constants.TEMPERATURE);
+        Mockito.verify(redisAdapter).delete(Constants.AIRCONDITIONER + Constants.TIMER);
     }
 }

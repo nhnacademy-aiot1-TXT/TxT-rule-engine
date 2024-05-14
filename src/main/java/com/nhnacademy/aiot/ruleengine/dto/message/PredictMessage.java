@@ -2,7 +2,8 @@ package com.nhnacademy.aiot.ruleengine.dto.message;
 
 import lombok.*;
 
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode

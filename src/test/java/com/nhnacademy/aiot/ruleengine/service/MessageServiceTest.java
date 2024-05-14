@@ -1,5 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
+import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import org.junit.jupiter.api.Test;
@@ -37,5 +38,14 @@ public class MessageServiceTest {
         messageService.sendDeviceMessage(measurement, message);
 
         verify(rabbitTemplate, times(1)).convertAndSend(any(), eq("txt." + measurement), any(ValueMessage.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"battery"})
+    public void testSendSensorMessage(String measurement) {
+        DetailMessage message = new DetailMessage(20, "test_place", "test_device");
+        messageService.sendSensorMessage(measurement, message);
+
+        verify(rabbitTemplate, times(1)).convertAndSend(any(), eq("txt." + measurement), any(DetailMessage.class));
     }
 }
