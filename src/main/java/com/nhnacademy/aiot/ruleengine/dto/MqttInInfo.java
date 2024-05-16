@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MqttMessage {
+public class MqttInInfo {
     private String mqttUrl;
-    private String topic;
-    private Payload payload;
+    private String[] topic;
 }
