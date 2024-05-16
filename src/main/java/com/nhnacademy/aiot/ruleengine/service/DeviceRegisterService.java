@@ -3,7 +3,7 @@ package com.nhnacademy.aiot.ruleengine.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
-import com.nhnacademy.aiot.ruleengine.dto.rule.RuleInfo;
+import com.nhnacademy.aiot.ruleengine.dto.RuleInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

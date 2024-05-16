@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto.rule;
+package com.nhnacademy.aiot.ruleengine.dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ public class RuleInfo {
     private String deviceName;
     private boolean occupancyCheckRequired;
     private AiMode aiMode;
-    private AutoMode autoMode;
+    private CustomMode customMode;
 
     public Optional<AiMode> getAiMode() {
         return Optional.ofNullable(aiMode);

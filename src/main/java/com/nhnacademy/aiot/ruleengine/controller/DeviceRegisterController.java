@@ -1,6 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.controller;
 
-import com.nhnacademy.aiot.ruleengine.dto.rule.RuleInfo;
+import com.nhnacademy.aiot.ruleengine.dto.RuleInfo;
 import com.nhnacademy.aiot.ruleengine.service.DeviceRegisterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

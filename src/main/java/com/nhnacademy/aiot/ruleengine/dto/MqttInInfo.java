@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto.rule;
+package com.nhnacademy.aiot.ruleengine.dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MqttInInfo {
     private String mqttUrl;
-    private String[] topic;
+    private String topic;
 }
