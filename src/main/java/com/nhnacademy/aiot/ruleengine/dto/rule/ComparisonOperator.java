@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto;
+package com.nhnacademy.aiot.ruleengine.dto.rule;
 
 public enum ComparisonOperator {
     GREATER_THAN,

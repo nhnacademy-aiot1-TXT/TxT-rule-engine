@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto;
+package com.nhnacademy.aiot.ruleengine.dto.rule;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

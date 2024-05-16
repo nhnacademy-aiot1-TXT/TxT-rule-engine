@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto;
+package com.nhnacademy.aiot.ruleengine.dto.rule;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Condition {
-    private MqttInInfo message;
-    private ComparisonOperator comparisonOperator;
-    private float controlValue;
+public class MqttInInfo {
+    private String mqttUrl;
+    private String[] topic;
 }
