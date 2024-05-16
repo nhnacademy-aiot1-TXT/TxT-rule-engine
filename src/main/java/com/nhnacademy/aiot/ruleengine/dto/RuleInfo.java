@@ -5,13 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalTime;
+import java.util.Optional;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DeviceResponse {
-    private Long deviceId;
+public class RuleInfo {
+    private String place;
     private String deviceName;
-    private LocalTime cycle;
+    private boolean occupancyCheckRequired;
+    private AiMode aiMode;
+    private AutoMode autoMode;
+
+    public Optional<AiMode> getAiMode() {
+        return Optional.ofNullable(aiMode);
+    }
 }
