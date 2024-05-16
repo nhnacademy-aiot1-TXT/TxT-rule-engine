@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AiMode {
-    private List<MqttInInfo> messages;
+public class AiMode{
+    private List<MqttInInfo> mqttInInfos;
     private LocalTime timeInterval;
 }

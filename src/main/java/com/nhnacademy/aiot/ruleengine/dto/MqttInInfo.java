@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MqttInInfo {
     private String mqttUrl;
-    private String[] topic;
+    private String topic;
 }

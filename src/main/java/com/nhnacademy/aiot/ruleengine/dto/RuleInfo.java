@@ -15,7 +15,7 @@ public class RuleInfo {
     private String deviceName;
     private boolean occupancyCheckRequired;
     private AiMode aiMode;
-    private AutoMode autoMode;
+    private CustomMode customMode;
 
     public Optional<AiMode> getAiMode() {
         return Optional.ofNullable(aiMode);

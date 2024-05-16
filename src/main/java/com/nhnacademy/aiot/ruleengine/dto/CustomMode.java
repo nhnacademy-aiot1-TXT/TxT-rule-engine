@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AutoMode {
-    private List<Condition> onCondition;
-    private List<Condition> offCondition;
+public class CustomMode{
+    private List<Condition> conditions;
     private LocalTime timeInterval;
 }

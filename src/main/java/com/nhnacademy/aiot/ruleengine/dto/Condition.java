@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Condition {
-    private MqttInInfo message;
+    private MqttInInfo mqttInInfo;
     private ComparisonOperator comparisonOperator;
-    private float controlValue;
+    private float standardValue;
 }
