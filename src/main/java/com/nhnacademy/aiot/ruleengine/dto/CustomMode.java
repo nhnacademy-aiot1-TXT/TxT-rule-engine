@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AutoMode {
+public class CustomMode {
     private List<Condition> onCondition;
     private List<Condition> offCondition;
     private LocalTime timeInterval;
