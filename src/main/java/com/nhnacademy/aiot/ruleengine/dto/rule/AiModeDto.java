@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto;
+package com.nhnacademy.aiot.ruleengine.dto.rule;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -11,8 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CustomMode {
-    private List<Condition> onCondition;
-    private List<Condition> offCondition;
+class AiModeDto {
+    private List<MqttInDto> mqttInDtos;
     private LocalTime timeInterval;
 }

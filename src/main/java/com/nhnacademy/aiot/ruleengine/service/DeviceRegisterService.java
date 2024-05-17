@@ -3,7 +3,7 @@ package com.nhnacademy.aiot.ruleengine.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
-import com.nhnacademy.aiot.ruleengine.dto.RuleInfo;
+import com.nhnacademy.aiot.ruleengine.dto.rule.RuleDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +12,13 @@ import org.springframework.stereotype.Service;
 public class DeviceRegisterService {
     private final RedisAdapter redisAdapter;
 
-    public void registerDevice(RuleInfo ruleInfo) {
+    public void registerDevice(RuleDto ruleDto) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            String jsonRuleInfo = objectMapper.writeValueAsString(ruleInfo);
+            String jsonRuleInfo = objectMapper.writeValueAsString(ruleDto);
             System.out.println("RuleInfo to JSON: " + jsonRuleInfo);
 
-            saveDeviceInfo(ruleInfo.getPlace(), ruleInfo.getDeviceName(), jsonRuleInfo);
+            saveDeviceInfo(ruleDto.getPlace(), ruleDto.getDeviceName(), jsonRuleInfo);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
