@@ -1,6 +1,5 @@
 package com.nhnacademy.aiot.ruleengine.dto.rule;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,8 +7,8 @@ import lombok.NoArgsConstructor;
 import java.util.Optional;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RuleDto {
     private String place;
     private String deviceName;
@@ -21,3 +20,4 @@ public class RuleDto {
         return Optional.ofNullable(aiMode);
     }
 }
+

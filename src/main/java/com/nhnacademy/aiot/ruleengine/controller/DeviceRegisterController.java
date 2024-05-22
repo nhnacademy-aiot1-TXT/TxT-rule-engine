@@ -1,8 +1,10 @@
 package com.nhnacademy.aiot.ruleengine.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.aiot.ruleengine.dto.rule.RuleDto;
 import com.nhnacademy.aiot.ruleengine.service.DeviceRegisterService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,14 +13,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/device")
+@RequestMapping(value = "/api/rule")
 public class DeviceRegisterController {
     private final DeviceRegisterService deviceRegisterService;
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerRuleInfoFlow(@RequestBody RuleDto ruleDto) {
-        deviceRegisterService.registerDevice(ruleDto);
-        return ResponseEntity.ok("Flow registered successfully!");
+    private final ObjectMapper objectMapper;
+    private final MessageConverter messageConverter;
+
+    @PostMapping(value = "/device/register")
+    public ResponseEntity<Void> registerRuleInfoFlow(@RequestBody String deviceRegisterInfo) {
+        RuleDto ruleDto = deviceRegisterService.parseDeviceRegisterInfo(deviceRegisterInfo);
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -1,33 +1,14 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.aiot.ruleengine.adapter.RedisAdapter;
+import com.nhnacademy.aiot.ruleengine.dto.rule.AiModeDto;
+import com.nhnacademy.aiot.ruleengine.dto.rule.CustomModeDto;
 import com.nhnacademy.aiot.ruleengine.dto.rule.RuleDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class DeviceRegisterService {
-    private final RedisAdapter redisAdapter;
+public interface DeviceRegisterService {
 
-    public void registerDevice(RuleDto ruleDto) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonRuleInfo = objectMapper.writeValueAsString(ruleDto);
-            System.out.println("RuleInfo to JSON: " + jsonRuleInfo);
+    RuleDto parseDeviceRegisterInfo(String deviceRegisterInfo);
 
-            saveDeviceInfo(ruleDto.getPlace(), ruleDto.getDeviceName(), jsonRuleInfo);
+    AiModeDto extractAiModeDto(Object aiModeDtoData);
 
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void saveDeviceInfo(String place, String deviceName, String jsonRuleInfo) {
-        redisAdapter.setValue(place + ":" + deviceName, jsonRuleInfo);
-    }
+    CustomModeDto extractCustomModeDto(Object customModeDtoData);
 }
-
-
