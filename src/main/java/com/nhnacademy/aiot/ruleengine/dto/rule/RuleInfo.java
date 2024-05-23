@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto;
+package com.nhnacademy.aiot.ruleengine.dto.rule;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,6 @@ import java.util.Optional;
 public class RuleInfo {
     private String place;
     private String deviceName;
-    private boolean occupancyCheckRequired;
     private AiMode aiMode;
     private CustomMode customMode;
 
