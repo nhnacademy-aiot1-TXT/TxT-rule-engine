@@ -3,7 +3,7 @@ package com.nhnacademy.aiot.ruleengine.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.aiot.ruleengine.dto.rule.*;
-import com.nhnacademy.aiot.ruleengine.service.DeviceRegisterService;
+import com.nhnacademy.aiot.ruleengine.service.RuleRegisterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class DeviceServiceImpl implements DeviceRegisterService {
+public class RuleRegisterServiceImpl implements RuleRegisterService {
     private final ObjectMapper objectMapper;
 
     @Override
@@ -27,10 +27,9 @@ public class DeviceServiceImpl implements DeviceRegisterService {
             CustomMode customMode = extractCustomMode(requestMapData.get("customMode"));
 
             RuleInfo ruleInfo = new RuleInfo(requestMapData.get("place").toString(),
-                                             requestMapData.get("deviceName").toString(),
-                                             Boolean.parseBoolean(requestMapData.get("occupancyCheckRequired").toString()),
-                                             aiMode,
-                                             customMode);
+                    requestMapData.get("deviceName").toString(),
+                    aiMode,
+                    customMode);
 
             System.out.println("RuleInfo: " + ruleInfo);
 
@@ -46,7 +45,7 @@ public class DeviceServiceImpl implements DeviceRegisterService {
             String aiModeJson = objectMapper.writeValueAsString(aiModeData);
             Map<String, Object> aiModeMap = objectMapper.readValue(aiModeJson, Map.class);
 
-            List<MqttInInfo> mqttInInfos = objectMapper.convertValue(aiModeMap.get("mqttIns"), List.class);
+            List<MqttInInfo> mqttInInfos = objectMapper.convertValue(aiModeMap.get("mqttInInfos"), List.class);
             int aiModeHour = Integer.parseInt(aiModeMap.get("hour").toString());
             int aiModeMinutes = Integer.parseInt(aiModeMap.get("minutes").toString());
             LocalTime aiModeTimeInterval = LocalTime.of(aiModeHour, aiModeMinutes);
@@ -72,11 +71,13 @@ public class DeviceServiceImpl implements DeviceRegisterService {
                 mqttConditionMap.put(key, value);
             }
 
+            boolean occupancyCheckRequired = Boolean.parseBoolean(customModeMap.get("occupancyCheckRequired")
+                                                                               .toString());
             int customModeHour = Integer.parseInt(customModeMap.get("hour").toString());
             int customModeMinutes = Integer.parseInt(customModeMap.get("minutes").toString());
             LocalTime customModeTimeInterval = LocalTime.of(customModeHour, customModeMinutes);
 
-            return new CustomMode(mqttConditionMap, customModeTimeInterval);
+            return new CustomMode(occupancyCheckRequired, mqttConditionMap, customModeTimeInterval);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

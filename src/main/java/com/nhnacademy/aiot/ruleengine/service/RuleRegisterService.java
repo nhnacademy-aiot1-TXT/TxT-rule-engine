@@ -4,7 +4,7 @@ import com.nhnacademy.aiot.ruleengine.dto.rule.AiMode;
 import com.nhnacademy.aiot.ruleengine.dto.rule.CustomMode;
 import com.nhnacademy.aiot.ruleengine.dto.rule.RuleInfo;
 
-public interface DeviceRegisterService {
+public interface RuleRegisterService {
 
     RuleInfo parseDeviceRegisterInfo(String deviceRegisterInfo);
 
