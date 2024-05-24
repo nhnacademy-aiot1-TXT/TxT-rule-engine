@@ -11,6 +11,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TimeIntervalResponse {
+    private Long timeIntervalId;
     private Long sensorId;
     private String sensorName;
     private LocalTime begin;

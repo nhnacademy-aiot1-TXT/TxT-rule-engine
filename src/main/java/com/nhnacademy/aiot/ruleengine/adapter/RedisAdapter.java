@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,10 @@ public class RedisAdapter {
 
     public boolean hasKey(String key) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    public boolean hasKey(String key, String hashKey) {
+        return redisTemplate.opsForHash().hasKey(key, hashKey);
     }
 
     public void setValue(String key, Long value) {
@@ -95,5 +100,9 @@ public class RedisAdapter {
 
     public void setValueToHash(String key, String hashKey, String value) {
         redisTemplate.opsForHash().put(key, hashKey, value);
+    }
+
+    public Map<Object, Object> getEntries(String key) {
+        return redisTemplate.opsForHash().entries(key);
     }
 }

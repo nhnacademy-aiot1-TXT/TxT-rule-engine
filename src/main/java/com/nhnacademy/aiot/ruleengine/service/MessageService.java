@@ -1,8 +1,6 @@
 package com.nhnacademy.aiot.ruleengine.service;
 
-import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
-import com.nhnacademy.aiot.ruleengine.dto.message.PredictMessage;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,43 +23,15 @@ public class MessageService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void sendPredictMessage(PredictMessage message) {
+    public void sendPredictMessage(Map<String, Object> message) {
         rabbitTemplate.convertAndSend(exchangeSensorName, "txt.predict", message);
     }
 
-    public void sendDeviceMessage(String deviceName, ValueMessage message) {
-        rabbitTemplate.convertAndSend(exchangeName, "txt." + deviceName, message);
+    public void sendDeviceMessage(ValueMessage message) {
+        rabbitTemplate.convertAndSend(exchangeName, "txt.device", message);
     }
 
     public void sendSensorMessage(String measurement, DetailMessage message) {
-        rabbitTemplate.convertAndSend(exchangeName, "txt." + measurement, message);
-    }
-
-    public void injectPredictMessage(Map<String, Object> avg, PredictMessage predictMessage) {
-        for (Map.Entry<String, Object> entry : avg.entrySet()) {
-            String key = entry.getKey();
-            switch (key) {
-                case Constants.OUTDOOR_TEMPERATURE:
-                    predictMessage.setOutdoorTemperature(new ValueMessage(avg.get(key)));
-                    break;
-                case Constants.OUTDOOR_HUMIDITY:
-                    predictMessage.setOutdoorHumidity(new ValueMessage(avg.get(key)));
-                    break;
-                case Constants.INDOOR_TEMPERATURE:
-                    predictMessage.setIndoorTemperature(new ValueMessage(avg.get(key)));
-                    break;
-                case Constants.INDOOR_HUMIDITY:
-                    predictMessage.setIndoorHumidity(new ValueMessage(avg.get(key)));
-                    break;
-                case Constants.TOTAL_PEOPLE_COUNT:
-                    predictMessage.setTotalPeopleCount(new ValueMessage(avg.get(key)));
-                    break;
-                case Constants.TIME:
-                    predictMessage.setTime((Long) avg.get(key));
-                    break;
-                default:
-                    break;
-            }
-        }
+        rabbitTemplate.convertAndSend(exchangeSensorName, "txt." + measurement, message);
     }
 }
