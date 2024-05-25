@@ -37,7 +37,7 @@ class BatteryLevelServiceTest {
     }
 
     @Test
-    void getStringValue() {
+    void getBatteryStatus() {
         when(redisAdapter.getStringValue("battery_status:testId")).thenReturn(Constants.CRITICAL);
 
         String result = batteryLevelService.getBatteryStatus("testId");

@@ -39,7 +39,7 @@ class IntrusionServiceTest {
 
     @Test
     void test0To6() {
-        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, Constants.OCCUPANCY, LocalTime.of(0, 0, 0), LocalTime.of(6, 0, 0)));
+        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, 1L, Constants.OCCUPANCY, LocalTime.of(0, 0, 0), LocalTime.of(6, 0, 0)));
 
         assertTrue(intrusionService.isAlertTimeActive(time0200));
         assertFalse(intrusionService.isAlertTimeActive(time1400));
@@ -49,7 +49,7 @@ class IntrusionServiceTest {
 
     @Test
     void test22To6() {
-        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, Constants.OCCUPANCY, LocalTime.of(22, 0, 0), LocalTime.of(6, 0, 0)));
+        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, 1L, Constants.OCCUPANCY, LocalTime.of(22, 0, 0), LocalTime.of(6, 0, 0)));
 
         assertTrue(intrusionService.isAlertTimeActive(time0200));
         assertFalse(intrusionService.isAlertTimeActive(time1400));
@@ -59,7 +59,7 @@ class IntrusionServiceTest {
 
     @Test
     void test22To22() {
-        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, Constants.OCCUPANCY, LocalTime.of(22, 0, 0), LocalTime.of(22, 0, 0)));
+        when(commonAdapter.getTimeIntervalBySensorName(Constants.OCCUPANCY)).thenReturn(new TimeIntervalResponse(7L, 1L, Constants.OCCUPANCY, LocalTime.of(22, 0, 0), LocalTime.of(22, 0, 0)));
 
         assertFalse(intrusionService.isAlertTimeActive(time0200));
         assertFalse(intrusionService.isAlertTimeActive(time1400));

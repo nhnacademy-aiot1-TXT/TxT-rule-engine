@@ -10,7 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {"message.dooray.hook-url=test"}) //Mock your property here
-public class DoorayMessageConfigTest {
+class DoorayMessageConfigTest {
 
     @Autowired
     private DoorayHookSender doorayHookSender;
@@ -22,18 +22,18 @@ public class DoorayMessageConfigTest {
     private RestTemplate restTemplate;
 
     @Test
-    public void restTemplateTest() {
+    void restTemplateTest() {
         RestTemplate rt = restTemplate;
         assertThat(rt).isNotNull();
     }
 
     @Test
-    public void doorayHookSenderTest() {
+    void doorayHookSenderTest() {
         assertThat(doorayHookSender).isNotNull();
     }
 
     @Test
-    public void messageSenderTest() {
+    void messageSenderTest() {
         assertThat(messageSender).isNotNull();
     }
 

@@ -3,9 +3,9 @@ package com.nhnacademy.aiot.ruleengine.config.flow;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.aiot.ruleengine.constants.Constants;
 import com.nhnacademy.aiot.ruleengine.dto.message.DetailMessage;
-import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.service.BatteryLevelService;
 import com.nhnacademy.aiot.ruleengine.service.MessageService;
+import com.nhnacademy.aiot.ruleengine.service.MqttService;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -43,11 +42,12 @@ class BatteryFlowConfigTest {
     private IntegrationFlowContext flowContext;
     @Autowired
     private MessageChannel batteryLevelChannel;
-
     @MockBean
     private BatteryLevelService batteryLevelService;
     @MockBean
     private MessageService messageService;
+    @MockBean
+    private MqttService mqttService;
     @Captor
     private ArgumentCaptor<DetailMessage> detailMessageCaptor;
 
@@ -58,15 +58,12 @@ class BatteryFlowConfigTest {
     private IntegrationFlow batteryLevelProcess;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         if (!flowContext.getRegistry().containsKey("batteryLevelProcess")) {
             flowContext.registration(batteryLevelProcess).id("batteryLevelProcess").register();
         }
         headersMap.put("mqtt_receivedTopic", "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
         doNothing().when(messageService).sendSensorMessage(anyString(), any(DetailMessage.class));
-
-        ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
-
     }
 
 
@@ -95,7 +92,7 @@ class BatteryFlowConfigTest {
 
         verify(messageService).sendSensorMessage(eq(Constants.BATTERY), detailMessageCaptor.capture());
         DetailMessage capturedMessage = detailMessageCaptor.getValue();
-        
+
         assertEquals(Constants.LOW, capturedMessage.getValue());
     }
 

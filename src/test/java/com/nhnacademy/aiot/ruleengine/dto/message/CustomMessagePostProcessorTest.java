@@ -6,7 +6,7 @@ import org.springframework.amqp.core.MessageProperties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CustomMessagePostProcessorTest {
+class CustomMessagePostProcessorTest {
 
     @Test
     void postProcessMessageSetsTtl() {
