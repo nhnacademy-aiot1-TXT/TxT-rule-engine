@@ -24,7 +24,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Service;
 
-import java.time.temporal.ChronoField;
 import java.util.*;
 
 @Service
@@ -43,14 +42,22 @@ public class RuleService {
     private final Map<String, String> latestValues = new HashMap<>();
 
 
-    public void createRule(RuleInfo ruleInfo) throws JsonProcessingException {
+    public void updateRule(RuleInfo ruleInfo) throws JsonProcessingException {
         String place = ruleInfo.getPlace();
         String deviceName = ruleInfo.getDeviceName();
-        List<Object> beans = new ArrayList<>();
 
-        if (!redisAdapter.hasKey("rule_infos", String.valueOf(ruleInfo.hashCode()))) {
-            redisAdapter.setValueToHash("rule_infos", String.valueOf(ruleInfo.hashCode()), objectMapper.writeValueAsString(ruleInfo));
+        if (redisAdapter.hasKey("rule_infos", place + "_" + deviceName)) {
+            deleteBeans(place + "." + deviceName + ".");
         }
+        redisAdapter.setValueToHash("rule_infos", place + "_" + deviceName, objectMapper.writeValueAsString(ruleInfo));
+
+        createRule(ruleInfo);
+    }
+
+    public void createRule(RuleInfo ruleInfo) {
+        String place = ruleInfo.getPlace();
+        String deviceName = ruleInfo.getDeviceName();
+        Map<String, Object> beans = new HashMap<>();
 
         createLatestValueSavingFlow(ruleInfo, beans);
         updateOnOffValue(place, deviceName, ruleInfo.getCustomMode());
@@ -62,7 +69,7 @@ public class RuleService {
         registerBean(place + "." + deviceName + ".", beans);
     }
 
-    private void createLatestValueSavingFlow(RuleInfo ruleInfo, List<Object> beans) {
+    private void createLatestValueSavingFlow(RuleInfo ruleInfo, Map<String, Object> beans) {
         MessageChannel messageChannel = createMessageChannel(beans);
         Set<MqttInInfo> customMqttInInfos = ruleInfo.getCustomMode().getMqttConditionMap().keySet();
         Set<MqttInInfo> mqttInInfos = customMqttInInfos;
@@ -83,12 +90,12 @@ public class RuleService {
 
                                                        return payload;
                                                    }).nullChannel();
-        beans.add(flow);
+        beans.put(flow.getClass().getSimpleName() + ".latestValueFlow", flow);
     }
 
-    private void createAiModeScheduledFlow(String place, String deviceName, AiMode aiMode, List<Object> beans) {
+    private void createAiModeScheduledFlow(String place, String deviceName, AiMode aiMode, Map<String, Object> beans) {
         IntegrationFlow flow = IntegrationFlows.from(() -> new GenericMessage<>("trigger"),
-                                                     c -> c.poller(Pollers.fixedRate(aiMode.getTimeInterval().getLong(ChronoField.MILLI_OF_SECOND))))
+                                                     c -> c.poller(Pollers.fixedRate(aiMode.getTimeInterval().toNanoOfDay() / 1_000_000)))
                                                .filter(p -> deviceService.isAiMode(place, deviceName) && !deviceService.isCustomMode(place, deviceName))
                                                .handle((payload, headers) ->
                                                            {
@@ -112,12 +119,12 @@ public class RuleService {
 
                                                                return null;
                                                            }).nullChannel();
-        beans.add(flow);
+        beans.put(flow.getClass().getSimpleName() + ".aiModeFlow", flow);
     }
 
-    private void createCustomModeFlow(String place, String deviceName, CustomMode customMode, List<Object> beans) {
+    private void createCustomModeFlow(String place, String deviceName, CustomMode customMode, Map<String, Object> beans) {
         IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(() -> new GenericMessage<>("trigger"),
-                                                                   c -> c.poller(Pollers.fixedRate(customMode.getTimeInterval().getLong(ChronoField.MILLI_OF_SECOND))))
+                                                                   c -> c.poller(Pollers.fixedRate(customMode.getTimeInterval().toNanoOfDay() / 1_000_000)))
                                                              .filter(p -> !deviceService.isAiMode(place, deviceName) && deviceService.isCustomMode(place, deviceName));
 
         if (customMode.isOccupancyCheckRequired()) {
@@ -129,6 +136,14 @@ public class RuleService {
                                                                                             }
                                                                                             return null;
                                                                                         }).nullChannel()));
+        } else {
+            flowBuilder = flowBuilder.handle((payload, headers) ->
+                                                 {
+                                                     if (Constants.VACANT.equals(occupancyService.getOccupancyStatus(place)) && deviceService.isDevicePowered(deviceName)) {
+                                                         messageService.sendDeviceMessage(new ValueMessage(place, deviceName, false));
+                                                     }
+                                                     return payload;
+                                                 });
         }
 
         IntegrationFlow flow = flowBuilder.handle((payload, headers) ->
@@ -143,21 +158,22 @@ public class RuleService {
 
                                                           return null;
                                                       }).nullChannel();
-        beans.add(flow);
+        beans.put(flow.getClass().getSimpleName() + ".customModeFlow", flow);
     }
 
 
-    private MessageChannel createMessageChannel(List<Object> beans) {
+    private MessageChannel createMessageChannel(Map<String, Object> beans) {
         MessageChannel customChannel = new DirectChannel();
-        beans.add(customChannel);
+        beans.put(customChannel.getClass().getSimpleName(), customChannel);
         return customChannel;
     }
 
-    private void createMqttAdapters(MessageChannel channel, Collection<MqttInInfo> mqttInInfoSet, List<Object> beans) {
+    private void createMqttAdapters(MessageChannel channel, Collection<MqttInInfo> mqttInInfoSet, Map<String, Object> beans) {
+        int i = 1;
         for (MqttInInfo mqttInInfo : mqttInInfoSet) {
             MqttPahoMessageDrivenChannelAdapter adapter = mqttService.createMqttAdapter(mqttInInfo.getMqttUrl(),
                                                                                         UUID.randomUUID().toString(), channel, mqttInInfo.getTopic());
-            beans.add(adapter);
+            beans.put(adapter.getClass().getSimpleName() + "#" + i++, adapter);
         }
     }
 
@@ -209,12 +225,20 @@ public class RuleService {
         return Optional.ofNullable(latestValues.get(place + "_" + measurement));
     }
 
-    private <T> void registerBean(String prefix, List<T> list) {
-        for (T object : list) {
-            AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition((Class<T>) object.getClass(), () -> object).getBeanDefinition();
+    private <T> void registerBean(String prefix, Map<String, T> map) {
+        for (Map.Entry<String, T> entry : map.entrySet()) {
+            AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition((Class<T>) entry.getValue().getClass(), () -> entry.getValue()).getBeanDefinition();
             ((BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory()).registerBeanDefinition(
-                    prefix + beanDefinition.getBeanClass().getSimpleName(), beanDefinition);
+                    prefix + entry.getKey(), beanDefinition);
+        }
+    }
 
+    private void deleteBeans(String prefix) {
+        BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
+        for (String name : beanFactory.getBeanDefinitionNames()) {
+            if (name.startsWith(prefix)) {
+                beanFactory.removeBeanDefinition(name);
+            }
         }
     }
 
