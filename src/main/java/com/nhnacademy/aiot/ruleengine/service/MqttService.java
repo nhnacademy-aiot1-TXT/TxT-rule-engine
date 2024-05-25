@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MqttService {
-
     public MqttPahoMessageDrivenChannelAdapter createMqttAdapter(String url, String clientId, MessageChannel outputChannel, String... topic) {
         MqttPahoMessageDrivenChannelAdapter adapter =
                 new MqttPahoMessageDrivenChannelAdapter(url, clientId, topic);

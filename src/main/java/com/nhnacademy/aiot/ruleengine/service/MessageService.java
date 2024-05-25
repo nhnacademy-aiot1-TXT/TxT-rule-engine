@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class MessageService {
 
     @Value("${rabbitmq.exchange.name}")

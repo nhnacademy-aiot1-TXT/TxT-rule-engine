@@ -17,12 +17,17 @@ public class OccupancyService {
     private final InfluxService influxService;
     private final RedisAdapter redisAdapter;
 
-    public void save(String place, String value) {
-        redisAdapter.setValueToHash(Constants.OCCUPANCY, place, value);
-    }
-
     public String getOccupancyStatus(String place) {
         return redisAdapter.getStringFromHash(Constants.OCCUPANCY, place);
+    }
+
+    public void updateAll() {
+        List<FluxTable> fluxTables = getValuesByPlace();
+        for (FluxTable table : fluxTables) {
+            List<String> collect = table.getRecords().stream().map(fluxRecord -> (String) fluxRecord.getRow().get(3)).collect(Collectors.toList());
+            upadate(Constants.VACANT, table, isOccupied(collect));
+            upadate(Constants.OCCUPIED, table, isVacant(collect));
+        }
     }
 
     private List<FluxTable> getValuesByPlace() {
@@ -36,13 +41,8 @@ public class OccupancyService {
         return influxService.query(query);
     }
 
-    public void updateAll() {
-        List<FluxTable> fluxTables = getValuesByPlace();
-        for (FluxTable table : fluxTables) {
-            List<String> collect = table.getRecords().stream().map(fluxRecord -> (String) fluxRecord.getRow().get(3)).collect(Collectors.toList());
-            upadate(Constants.VACANT, table, isOccupied(collect));
-            upadate(Constants.OCCUPIED, table, isVacant(collect));
-        }
+    private void save(String place, String value) {
+        redisAdapter.setValueToHash(Constants.OCCUPANCY, place, value);
     }
 
     private void upadate(String nowStatus, FluxTable table, boolean condition) {
