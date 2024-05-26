@@ -25,15 +25,15 @@ public class RuleRegisterServiceImpl implements RuleRegisterService {
      * 디바이스 등록 정보를 파싱하여 RuleInfo 객체를 생성합니다.
      * AiMode 객체는 null 일 수 있습니다.
      *
-     * @param deviceRegisterInfo 프론트서버에서 전달된 Rule 등록 요청 정보.
+     * @param ruleRegisterInfo 프론트서버에서 전달된 Rule 등록 요청 정보.
      * @return 파싱된 RuleInfo 객체
      * @throws RuntimeException JSON 파싱 중 오류 발생 시
      */
     @Override
-    public RuleInfo parseDeviceRegisterInfo(String deviceRegisterInfo) {
+    public RuleInfo parseRuleRegisterInfo(String ruleRegisterInfo) {
 
         try {
-            Map<String, Object> requestMapData = objectMapper.readValue(deviceRegisterInfo, Map.class);
+            Map<String, Object> requestMapData = objectMapper.readValue(ruleRegisterInfo, Map.class);
 
             AiMode aiMode;
             if (requestMapData.get("aiMode") != null) {

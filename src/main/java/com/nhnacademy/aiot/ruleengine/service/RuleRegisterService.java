@@ -10,7 +10,7 @@ import com.nhnacademy.aiot.ruleengine.dto.rule.RuleInfo;
  */
 public interface RuleRegisterService {
 
-    RuleInfo parseDeviceRegisterInfo(String deviceRegisterInfo);
+    RuleInfo parseRuleRegisterInfo(String ruleRegisterInfo);
 
     AiMode extractAiMode(Object aiModeDtoData);
 
