@@ -48,4 +48,12 @@ public class SensorService {
         return Objects.requireNonNull(headers.get(Constants.MQTT_RECEIVED_TOPIC, String.class)).split("/");
     }
 
+    public String getPlace(String[] topics) {
+        return topics[Constants.PLACE_INDEX];
+    }
+
+    public String getMeasurement(String[] topics) {
+        return topics[10];
+    }
+
 }

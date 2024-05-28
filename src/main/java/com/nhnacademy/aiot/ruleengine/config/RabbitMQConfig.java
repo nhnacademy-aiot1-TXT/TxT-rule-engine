@@ -39,29 +39,17 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.exchange.sensor.name}")
     private String exchangeSensorName;
 
-    @Value("${rabbitmq.aircleaner.queue.name}")
-    private String aircleanerQueue;
+    @Value("${rabbitmq.device.queue.name}")
+    private String deviceQueue;
 
-    @Value("${rabbitmq.aircleaner.routing.key}")
-    private String aircleanerRouterKey;
-
-    @Value("${rabbitmq.light.queue.name}")
-    private String lightQueue;
-
-    @Value("${rabbitmq.light.routing.key}")
-    private String lightRouterKey;
+    @Value("${rabbitmq.device.routing.key}")
+    private String deviceRouterKey;
 
     @Value("${rabbitmq.intrusion.queue.name}")
     private String intrusionQueue;
 
     @Value("${rabbitmq.intrusion.routing.key}")
     private String intrusionRouterKey;
-
-    @Value("${rabbitmq.airconditioner.queue.name}")
-    private String airconditionerQueue;
-
-    @Value("${rabbitmq.airconditioner.routing.key}")
-    private String airconditionerRouterKey;
 
     @Value("${rabbitmq.occupancy.queue.name}")
     private String occupancyQueue;
@@ -92,23 +80,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue aircleanerQueue() {
-        return new Queue(aircleanerQueue);
+    public Queue deviceQueue() {
+        return new Queue(deviceQueue);
     }
 
     @Bean
-    public Binding aircleanerBinding(Queue aircleanerQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(aircleanerQueue).to(exchange).with(aircleanerRouterKey);
-    }
-
-    @Bean
-    public Queue lightQueue() {
-        return new Queue(lightQueue);
-    }
-
-    @Bean
-    public Binding lightBinding(Queue lightQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(lightQueue).to(exchange).with(lightRouterKey);
+    public Binding deviceBinding(Queue deviceQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(deviceQueue).to(exchange).with(deviceRouterKey);
     }
 
     @Bean
@@ -119,16 +97,6 @@ public class RabbitMQConfig {
     @Bean
     public Binding intrusionBinding(Queue intrusionQueue, DirectExchange exchange) {
         return BindingBuilder.bind(intrusionQueue).to(exchange).with(intrusionRouterKey);
-    }
-
-    @Bean
-    public Queue airconditionerQueue() {
-        return new Queue(airconditionerQueue);
-    }
-
-    @Bean
-    public Binding airconditionerBinding(Queue airconditionerQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(airconditionerQueue).to(exchange).with(airconditionerRouterKey);
     }
 
     @Bean

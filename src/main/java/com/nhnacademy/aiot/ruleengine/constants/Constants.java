@@ -5,6 +5,7 @@ public final class Constants {
     public static final String RULE_ENGINE = "RuleEngine";
     public static final String RULE_ENGINE_STOP_MESSAGE = "룰엔진 서버가 종료되었습니다.";
     public static final String INTRUSION = "intrusion";
+    public static final int MEASUREMENT_INDEX = 10;
 
     private Constants() {
         throw new UnsupportedOperationException("유틸 클래스입니다.");

@@ -1,4 +1,4 @@
-package com.nhnacademy.aiot.ruleengine.dto;
+package com.nhnacademy.aiot.ruleengine.dto.rule;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -6,14 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TimeIntervalResponse {
-    private Long timeIntervalId;
-    private Long sensorId;
-    private String sensorName;
-    private LocalTime begin;
-    private LocalTime end;
+public class AiMode {
+    private List<MqttInInfo> mqttInInfos;
+    private LocalTime timeInterval;
 }

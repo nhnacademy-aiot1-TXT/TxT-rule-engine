@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,6 +47,16 @@ class RedisAdapterTest {
         when(redisTemplate.hasKey(testKey)).thenReturn(true);
 
         boolean result = redisAdapter.hasKey(testKey);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void hasKeyHash() {
+        when(redisTemplate.opsForHash()).thenReturn(hashOps);
+        when(hashOps.hasKey(testKey, testHashKey)).thenReturn(true);
+
+        boolean result = redisAdapter.hasKey(testKey, testHashKey);
 
         assertTrue(result);
     }
@@ -230,5 +241,15 @@ class RedisAdapterTest {
         redisAdapter.setValueToHash(testKey, testHashKey, testValue);
 
         verify(hashOps).put(testKey, testHashKey, testValue);
+    }
+
+    @Test
+    void getEntries() {
+        when(redisTemplate.opsForHash()).thenReturn(hashOps);
+        when(hashOps.entries(testKey)).thenReturn(Map.of("test", "testVal"));
+
+        Map<Object, Object> result = redisAdapter.getEntries(testKey);
+
+        assertEquals("testVal", result.get("test"));
     }
 }

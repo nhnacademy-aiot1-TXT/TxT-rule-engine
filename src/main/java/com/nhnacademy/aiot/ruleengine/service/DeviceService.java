@@ -11,31 +11,15 @@ public class DeviceService {
 
     private final RedisAdapter redisAdapter;
 
-    public boolean isAirConditionerPowered() {
-        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER);
+    public boolean isDevicePowered(String deviceName) {
+        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, deviceName);
     }
 
-    public boolean isAirCleanerPowered() {
-        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCLEANER);
+    public boolean isAiMode(String place, String deviceName) {
+        return redisAdapter.getBooleanFromHash("ai_mode", place + "_" + deviceName);
     }
 
-    public boolean isLightPowered() {
-        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT);
-    }
-
-    public void setAirConditionerPower(boolean power) {
-        redisAdapter.setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER, power);
-    }
-
-    public void setAirCleanerPower(boolean power) {
-        redisAdapter.setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCLEANER, power);
-    }
-
-    public void setLightPower(boolean power) {
-        redisAdapter.setValueToHash(Constants.DEVICE_POWER_STATUS, Constants.LIGHT, power);
-    }
-
-    public boolean isAutoMode() {
-        return redisAdapter.getBooleanValue(Constants.AUTO_MODE);
+    public boolean isCustomMode(String place, String deviceName) {
+        return redisAdapter.getBooleanFromHash("custom_mode", place + "_" + deviceName);
     }
 }

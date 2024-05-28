@@ -1,69 +1,57 @@
 package com.nhnacademy.aiot.ruleengine.config.flow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.service.OccupancyService;
-import com.nhnacademy.aiot.ruleengine.service.SensorService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.Pollers;
+import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.*;
 
 @EnableIntegration
-@SpringJUnitConfig(classes = {OccupancyFlowConfig.class, SensorService.class, OccupancyFlowConfigTest.TestConfig.class})
+@SpringJUnitConfig(classes = {OccupancyFlowConfigTest.TestConfig.class})
 class OccupancyFlowConfigTest {
+
     @Autowired
-    private MessageChannel occupancyChannel;
+    private IntegrationFlowContext flowContext;
+    @Autowired
+    private IntegrationFlow occupancyProcess;
     @MockBean
-    private OccupancyService occupancyService;
-    private Message<String> message;
-
-    @BeforeEach
-    void setUp() {
-        message = new GenericMessage<>("{\"time\":1714029000000,\"value\":\"occupied\"}");
-        when(occupancyService.shouldStartProcess(any(Payload.class), anyString())).thenReturn(true);
-        when(occupancyService.setTimer(any(Payload.class), anyString())).then(returnsFirstArg());
-        when(occupancyService.save(any(Payload.class), anyString())).then(returnsFirstArg());
-        when(occupancyService.updateOccupancy(any(Payload.class), anyString())).then(returnsFirstArg());
-    }
+    private static OccupancyService occupancyService;
 
     @Test
-    void updateOccupancy() {
-        when(occupancyService.isTimerActive(any(Payload.class), anyString())).thenReturn(false);
+    void test() {
+        flowContext.registration(occupancyProcess).id("intrusionProcess").register();
+        doNothing().when(occupancyService).updateAll();
 
-        occupancyChannel.send(message);
-
-        verify(occupancyService).updateOccupancy(any(Payload.class), anyString());
+        await().atMost(6, TimeUnit.SECONDS)
+               .untilAsserted(() -> verify(occupancyService, atLeastOnce()).updateAll());
     }
 
-    @Test
-    void saveOccupancySave() {
-        when(occupancyService.isTimerActive(any(Payload.class), anyString())).thenReturn(true);
-
-        occupancyChannel.send(message);
-
-        verify(occupancyService).save(any(Payload.class), anyString());
-    }
 
     @Configuration
     static class TestConfig {
         @Bean
-        MessageChannel occupancyChannel() {
-            return new DirectChannel();
+        public IntegrationFlow occupancyProcess() {
+            return IntegrationFlows.from(() -> new GenericMessage<>("trigger"),
+                                         c -> c.poller(Pollers.fixedRate(2000)))
+                                   .handle((payload, headers) ->
+                                               {
+                                                   occupancyService.updateAll();
+                                                   return null;
+                                               }).nullChannel();
         }
 
         @Bean

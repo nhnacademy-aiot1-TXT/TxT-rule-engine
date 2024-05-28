@@ -14,7 +14,7 @@ class RabbitMQConfigTest {
     private ConnectionFactory connectionFactory;
 
     @Test
-    public void testRabbitTemplate() {
+    void testRabbitTemplate() {
         RabbitMQConfig rabbitMqConfig = new RabbitMQConfig();
         RabbitTemplate result = rabbitMqConfig.rabbitTemplate(connectionFactory);
         assertNotNull(result);
