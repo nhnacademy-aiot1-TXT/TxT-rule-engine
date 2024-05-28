@@ -2,6 +2,7 @@ package com.nhnacademy.aiot.ruleengine.controller;
 
 import com.nhnacademy.aiot.ruleengine.dto.rule.RuleInfo;
 import com.nhnacademy.aiot.ruleengine.service.RuleRegisterService;
+import com.nhnacademy.aiot.ruleengine.service.RuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/rule")
 public class RuleRegisterController {
     private final RuleRegisterService ruleRegisterService;
+    private final RuleService ruleService;
 
     /**
      * 룰 정보 플로우를 등록하는 엔드포인트.
@@ -31,7 +33,6 @@ public class RuleRegisterController {
         try {
             RuleInfo ruleInfo = ruleRegisterService.parseRuleRegisterInfo(ruleRegisterInfo);
 
-            //Flow 등록 구현
             ruleService.updateRule(ruleInfo);
 
             return ResponseEntity.ok("Flow registered successfully!");
