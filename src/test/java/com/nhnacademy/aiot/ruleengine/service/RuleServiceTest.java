@@ -247,3 +247,4 @@
 //        return new GenericMessage<>("{\"time\":1714029232710,\"value\":" + value + "}", new MessageHeaders(headersMap));
 //    }
 //}
+//
