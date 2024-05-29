@@ -28,7 +28,7 @@ public class MessageService {
     }
 
     public void sendDeviceMessage(ValueMessage message) {
-        rabbitTemplate.convertAndSend(exchangeName, "txt.device", message);
+        rabbitTemplate.convertAndSend(exchangeName, "txt." + message.getDeviceName(), message);
     }
 
     public void sendSensorMessage(String measurement, DetailMessage message) {
