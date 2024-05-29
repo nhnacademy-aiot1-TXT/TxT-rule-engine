@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -21,9 +22,9 @@ public class StartUpRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws JsonProcessingException {
-        Collection<Object> ruleInfos = redisAdapter.getEntries("rule_infos").values();
-        for (Object ruleInfoStr : ruleInfos) {
-            RuleInfo ruleInfo = objectMapper.readValue((String) ruleInfoStr, RuleInfo.class);
+        List<String> ruleInfos = redisAdapter.getEntries("rule_infos").values().stream().map(object -> (String) object).collect(Collectors.toList());
+        for (String ruleInfoStr : ruleInfos) {
+            RuleInfo ruleInfo = objectMapper.readValue(ruleInfoStr, RuleInfo.class);
             ruleService.createRule(ruleInfo);
         }
     }

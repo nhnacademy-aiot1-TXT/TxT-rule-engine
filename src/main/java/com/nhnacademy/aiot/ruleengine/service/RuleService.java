@@ -238,6 +238,7 @@ public class RuleService {
         BeanDefinitionRegistry beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
         for (String name : beanFactory.getBeanDefinitionNames()) {
             if (name.startsWith(prefix)) {
+                beanFactory.getBeanDefinition(name);
                 beanFactory.removeBeanDefinition(name);
             }
         }
