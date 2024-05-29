@@ -11,6 +11,7 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * RuleRegisterService의 구현체.
@@ -19,6 +20,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class RuleRegisterServiceImpl implements RuleRegisterService {
+
     private final ObjectMapper objectMapper;
 
     /**
@@ -72,7 +74,7 @@ public class RuleRegisterServiceImpl implements RuleRegisterService {
             String aiModeJson = objectMapper.writeValueAsString(aiModeData);
             Map<String, Object> aiModeMap = objectMapper.readValue(aiModeJson, Map.class);
 
-            List<MqttInInfo> mqttInInfos = objectMapper.convertValue(aiModeMap.get("mqttInInfos"), List.class);
+            List<MqttInInfo> mqttInInfos = ((List<Map<String, String>>) aiModeMap.get("mqttInInfos")).stream().map(map -> new MqttInInfo(map.get("mqttUrl"), map.get("topic"))).collect(Collectors.toList());
             String hourStr = aiModeMap.get("hour").toString();
             String minutesStr = aiModeMap.get("minutes").toString();
 
