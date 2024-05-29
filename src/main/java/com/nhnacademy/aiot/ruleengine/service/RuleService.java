@@ -90,7 +90,7 @@ public class RuleService {
                                                        String sensorMeasurement = sensorService.getMeasurement(topics);
 
                                                        latestValues.put(sensorPlace + "_" + sensorMeasurement, payload.getValue());
-                                                       log.debug("latestValue: " + sensorPlace + "_" + sensorMeasurement + ":" + payload.getValue());
+                                                       log.info("latestValue: " + sensorPlace + "_" + sensorMeasurement + ":" + payload.getValue());
 
                                                        return payload;
                                                    }).nullChannel();
@@ -154,12 +154,12 @@ public class RuleService {
                                                       {
                                                           if (isAllOnConditionsTrue(customMode) && !deviceService.isDevicePowered(deviceName)) {
                                                               messageService.sendDeviceMessage(new ValueMessage(place, deviceName, true));
-                                                              log.debug(place + "_" + deviceName + ": send on Message");
+                                                              log.info(place + "_" + deviceName + ": send on Message");
                                                               return payload;
                                                           }
                                                           if (isAllOffConditionsTrue(customMode) && deviceService.isDevicePowered(deviceName)) {
                                                               messageService.sendDeviceMessage(new ValueMessage(place, deviceName, false));
-                                                              log.debug(place + "_" + deviceName + ": send off Message");
+                                                              log.info(place + "_" + deviceName + ": send off Message");
                                                           }
 
                                                           return null;
@@ -237,7 +237,7 @@ public class RuleService {
             ((BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory()).registerBeanDefinition(
                     prefix + entry.getKey(), beanDefinition);
         }
-        log.debug(prefix + "bean 생성 완료");
+        log.info(prefix + "bean 생성 완료");
     }
 
     private void deleteBeans(String prefix) {
