@@ -17,7 +17,6 @@
 //import org.springframework.context.annotation.Configuration;
 //import org.springframework.http.ResponseEntity;
 //import org.springframework.integration.config.EnableIntegration;
-//import org.springframework.integration.dsl.IntegrationFlow;
 //import org.springframework.integration.dsl.context.IntegrationFlowContext;
 //import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 //import org.springframework.messaging.Message;
@@ -99,9 +98,9 @@
 //        ArgumentCaptor<Map<String, Object>> captor = forClass(Map.class);
 //
 //        ruleService.createRule(ruleInfo);
-//        flowContext.registration(applicationContext.getBean("class_a.airconditioner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
-//        flowContext.registration(applicationContext.getBean("class_a.airconditioner.StandardIntegrationFlow.aiModeFlow", IntegrationFlow.class)).id("aiModeFlow").register();
-//        flowContext.registration(applicationContext.getBean("class_a.airconditioner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_a.airconditioner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_a.airconditioner.StandardIntegrationFlow.aiModeFlow", IntegrationFlow.class)).id("aiModeFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_a.airconditioner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
 //        MessageChannel channel = applicationContext.getBean("class_a.airconditioner.DirectChannel", MessageChannel.class);
 //        channel.send(temperatrueMsg);
 //        channel.send(humidityMsg);
@@ -119,9 +118,9 @@
 //        assertNotNull(applicationContext.getAutowireCapableBeanFactory().getBean("class_a.airconditioner.MqttPahoMessageDrivenChannelAdapter#1"));
 //        assertNotNull(applicationContext.getAutowireCapableBeanFactory().getBean("class_a.airconditioner.MqttPahoMessageDrivenChannelAdapter#2"));
 //
-//        flowContext.remove("latestValueFlow");
-//        flowContext.remove("aiModeFlow");
-//        flowContext.remove("customModeFlow");
+//        flowContext.remove("class_a.airconditioner.StandardIntegrationFlow.latestValueFlow");
+//        flowContext.remove("class_a.airconditioner.StandardIntegrationFlow.aiModeFlow");
+//        flowContext.remove("class_a.airconditioner.StandardIntegrationFlow.customModeFlow");
 //    }
 //
 //    @Test
@@ -146,8 +145,8 @@
 //        ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 //
 //        ruleService.createRule(ruleInfo);
-//        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
-//        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
 //        MessageChannel channel = applicationContext.getBean("class_b.aircleaner.DirectChannel", MessageChannel.class);
 //        channel.send(tvoc500Msg);
 //        channel.send(temp29Msg);
@@ -157,8 +156,8 @@
 //        assertEquals(deviceName, captor.getValue().getDeviceName());
 //        assertTrue((Boolean) captor.getValue().getValue());
 //
-//        flowContext.remove("latestValueFlow");
-//        flowContext.remove("customModeFlow");
+//        flowContext.remove("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow");
+//        flowContext.remove("class_b.aircleaner.StandardIntegrationFlow.customModeFlow");
 //    }
 //
 //    @Test
@@ -183,8 +182,8 @@
 //        ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 //
 //        ruleService.createRule(ruleInfo);
-//        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
-//        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
 //        MessageChannel channel = applicationContext.getBean("class_b.aircleaner.DirectChannel", MessageChannel.class);
 //        channel.send(tvoc100Msg);
 //        channel.send(temp19Msg);
@@ -194,8 +193,8 @@
 //        assertEquals(deviceName, captor.getValue().getDeviceName());
 //        assertFalse((Boolean) captor.getValue().getValue());
 //
-//        flowContext.remove("latestValueFlow");
-//        flowContext.remove("customModeFlow");
+//        flowContext.remove("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow");
+//        flowContext.remove("class_b.aircleaner.StandardIntegrationFlow.customModeFlow");
 //    }
 //
 //    @Test
@@ -220,8 +219,8 @@
 //        ArgumentCaptor<ValueMessage> captor = forClass(ValueMessage.class);
 //
 //        ruleService.createRule(ruleInfo);
-//        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
-//        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow", IntegrationFlow.class)).id("latestValueFlow").register();
+//        //        flowContext.registration(applicationContext.getBean("class_b.aircleaner.StandardIntegrationFlow.customModeFlow", IntegrationFlow.class)).id("customModeFlow").register();
 //        MessageChannel channel = applicationContext.getBean("class_b.aircleaner.DirectChannel", MessageChannel.class);
 //        channel.send(tvoc400Msg);
 //        channel.send(temp19Msg);
@@ -231,10 +230,9 @@
 //        assertEquals(deviceName, captor.getValue().getDeviceName());
 //        assertFalse((Boolean) captor.getValue().getValue());
 //
-//        flowContext.remove("latestValueFlow");
-//        flowContext.remove("customModeFlow");
+//        flowContext.remove("class_b.aircleaner.StandardIntegrationFlow.latestValueFlow");
+//        flowContext.remove("class_b.aircleaner.StandardIntegrationFlow.customModeFlow");
 //    }
-//
 //
 //    @Configuration
 //    static class TestConfig {

@@ -11,16 +11,14 @@ import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.dto.rule.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlowBuilder;
-import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.Pollers;
+import org.springframework.integration.dsl.*;
+import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
@@ -32,13 +30,14 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class RuleService {
-
     private final MqttService mqttService;
     private final ObjectMapper objectMapper;
     private final RedisAdapter redisAdapter;
     private final CommonAdapter commonAdapter;
     private final SensorService sensorService;
     private final DeviceService deviceService;
+    @Autowired
+    private IntegrationFlowContext flowContext;
     private final MessageService messageService;
     private final OccupancyService occupancyService;
     private final ApplicationContext applicationContext;
@@ -51,6 +50,7 @@ public class RuleService {
 
         if (redisAdapter.hasKey("rule_infos", place + "_" + deviceName)) {
             deleteBeans(place + "." + deviceName + ".");
+            commonAdapter.deleteSensorsByPlaceAndDevice(place, deviceName);
         }
         redisAdapter.setValueToHash("rule_infos", place + "_" + deviceName, objectMapper.writeValueAsString(ruleInfo));
 
@@ -236,18 +236,33 @@ public class RuleService {
             AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition((Class<T>) entry.getValue().getClass(), () -> entry.getValue()).getBeanDefinition();
             ((BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory()).registerBeanDefinition(
                     prefix + entry.getKey(), beanDefinition);
+            if (beanDefinition.getBeanClass().equals(StandardIntegrationFlow.class)) {
+                registerFlow(prefix, entry.getKey(), (IntegrationFlow) entry.getValue());
+            }
         }
+
         log.info(prefix + "bean 생성 완료");
     }
 
     private void deleteBeans(String prefix) {
-        BeanDefinitionRegistry beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
+        BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
         for (String name : beanFactory.getBeanDefinitionNames()) {
             if (name.startsWith(prefix)) {
-                beanFactory.getBeanDefinition(name);
                 beanFactory.removeBeanDefinition(name);
+                if ("org.springframework.integration.dsl.StandardIntegrationFlow".equals(beanFactory.getBeanDefinition(name).getBeanClassName())) {
+                    deleteFlow(name);
+                }
             }
         }
+        log.info(prefix + "로 시작하는 기존 bean 모두 삭제 완료");
+    }
+
+    private void registerFlow(String prefix, String flowName, IntegrationFlow flow) {
+        flowContext.registration(flow).id(prefix + flowName).register();
+    }
+
+    private void deleteFlow(String flowName) {
+        flowContext.remove(flowName);
     }
 
     private Set<MqttInInfo> combineUniqueMqttInfos(Collection<MqttInInfo> mqttInfos, Collection<MqttInInfo> mqttInfos2) {
