@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
@@ -234,7 +235,7 @@ public class RuleService {
     }
 
     private void deleteBeans(String prefix) {
-        BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
+        BeanDefinitionRegistry beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
         for (String name : beanFactory.getBeanDefinitionNames()) {
             if (name.startsWith(prefix)) {
                 beanFactory.removeBeanDefinition(name);
