@@ -10,6 +10,7 @@ import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.dto.rule.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RuleService {
@@ -88,6 +90,7 @@ public class RuleService {
                                                        String sensorMeasurement = sensorService.getMeasurement(topics);
 
                                                        latestValues.put(sensorPlace + "_" + sensorMeasurement, payload.getValue());
+                                                       log.debug("latestValue: " + sensorPlace + "_" + sensorMeasurement + ":" + payload.getValue());
 
                                                        return payload;
                                                    }).nullChannel();
@@ -151,10 +154,12 @@ public class RuleService {
                                                       {
                                                           if (isAllOnConditionsTrue(customMode) && !deviceService.isDevicePowered(deviceName)) {
                                                               messageService.sendDeviceMessage(new ValueMessage(place, deviceName, true));
+                                                              log.debug(place + "_" + deviceName + ": send on Message");
                                                               return payload;
                                                           }
                                                           if (isAllOffConditionsTrue(customMode) && deviceService.isDevicePowered(deviceName)) {
                                                               messageService.sendDeviceMessage(new ValueMessage(place, deviceName, false));
+                                                              log.debug(place + "_" + deviceName + ": send off Message");
                                                           }
 
                                                           return null;
@@ -232,6 +237,7 @@ public class RuleService {
             ((BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory()).registerBeanDefinition(
                     prefix + entry.getKey(), beanDefinition);
         }
+        log.debug(prefix + "bean 생성 완료");
     }
 
     private void deleteBeans(String prefix) {
