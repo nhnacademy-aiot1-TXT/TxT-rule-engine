@@ -43,7 +43,7 @@ class MessageServiceTest {
         ValueMessage message = new ValueMessage("test", "test1", "test2");
         messageService.sendDeviceMessage(message);
 
-        verify(rabbitTemplate).convertAndSend(any(), eq("txt.device"), any(ValueMessage.class));
+        verify(rabbitTemplate).convertAndSend(any(), eq("txt.test1"), any(ValueMessage.class));
     }
 
     @Test
