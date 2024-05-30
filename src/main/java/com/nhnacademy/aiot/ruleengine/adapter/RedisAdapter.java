@@ -83,7 +83,7 @@ public class RedisAdapter {
     }
 
     public boolean getBooleanFromHash(String key, String hashKey) {
-        return Boolean.parseBoolean((String) redisTemplate.opsForHash().get(key, hashKey));
+        return (boolean) redisTemplate.opsForHash().get(key, hashKey);
     }
 
     public Double getDoubleFromHash(String key, String hashKey) {

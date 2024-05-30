@@ -15,6 +15,9 @@ public interface CommonAdapter {
     @PutMapping("/api/common/device-sensor")
     ResponseEntity<DeviceSensorResponse> updateSensorByDeviceAndSensor(@RequestBody DeviceSensorRequest deviceSensorRequest);
 
+    @PostMapping("/api/common/device-sensor")
+    ResponseEntity<DeviceSensorResponse> addSensor(@RequestBody DeviceSensorRequest deviceSensorRequest);
+
     @DeleteMapping("/api/common/device-sensor/{placeCode}/{deviceName}")
     ResponseEntity<Void> deleteSensorsByPlaceAndDevice(@PathVariable String placeCode, @PathVariable String deviceName);
 }
