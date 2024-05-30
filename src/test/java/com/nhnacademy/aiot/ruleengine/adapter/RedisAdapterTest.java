@@ -196,7 +196,7 @@ class RedisAdapterTest {
     @Test
     void getBooleanFromHash() {
         when(redisTemplate.opsForHash()).thenReturn(hashOps);
-        when(hashOps.get(testKey, testHashKey)).thenReturn("true");
+        when(hashOps.get(testKey, testHashKey)).thenReturn(true);
 
         boolean result = redisAdapter.getBooleanFromHash(testKey, testHashKey);
 

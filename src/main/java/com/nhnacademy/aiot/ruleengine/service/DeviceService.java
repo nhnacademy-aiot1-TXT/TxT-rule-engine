@@ -11,8 +11,8 @@ public class DeviceService {
 
     private final RedisAdapter redisAdapter;
 
-    public boolean isDevicePowered(String deviceName) {
-        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, deviceName);
+    public boolean isDevicePowered(String place, String deviceName) {
+        return redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, place + "_" + deviceName);
     }
 
     public boolean isAiMode(String place, String deviceName) {

@@ -6,6 +6,7 @@ import com.nhnacademy.aiot.ruleengine.service.RuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ public class RuleRegisterController {
      * @return 플로우가 성공적으로 등록되었을 경우 성공 메시지를 포함한 ResponseEntity,
      * 등록이 실패할 경우 오류 메시지를 포함한 ResponseEntity.
      */
+    @Transactional
     @PostMapping(value = "/device/register")
     public ResponseEntity<String> registerRuleInfoFlow(@RequestBody String ruleRegisterInfo) {
         try {

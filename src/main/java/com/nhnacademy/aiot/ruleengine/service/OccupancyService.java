@@ -48,7 +48,8 @@ public class OccupancyService {
     private void upadate(String nowStatus, FluxTable table, boolean condition) {
         String value = Constants.OCCUPIED.equals(nowStatus) ? Constants.VACANT : Constants.OCCUPIED;
         String place = (String) table.getRecords().get(0).getRow().get(2);
-        if (nowStatus.equals(getOccupancyStatus(place)) && condition) {
+        String occupancyStatus = getOccupancyStatus(place);
+        if ((nowStatus.equals(occupancyStatus) || occupancyStatus == null) && condition) {
             save(place, value);
         }
     }
