@@ -13,6 +13,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -75,8 +76,8 @@ public class RuleService {
         }
         createCustomModeFlow(place, deviceName, ruleInfo.getCustomMode(), flows);
 
-        registerBean(place + "." + deviceName + ".", beans);
         registerFlows(place + "." + deviceName + ".", flows);
+        registerBean(place + "." + deviceName + ".", beans);
     }
 
     private void createLatestValueSavingFlow(RuleInfo ruleInfo, Map<String, Object> beans, Map<String, IntegrationFlow> flows) {
@@ -150,7 +151,7 @@ public class RuleService {
                                                                          });
 
         if (customMode.isOccupancyCheckRequired()) {
-            flowBuilder = flowBuilder.filter(Payload.class, payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(place)),
+            flowBuilder = flowBuilder.filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(place)),
                                              e -> e.discardFlow(flow -> flow.handle((payload, headers) ->
                                                                                         {
                                                                                             if (deviceService.isDevicePowered(place, deviceName)) {
@@ -200,7 +201,7 @@ public class RuleService {
             MqttPahoMessageDrivenChannelAdapter adapter = mqttService.createMqttAdapter(mqttInInfo.getMqttUrl(),
                                                                                         UUID.randomUUID().toString(), channel, mqttInInfo.getTopic());
             adapter.start();
-            log.info("Created MQTT adapter for topic: " + mqttInInfo.getMqttUrl() + " : " + mqttInInfo.getTopic());
+            log.info("MQTT adapter 생성 완료: " + mqttInInfo.getMqttUrl() + " : " + mqttInInfo.getTopic());
             beans.put(adapter.getClass().getSimpleName() + "#" + i++, adapter);
         }
     }
@@ -274,7 +275,11 @@ public class RuleService {
         }
         for (String name : beanFactory.getBeanDefinitionNames()) {
             if (name.startsWith(prefix)) {
-                beanFactory.getBeanDefinition(name);
+                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(name);
+                if (((AbstractBeanDefinition) beanDefinition).getBeanClass().equals(MqttPahoMessageDrivenChannelAdapter.class)) {
+                    mqttService.stopMqttAdapter(name);
+                    log.info(name + " 중지");
+                }
                 beanFactory.removeBeanDefinition(name);
             }
         }
@@ -282,7 +287,7 @@ public class RuleService {
         log.info(prefix + "로 시작하는 기존 bean 모두 삭제 완료");
     }
 
-    private <T> void registerFlows(String prefix, Map<String, IntegrationFlow> map) {
+    private void registerFlows(String prefix, Map<String, IntegrationFlow> map) {
         for (Map.Entry<String, IntegrationFlow> entry : map.entrySet()) {
             flowContext.registration(entry.getValue()).id(prefix + entry.getKey()).register();
         }
