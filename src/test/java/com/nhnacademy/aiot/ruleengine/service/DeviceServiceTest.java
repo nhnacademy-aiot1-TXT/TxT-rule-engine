@@ -25,10 +25,10 @@ class DeviceServiceTest {
 
     @Test
     void testIsAirConditionerPowered() {
-        Mockito.when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.AIRCONDITIONER))
+        Mockito.when(redisAdapter.getBooleanFromHash(Constants.DEVICE_POWER_STATUS, Constants.CLASS_A + "_" + Constants.AIRCONDITIONER))
                .thenReturn(true);
 
-        boolean result = deviceService.isDevicePowered(Constants.AIRCONDITIONER);
+        boolean result = deviceService.isDevicePowered(Constants.CLASS_A, Constants.AIRCONDITIONER);
 
         assertTrue(result);
     }

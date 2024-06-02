@@ -46,15 +46,11 @@ public class RuleRegisterServiceImpl implements RuleRegisterService {
 
             CustomMode customMode = extractCustomMode(requestMapData.get("customMode"));
 
-            RuleInfo ruleInfo = new RuleInfo(
+            return new RuleInfo(
                     requestMapData.get("place").toString(),
                     requestMapData.get("deviceName").toString(),
                     aiMode,
                     customMode);
-
-            System.out.println("RuleInfo: " + ruleInfo);
-
-            return ruleInfo;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

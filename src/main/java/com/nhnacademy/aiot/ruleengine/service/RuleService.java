@@ -9,16 +9,22 @@ import com.nhnacademy.aiot.ruleengine.dto.DeviceSensorRequest;
 import com.nhnacademy.aiot.ruleengine.dto.Payload;
 import com.nhnacademy.aiot.ruleengine.dto.message.ValueMessage;
 import com.nhnacademy.aiot.ruleengine.dto.rule.*;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
+import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlowBuilder;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.Pollers;
+import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
@@ -26,21 +32,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
+@IntegrationComponentScan
 @RequiredArgsConstructor
 public class RuleService {
-
     private final MqttService mqttService;
     private final ObjectMapper objectMapper;
     private final RedisAdapter redisAdapter;
     private final CommonAdapter commonAdapter;
     private final SensorService sensorService;
     private final DeviceService deviceService;
+    @Autowired
+    private IntegrationFlowContext flowContext;
     private final MessageService messageService;
     private final OccupancyService occupancyService;
     private final ApplicationContext applicationContext;
     private final Map<String, String> latestValues = new HashMap<>();
-
 
     public void updateRule(RuleInfo ruleInfo) throws JsonProcessingException {
         String place = ruleInfo.getPlace();
@@ -48,28 +56,31 @@ public class RuleService {
 
         if (redisAdapter.hasKey("rule_infos", place + "_" + deviceName)) {
             deleteBeans(place + "." + deviceName + ".");
+            commonAdapter.deleteSensorsByPlaceAndDevice(place, deviceName);
         }
-        redisAdapter.setValueToHash("rule_infos", place + "_" + deviceName, objectMapper.writeValueAsString(ruleInfo));
 
         createRule(ruleInfo);
+        redisAdapter.setValueToHash("rule_infos", place + "_" + deviceName, objectMapper.writeValueAsString(ruleInfo));
     }
 
     public void createRule(RuleInfo ruleInfo) {
         String place = ruleInfo.getPlace();
         String deviceName = ruleInfo.getDeviceName();
         Map<String, Object> beans = new HashMap<>();
+        Map<String, IntegrationFlow> flows = new HashMap<>();
 
-        createLatestValueSavingFlow(ruleInfo, beans);
+        createLatestValueSavingFlow(ruleInfo, beans, flows);
         updateOnOffValue(place, deviceName, ruleInfo.getCustomMode());
         if (ruleInfo.getAiMode().isPresent()) {
-            createAiModeScheduledFlow(place, deviceName, ruleInfo.getAiMode().get(), beans);
+            createAiModeScheduledFlow(place, deviceName, ruleInfo.getAiMode().get(), flows);
         }
-        createCustomModeFlow(place, deviceName, ruleInfo.getCustomMode(), beans);
+        createCustomModeFlow(place, deviceName, ruleInfo.getCustomMode(), flows);
 
+        registerFlows(place + "." + deviceName + ".", flows);
         registerBean(place + "." + deviceName + ".", beans);
     }
 
-    private void createLatestValueSavingFlow(RuleInfo ruleInfo, Map<String, Object> beans) {
+    private void createLatestValueSavingFlow(RuleInfo ruleInfo, Map<String, Object> beans, Map<String, IntegrationFlow> flows) {
         MessageChannel messageChannel = createMessageChannel(beans);
         Set<MqttInInfo> customMqttInInfos = ruleInfo.getCustomMode().getMqttConditionMap().keySet();
         Set<MqttInInfo> mqttInInfos = customMqttInInfos;
@@ -87,16 +98,22 @@ public class RuleService {
                                                        String sensorMeasurement = sensorService.getMeasurement(topics);
 
                                                        latestValues.put(sensorPlace + "_" + sensorMeasurement, payload.getValue());
+                                                       log.info("latestValue: " + sensorPlace + "_" + sensorMeasurement + ":" + payload.getValue());
 
                                                        return payload;
                                                    }).nullChannel();
-        beans.put(flow.getClass().getSimpleName() + ".latestValueFlow", flow);
+        flows.put(flow.getClass().getSimpleName() + ".latestValueFlow", flow);
     }
 
-    private void createAiModeScheduledFlow(String place, String deviceName, AiMode aiMode, Map<String, Object> beans) {
+    private void createAiModeScheduledFlow(String place, String deviceName, AiMode aiMode, Map<String, IntegrationFlow> flows) {
         IntegrationFlow flow = IntegrationFlows.from(() -> new GenericMessage<>("trigger"),
                                                      c -> c.poller(Pollers.fixedRate(aiMode.getTimeInterval().toNanoOfDay() / 1_000_000)))
                                                .filter(p -> deviceService.isAiMode(place, deviceName) && !deviceService.isCustomMode(place, deviceName))
+                                               .handle((payload, headers) ->
+                                                           {
+                                                               log.info(place + "." + deviceName + ".aiModeFlow 실행");
+                                                               return payload;
+                                                           })
                                                .handle((payload, headers) ->
                                                            {
                                                                Map<String, Object> messageValue = new HashMap<>();
@@ -116,31 +133,39 @@ public class RuleService {
                                                                }
 
                                                                messageService.sendPredictMessage(messageValue);
+                                                               log.info(place + "_" + deviceName + ": send Predict Message");
 
                                                                return null;
                                                            }).nullChannel();
-        beans.put(flow.getClass().getSimpleName() + ".aiModeFlow", flow);
+        flows.put(flow.getClass().getSimpleName() + ".aiModeFlow", flow);
     }
 
-    private void createCustomModeFlow(String place, String deviceName, CustomMode customMode, Map<String, Object> beans) {
+    private void createCustomModeFlow(String place, String deviceName, CustomMode customMode, Map<String, IntegrationFlow> flows) {
         IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(() -> new GenericMessage<>("trigger"),
                                                                    c -> c.poller(Pollers.fixedRate(customMode.getTimeInterval().toNanoOfDay() / 1_000_000)))
-                                                             .filter(p -> deviceService.isCustomMode(place, deviceName));
-
+                                                             .filter(p -> deviceService.isCustomMode(place, deviceName))
+                                                             .handle((payload, headers) ->
+                                                                         {
+                                                                             log.info(place + "." + deviceName + ".customModeFlow 실행");
+                                                                             return payload;
+                                                                         });
+      
         if (customMode.isOccupancyCheckRequired()) {
-            flowBuilder = flowBuilder.filter(Payload.class, payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(place)),
+            flowBuilder = flowBuilder.filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(place)),
                                              e -> e.discardFlow(flow -> flow.handle((payload, headers) ->
                                                                                         {
-                                                                                            if (deviceService.isDevicePowered(deviceName)) {
+                                                                                            if (deviceService.isDevicePowered(place, deviceName)) {
                                                                                                 messageService.sendDeviceMessage(new ValueMessage(place, deviceName, false));
+                                                                                                log.info(place + "_" + deviceName + ": send off Message");
                                                                                             }
                                                                                             return null;
                                                                                         }).nullChannel()));
         } else {
             flowBuilder = flowBuilder.handle((payload, headers) ->
                                                  {
-                                                     if (Constants.VACANT.equals(occupancyService.getOccupancyStatus(place)) && deviceService.isDevicePowered(deviceName)) {
+                                                     if (Constants.VACANT.equals(occupancyService.getOccupancyStatus(place)) && deviceService.isDevicePowered(place, deviceName)) {
                                                          messageService.sendDeviceMessage(new ValueMessage(place, deviceName, false));
+                                                         log.info(place + "_" + deviceName + ": send off Message");
                                                      }
                                                      return payload;
                                                  });
@@ -148,17 +173,19 @@ public class RuleService {
 
         IntegrationFlow flow = flowBuilder.handle((payload, headers) ->
                                                       {
-                                                          if (isAllOnConditionsTrue(customMode) && !deviceService.isDevicePowered(deviceName)) {
+                                                          if (isAllOnConditionsTrue(customMode) && !deviceService.isDevicePowered(place, deviceName)) {
                                                               messageService.sendDeviceMessage(new ValueMessage(place, deviceName, true));
+                                                              log.info(place + "_" + deviceName + ": send on Message");
                                                               return payload;
                                                           }
-                                                          if (isAllOffConditionsTrue(customMode) && deviceService.isDevicePowered(deviceName)) {
+                                                          if (isAllOffConditionsTrue(customMode) && deviceService.isDevicePowered(place, deviceName)) {
                                                               messageService.sendDeviceMessage(new ValueMessage(place, deviceName, false));
+                                                              log.info(place + "_" + deviceName + ": send off Message");
                                                           }
 
                                                           return null;
                                                       }).nullChannel();
-        beans.put(flow.getClass().getSimpleName() + ".customModeFlow", flow);
+        flows.put(flow.getClass().getSimpleName() + ".customModeFlow", flow);
     }
 
 
@@ -173,6 +200,8 @@ public class RuleService {
         for (MqttInInfo mqttInInfo : mqttInInfoSet) {
             MqttPahoMessageDrivenChannelAdapter adapter = mqttService.createMqttAdapter(mqttInInfo.getMqttUrl(),
                                                                                         UUID.randomUUID().toString(), channel, mqttInInfo.getTopic());
+            adapter.start();
+            log.info("MQTT adapter 생성 완료: " + mqttInInfo.getMqttUrl() + " : " + mqttInInfo.getTopic());
             beans.put(adapter.getClass().getSimpleName() + "#" + i++, adapter);
         }
     }
@@ -186,7 +215,11 @@ public class RuleService {
                                                            .onValue(entry.getValue().getOnCondition().getStandardValue())
                                                            .offValue(entry.getValue().getOffCondition().isPresent() ? entry.getValue().getOffCondition().get().getStandardValue() : -1)
                                                            .build();
-            commonAdapter.updateSensorByDeviceAndSensor(build);
+            try {
+                commonAdapter.updateSensorByDeviceAndSensor(build);
+            } catch (FeignException.NotFound e) {
+                commonAdapter.addSensor(build);
+            }
         }
     }
 
@@ -212,7 +245,6 @@ public class RuleService {
             }
 
             CompareCondition offCondition = entry.getValue().getOffCondition().get();
-
             if (getLatestValue(mqttInInfo.getPlace(), mqttInInfo.getMeasurement()).isEmpty() ||
                     !offCondition.test(sensorService.parseToFloatValue(getLatestValue(mqttInInfo.getPlace(), mqttInInfo.getMeasurement()).get()))) {
                 return false;
@@ -228,18 +260,42 @@ public class RuleService {
     private <T> void registerBean(String prefix, Map<String, T> map) {
         for (Map.Entry<String, T> entry : map.entrySet()) {
             AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition((Class<T>) entry.getValue().getClass(), () -> entry.getValue()).getBeanDefinition();
-            ((BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory()).registerBeanDefinition(
-                    prefix + entry.getKey(), beanDefinition);
+            ((BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory()).registerBeanDefinition(prefix + entry.getKey(), beanDefinition);
         }
+
+        log.info(prefix + "bean 생성 완료");
     }
 
     private void deleteBeans(String prefix) {
         BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
         for (String name : beanFactory.getBeanDefinitionNames()) {
+            if (name.startsWith(prefix) && flowContext.getRegistry().containsKey(name)) {
+                deleteFlow(name);
+            }
+        }
+        for (String name : beanFactory.getBeanDefinitionNames()) {
             if (name.startsWith(prefix)) {
+                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(name);
+                if (((AbstractBeanDefinition) beanDefinition).getBeanClass().equals(MqttPahoMessageDrivenChannelAdapter.class)) {
+                    mqttService.stopMqttAdapter(name);
+                    log.info(name + " 중지");
+                }
                 beanFactory.removeBeanDefinition(name);
             }
         }
+
+        log.info(prefix + "로 시작하는 기존 bean 모두 삭제 완료");
+    }
+
+    private void registerFlows(String prefix, Map<String, IntegrationFlow> map) {
+        for (Map.Entry<String, IntegrationFlow> entry : map.entrySet()) {
+            flowContext.registration(entry.getValue()).id(prefix + entry.getKey()).register();
+        }
+        log.info(prefix + "flow 등록 완료");
+    }
+
+    private void deleteFlow(String flowName) {
+        flowContext.remove(flowName);
     }
 
     private Set<MqttInInfo> combineUniqueMqttInfos(Collection<MqttInInfo> mqttInfos, Collection<MqttInInfo> mqttInfos2) {

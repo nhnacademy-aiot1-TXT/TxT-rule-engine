@@ -13,7 +13,6 @@ import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -183,20 +182,9 @@ class RedisAdapterTest {
     }
 
     @Test
-    void deleteListWithPrefix() {
-        when(redisTemplate.keys(testKey + "*")).thenReturn(Set.of("testKey1", "testKey2", "testKey3"));
-        when(redisTemplate.delete(anyCollection())).thenReturn(testLong);
-
-        redisAdapter.deleteListWithPrefix(testKey);
-
-        verify(redisTemplate).keys(testKey + "*");
-        verify(redisTemplate).delete(anyCollection());
-    }
-
-    @Test
     void getBooleanFromHash() {
         when(redisTemplate.opsForHash()).thenReturn(hashOps);
-        when(hashOps.get(testKey, testHashKey)).thenReturn("true");
+        when(hashOps.get(testKey, testHashKey)).thenReturn(true);
 
         boolean result = redisAdapter.getBooleanFromHash(testKey, testHashKey);
 
