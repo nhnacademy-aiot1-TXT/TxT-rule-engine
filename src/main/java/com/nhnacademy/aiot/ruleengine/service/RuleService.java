@@ -125,7 +125,7 @@ public class RuleService {
     private void createCustomModeFlow(String place, String deviceName, CustomMode customMode, Map<String, Object> beans) {
         IntegrationFlowBuilder flowBuilder = IntegrationFlows.from(() -> new GenericMessage<>("trigger"),
                                                                    c -> c.poller(Pollers.fixedRate(customMode.getTimeInterval().toNanoOfDay() / 1_000_000)))
-                                                             .filter(p -> !deviceService.isAiMode(place, deviceName) && deviceService.isCustomMode(place, deviceName));
+                                                             .filter(p -> deviceService.isCustomMode(place, deviceName));
 
         if (customMode.isOccupancyCheckRequired()) {
             flowBuilder = flowBuilder.filter(Payload.class, payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(place)),
