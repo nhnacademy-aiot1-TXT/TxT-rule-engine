@@ -132,7 +132,8 @@ public class RuleService {
 
                                                                    messageValue.put(sensorPlace + "_" + sensorMeasurement, getLatestValue(sensorPlace, sensorMeasurement).get());
                                                                }
-                                                               messageValue.put("time", latestValues.get("time"));
+                                                               messageValue.put("time", Long.parseLong(latestValues.get("time")));
+
 
                                                                messageService.sendPredictMessage(messageValue);
                                                                log.info(place + "_" + deviceName + ": send Predict Message");
