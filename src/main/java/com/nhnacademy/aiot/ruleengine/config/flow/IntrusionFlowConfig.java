@@ -17,7 +17,6 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.messaging.MessageChannel;
 
-@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class IntrusionFlowConfig {
