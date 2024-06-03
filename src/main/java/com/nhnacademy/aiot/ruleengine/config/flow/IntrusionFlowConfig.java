@@ -8,6 +8,7 @@ import com.nhnacademy.aiot.ruleengine.service.MessageService;
 import com.nhnacademy.aiot.ruleengine.service.MqttService;
 import com.nhnacademy.aiot.ruleengine.service.SensorService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
@@ -16,6 +17,7 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.messaging.MessageChannel;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class IntrusionFlowConfig {
@@ -24,6 +26,7 @@ public class IntrusionFlowConfig {
     private final SensorService sensorService;
     private final MessageService messageService;
     private final IntrusionService intrusionService;
+    private String latestValue = Constants.VACANT;
 
     @Bean
     public MessageChannel intrusionChannel() {
@@ -41,10 +44,18 @@ public class IntrusionFlowConfig {
         return IntegrationFlows.from(Constants.INTRUSION_CHANNEL)
                                .transform(sensorService::convertStringToPayload)
                                .filter(Payload.class, payload -> intrusionService.isAlertTimeActive(payload.getLocalTime()))
-                               .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()))
+                               .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()),
+                                       e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) ->
+                                           {
+                                               latestValue = payload.getValue();
+                                               return payload;
+                                           }).nullChannel()))
                                .handle(Payload.class, (payload, headers) ->
                                    {
-                                       messageService.sendDeviceMessage(new ValueMessage("class_a", "intrusion", true));
+                                       if (Constants.VACANT.equals(payload.getValue())) {
+                                           messageService.sendDeviceMessage(new ValueMessage("class_a", "intrusion", true));
+                                           latestValue = Constants.OCCUPIED;
+                                       }
                                        return payload;
                                    }).nullChannel();
     }
