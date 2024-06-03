@@ -32,7 +32,7 @@ public class IntrusionFlowConfig {
 
     @Bean
     public MessageProducer intrusionInbound() {
-        return mqttService.createMqttAdapter(Constants.ACADEMY_MQTT, "rule-engine-intrusion", intrusionChannel(),
+        return mqttService.createMqttAdapter(Constants.TXT_MQTT, "rule-engine-intrusion", intrusionChannel(),
                                              "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
     }
 
