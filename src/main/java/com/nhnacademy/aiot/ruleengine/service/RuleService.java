@@ -136,6 +136,7 @@ public class RuleService {
 
 
                                                                messageService.sendPredictMessage(messageValue);
+                                                               log.info(messageValue.entrySet().toString());
                                                                log.info(place + "_" + deviceName + ": send Predict Message");
 
                                                                return null;
