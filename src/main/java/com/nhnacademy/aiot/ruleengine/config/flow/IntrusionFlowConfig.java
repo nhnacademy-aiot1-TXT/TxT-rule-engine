@@ -26,7 +26,7 @@ public class IntrusionFlowConfig {
     private final SensorService sensorService;
     private final MessageService messageService;
     private final IntrusionService intrusionService;
-    private String latestValue;
+    private final ThreadLocal<String> latestValue = new ThreadLocal<>();
 
     @Bean
     public MessageChannel intrusionChannel() {
@@ -47,17 +47,16 @@ public class IntrusionFlowConfig {
                                .filter(Payload.class, payload -> Constants.OCCUPIED.equals(payload.getValue()),
                                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) ->
                                            {
-                                               latestValue = payload.getValue();
-                                               log.info(latestValue);
+                                               latestValue.set(payload.getValue());
+                                               log.info(latestValue.get());
                                                return payload;
                                            }).nullChannel()))
                                .handle(Payload.class, (payload, headers) ->
                                    {
-                                       log.info(latestValue);
-
                                        if (Constants.VACANT.equals(payload.getValue())) {
                                            messageService.sendDeviceMessage(new ValueMessage("class_a", "intrusion", true));
-                                           latestValue = Constants.OCCUPIED;
+                                           latestValue.set(Constants.OCCUPIED);
+                                           log.info(latestValue.get());
                                        }
                                        return payload;
                                    }).nullChannel();
