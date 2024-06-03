@@ -53,7 +53,7 @@ public class IntrusionFlowConfig {
                                            }).nullChannel()))
                                .handle(Payload.class, (payload, headers) ->
                                    {
-                                       if (Constants.VACANT.equals(payload.getValue())) {
+                                       if (Constants.VACANT.equals(latestValue.get())) {
                                            messageService.sendDeviceMessage(new ValueMessage("class_a", "intrusion", true));
                                            latestValue.set(Constants.OCCUPIED);
                                            log.info(latestValue.get());
