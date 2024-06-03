@@ -98,6 +98,7 @@ public class RuleService {
                                                        String sensorMeasurement = sensorService.getMeasurement(topics);
 
                                                        latestValues.put(sensorPlace + "_" + sensorMeasurement, payload.getValue());
+                                                       latestValues.put("time", String.valueOf(payload.getTime()));
                                                        log.info("latestValue: " + sensorPlace + "_" + sensorMeasurement + ":" + payload.getValue());
 
                                                        return payload;
@@ -117,7 +118,7 @@ public class RuleService {
                                                .handle((payload, headers) ->
                                                            {
                                                                Map<String, Object> messageValue = new HashMap<>();
-                                                               messageValue.put("time", System.currentTimeMillis());
+                                                               //                                                               messageValue.put("time", System.currentTimeMillis());
                                                                messageValue.put("place", place);
                                                                messageValue.put("deviceName", deviceName);
 
@@ -149,7 +150,7 @@ public class RuleService {
                                                                              log.info(place + "." + deviceName + ".customModeFlow 실행");
                                                                              return payload;
                                                                          });
-      
+
         if (customMode.isOccupancyCheckRequired()) {
             flowBuilder = flowBuilder.filter(payload -> Constants.OCCUPIED.equals(occupancyService.getOccupancyStatus(place)),
                                              e -> e.discardFlow(flow -> flow.handle((payload, headers) ->
