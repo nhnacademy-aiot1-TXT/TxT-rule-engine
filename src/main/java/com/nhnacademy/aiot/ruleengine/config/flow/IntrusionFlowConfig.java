@@ -26,7 +26,7 @@ public class IntrusionFlowConfig {
     private final SensorService sensorService;
     private final MessageService messageService;
     private final IntrusionService intrusionService;
-    private String latestValue = Constants.VACANT;
+    private String latestValue;
 
     @Bean
     public MessageChannel intrusionChannel() {
