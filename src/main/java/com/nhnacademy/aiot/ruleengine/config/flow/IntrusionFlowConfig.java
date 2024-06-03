@@ -17,6 +17,7 @@ import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.messaging.MessageChannel;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class IntrusionFlowConfig {
@@ -47,10 +48,13 @@ public class IntrusionFlowConfig {
                                        e -> e.discardFlow(flow -> flow.handle(Payload.class, (payload, headers) ->
                                            {
                                                latestValue = payload.getValue();
+                                               log.info(latestValue);
                                                return payload;
                                            }).nullChannel()))
                                .handle(Payload.class, (payload, headers) ->
                                    {
+                                       log.info(latestValue);
+
                                        if (Constants.VACANT.equals(payload.getValue())) {
                                            messageService.sendDeviceMessage(new ValueMessage("class_a", "intrusion", true));
                                            latestValue = Constants.OCCUPIED;
