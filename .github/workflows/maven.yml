@@ -46,6 +46,7 @@ jobs:
           script: |
             docker stop TxT-rule-engine || true
             docker rm -f TxT-rule-engine || true
+            docker rmi $(docker images ${{ secrets.DOCKER_REPO }} -q)
             docker pull ${{ secrets.DOCKER_REPO }}
             docker run -d -p 9897:9897 --name TxT-rule-engine ${{ secrets.DOCKER_REPO }}
 
