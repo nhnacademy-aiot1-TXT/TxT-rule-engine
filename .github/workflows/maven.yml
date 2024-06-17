@@ -57,7 +57,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script_stop: true
           script: |
-            docker load -i ~/rule-engine.tar
-            docker stop rule-engine-container || true
-            docker rm rule-engine-container || true
-            docker run -d --name rule-engine-container -p 9897:9897 txt-rule-engine
+            sudo docker load -i ~/rule-engine.tar
+            sudo docker stop rule-engine-container || true
+            sudo docker rm rule-engine-container || true
+            sudo docker run -d --name rule-engine-container -p 9897:9897 txt-rule-engine
