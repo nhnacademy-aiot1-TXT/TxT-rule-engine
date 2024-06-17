@@ -30,7 +30,6 @@ jobs:
       - name: Run SonarQube
         run: mvn sonar:sonar -Dsonar.projectKey=github-action -Dsonar.host.url=${{secrets.SONAR_HOST}} -Dsonar.login=${{secrets.SONAR_TOKEN}}
 
-
       - name: web docker build and push
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -47,4 +46,4 @@ jobs:
           script: |
             docker rm -f $(docker ps -qa)
             docker pull ${{ secrets.DOCKER_REPO }}
-            docker run -d -p 8100:8100 --name TxT-auth ${{ secrets.DOCKER_REPO }}
+            docker run -d -p 9897:9897 --name TxT-rule-engine ${{ secrets.DOCKER_REPO }}
