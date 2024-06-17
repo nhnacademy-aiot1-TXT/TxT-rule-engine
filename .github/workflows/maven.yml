@@ -44,8 +44,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            docker stop $(docker ps -q) || true
-            docker rm -f $(docker ps -qa) || true
+            docker stop TxT-rule-engine || true
+            docker rm -f TxT-rule-engine || true
             docker pull ${{ secrets.DOCKER_REPO }}
             docker run -d -p 9897:9897 --name TxT-rule-engine ${{ secrets.DOCKER_REPO }}
 
