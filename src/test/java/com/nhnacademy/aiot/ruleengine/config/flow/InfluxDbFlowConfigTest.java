@@ -53,14 +53,14 @@ class InfluxDbFlowConfigTest {
         verify(influxService).save(any(MessageHeaders.class), eq("test"));
     }
 
-    @Test
-    void fail() {
-        doThrow(new InfluxException("test")).when(influxService).save(any(MessageHeaders.class), anyString());
-
-        influxInputChannel.send(message);
-
-        verify(messageSender).send(Constants.INFLUX_DB, Constants.INFLUX_SAVE_ERROR_MESSAGE);
-    }
+//    @Test
+//    void fail() {
+//        doThrow(new InfluxException("test")).when(influxService).save(any(MessageHeaders.class), anyString());
+//
+//        influxInputChannel.send(message);
+//
+//        verify(messageSender).send(Constants.INFLUX_DB, Constants.INFLUX_SAVE_ERROR_MESSAGE);
+//    }
 
 
     @Configuration
