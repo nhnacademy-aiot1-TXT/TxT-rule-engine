@@ -32,11 +32,11 @@ public class BatteryFlowConfig {
     /**
      * TxT팀이 설치한 센서들의 batteryLevel 메시지
      */
-    @Bean
-    public MessageProducer batteryLevelInbound() {
-        return mqttService.createMqttAdapter(Constants.TXT_MQTT, "rule-engine-battery1", batteryLevelChannel(),
-                                             "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
-    }
+//    @Bean
+//    public MessageProducer batteryLevelInbound() {
+//        return mqttService.createMqttAdapter(Constants.TXT_MQTT, "rule-engine-battery1", batteryLevelChannel(),
+//                                             "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/battery_level");
+//    }
 
     /**
      * 학원 강의실 A에 설치된 센서들의 batteryLevel 메시지

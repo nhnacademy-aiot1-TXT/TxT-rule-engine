@@ -31,7 +31,7 @@ public class OccupancyService {
     }
 
     private List<FluxTable> getValuesByPlace() {
-        String query = "from(bucket: \"TxT-iot\")" +
+        String query = "from(bucket: \"TxT\")" +
                 "  |> range(start: -10m, stop: now())" +
                 "  |> filter(fn: (r) => r[\"_measurement\"] == \"occupancy\")" +
                 "  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")" +

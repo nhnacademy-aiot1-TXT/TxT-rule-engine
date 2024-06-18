@@ -40,11 +40,11 @@ public class InfluxDbFlowConfig {
      *
      * @return MessageProducer 객체
      */
-    @Bean
-    public MessageProducer txtSensorInbound() {
-        return mqttService.createMqttAdapter(Constants.TXT_MQTT, "rule-engine-txt", influxInputChannel(),
-                                             "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
-    }
+//    @Bean
+//    public MessageProducer txtSensorInbound() {
+//        return mqttService.createMqttAdapter(Constants.TXT_MQTT, "rule-engine-txt", influxInputChannel(),
+//                                             "milesight/s/nhnacademy/b/gyeongnam/p/+/d/+/e/+");
+//    }
 
     /**
      * 이 메소드는 학원의 기존 센서들의 메시지를 수신하는 데 필요한 설정을 정의
@@ -80,7 +80,7 @@ public class InfluxDbFlowConfig {
                     influxService.save(message.getHeaders(), payload);
                 } catch (InfluxException e) {
                     log.debug("InfluxDB에 데이터 저장 과정 중 예외 발생:" + System.lineSeparator() + e);
-                    messageSender.send(Constants.INFLUX_DB, Constants.INFLUX_SAVE_ERROR_MESSAGE);
+//                    messageSender.send(Constants.INFLUX_DB, Constants.INFLUX_SAVE_ERROR_MESSAGE);
                 }
             };
     }

@@ -53,7 +53,7 @@ eureka:
 influxdb:
   token: 5ZAgYbeX9WAO6_njrl-Dh8bWK846SwZfUxD10jgIz_LbCOtXCyhecUhpvS0AHsZHXNEGSD5skrEoJK2CkWskrQ==
   url: http://180.210.81.216:8086
-  org: TXT
+  org: TxT
   bucket: TxT
 
 server:

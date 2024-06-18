@@ -33,11 +33,11 @@ public class IntrusionFlowConfig {
         return new DirectChannel();
     }
 
-    @Bean
-    public MessageProducer intrusionInbound() {
-        return mqttService.createMqttAdapter(Constants.TXT_MQTT, "rule-engine-intrusion", intrusionChannel(),
-                                             "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
-    }
+//    @Bean
+//    public MessageProducer intrusionInbound() {
+//        return mqttService.createMqttAdapter(Constants.TXT_MQTT, "rule-engine-intrusion", intrusionChannel(),
+//                                             "milesight/s/nhnacademy/b/gyeongnam/p/class_a/d/vs121/e/occupancy");
+//    }
 
     @Bean
     public IntegrationFlow intrusionProcess() {
