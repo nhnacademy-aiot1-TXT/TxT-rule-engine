@@ -1,3 +1,7 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://admin:1234@125.6.39.120:8761/eureka
 message:
   dooray:
     hook-url: https://hook.dooray.com/services/3204376758577275363/3797860672948676564/-gMIrbs6SLmwwxZhrWjPSg

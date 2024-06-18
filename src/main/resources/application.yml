@@ -7,10 +7,10 @@ spring:
     username: guest
     password: guest
   redis:
-    host: 133.186.244.96
-    port: 6379
+    host: 133.186.241.167
     password: '*N2vya7H@muDTwdNMR!'
-    database: 13
+    port: 6379
+    database: 263
   profiles:
     active: dev
 
@@ -49,8 +49,6 @@ eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
-    service-url:
-      defaultZone: http://admin:1234@125.6.39.120:8761/eureka
 
 influxdb:
   token: noC68n9KNe6HJd20B9HFaRf68SuYV2lLVdGuuj1aFZb9xaJ4wlkL7Wxf02_ajEVxgw8PupjrTAwQo7kX6K65fA==
