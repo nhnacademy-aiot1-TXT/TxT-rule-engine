@@ -2,7 +2,7 @@ spring:
   application:
     name: rule-engine
   rabbitmq:
-    host: 180.210.81.216
+    host: 180.210.82.110
     port: '5672'
     username: guest
     password: guest
@@ -52,7 +52,7 @@ eureka:
 
 influxdb:
   token: noC68n9KNe6HJd20B9HFaRf68SuYV2lLVdGuuj1aFZb9xaJ4wlkL7Wxf02_ajEVxgw8PupjrTAwQo7kX6K65fA==
-  url: http://180.210.81.216:8086
+  url: http://180.210.82.110:8086
   org: TXT
   bucket: TxT
 
