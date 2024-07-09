@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(value = "common-api", url = "http://133.186.208.129:8400")
+@FeignClient(value = "common-api")
 public interface CommonAdapter {
     @GetMapping("/api/common/time-interval")
     TimeIntervalResponse getTimeIntervalBySensorName(@RequestParam("sensorName") String sensorName);
