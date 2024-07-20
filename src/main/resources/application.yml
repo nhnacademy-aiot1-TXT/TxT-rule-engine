@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: rule-engine
+  rabbitmq:
+    host: 180.210.82.110
+    port: '5672'
+    username: guest
+    password: guest
+  redis:
+    host: 133.186.241.167
+    password: '*N2vya7H@muDTwdNMR!'
+    port: 6379
+    database: 263
+  profiles:
+    active: prod
+
+rabbitmq:
+  intrusion:
+    queue:
+      name: txt.intrusion.queue
+    routing:
+      key: txt.intrusion
+  device:
+    queue:
+      name: txt.device.queue
+    routing:
+      key: txt.device
+  occupancy:
+    routing:
+      key: txt.occupancy
+    queue:
+      name: txt.occupancy.queue
+  predict:
+    queue:
+      name: txt.predict.queue
+    routing:
+      key: txt.predict
+  battery:
+    routing:
+      key: txt.battery
+    queue:
+      name: txt.battery.queue
+  exchange:
+    sensor:
+      name: txt.sensor.data
+    name: txt.device.control
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+
+influxdb:
+  token: noC68n9KNe6HJd20B9HFaRf68SuYV2lLVdGuuj1aFZb9xaJ4wlkL7Wxf02_ajEVxgw8PupjrTAwQo7kX6K65fA==
+  url: http://180.210.82.110:8086
+  org: TXT
+  bucket: TxT
+
+server:
+  port: '9897'
+
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 30000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: beans, conditions, configprops, env, health, httpexchanges, info, loggers, metrics, mappings, threaddump, shutdown
+      base-path: /rule-engine-server/manage
+  endpoint:
+    health:
+      show-details: always
